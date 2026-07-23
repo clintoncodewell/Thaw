@@ -1,0 +1,19 @@
+Thaw/Permissions/Permission.swift
+  s_5aa49261fd1b47::t_1a700d96f5d5d6 171-178
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "fb0d2d68569e64c6e5d7ceeb55c27e7db4a05af0",
+  "prompts": {},
+  "sessions": {
+    "s_5aa49261fd1b47": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f1eccd67-a8a0-44d0-8345-e6bdc92091e1",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "clintoncodewell <clinton@advisewell.co>"
+    }
+  }
+}
