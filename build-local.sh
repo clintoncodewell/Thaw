@@ -46,13 +46,27 @@ if [[ " ${*} " != *" --signed "* ]]; then
   # Xcode leaves the prebuilt Sparkle.framework signed with upstream's Team ID
   # while our binary is ad-hoc (no team). dyld refuses to load a framework whose
   # Team ID differs from the loading process, so the app aborts at launch with
-  # "Library not loaded: @rpath/Sparkle.framework". Re-sign every nested bundle
-  # ad-hoc, deepest first, so the whole tree agrees on "no team".
-  find "$APP/Contents" -depth \
-    \( -name "*.framework" -o -name "*.xpc" -o -name "*.app" -o -name "*.dylib" \) \
-    -print0 | xargs -0 -I{} codesign --force --sign - --timestamp=none {} >/dev/null 2>&1
-  codesign --force --sign - --timestamp=none "$APP" >/dev/null 2>&1
-  codesign --verify --strict "$APP" && echo "re-signed ad-hoc (whole tree)"
+  # "Library not loaded: @rpath/Sparkle.framework".
+  #
+  # Re-sign ONLY the frameworks. Do not touch MenuBarItemService.xpc: Xcode
+  # already signed it ad-hoc with its generated .xcent, and a blanket
+  # `codesign --force --sign -` silently DROPS entitlements. Without them the
+  # service launches but every XPC request dies with "Underlying connection
+  # interrupted", sourcePID comes back nil for every item, and the layout editor
+  # reports every item as immovable.
+  find "$APP/Contents" -depth -name "*.framework" -print0 |
+    xargs -0 -I{} codesign --force --sign - --timestamp=none {} >/dev/null 2>&1
+
+  # Changing nested code invalidates the outer seal, so re-sign the app — but
+  # carry its own entitlements back over rather than dropping them.
+  ENTS=$(mktemp -t thaw-ents).plist
+  if codesign -d --entitlements "$ENTS" --xml "$APP" 2>/dev/null && [ -s "$ENTS" ]; then
+    codesign --force --sign - --timestamp=none --entitlements "$ENTS" "$APP" >/dev/null 2>&1
+  else
+    codesign --force --sign - --timestamp=none "$APP" >/dev/null 2>&1
+  fi
+  rm -f "$ENTS"
+  codesign --verify --strict "$APP" && echo "re-signed frameworks ad-hoc (entitlements preserved)"
 fi
 
 echo "built: $APP"
