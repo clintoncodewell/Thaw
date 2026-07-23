@@ -15,3 +15,5 @@ Sparkle
 ThawCtl/.build/
 xcode-skills
 xcuserdata/
+# local build output (build-local.sh -derivedDataPath)
+/build/
