@@ -41,6 +41,20 @@ xcodebuild \
   build
 
 APP="build/Build/Products/$CONFIG/Thaw.app"
+
+if [[ " ${*} " != *" --signed "* ]]; then
+  # Xcode leaves the prebuilt Sparkle.framework signed with upstream's Team ID
+  # while our binary is ad-hoc (no team). dyld refuses to load a framework whose
+  # Team ID differs from the loading process, so the app aborts at launch with
+  # "Library not loaded: @rpath/Sparkle.framework". Re-sign every nested bundle
+  # ad-hoc, deepest first, so the whole tree agrees on "no team".
+  find "$APP/Contents" -depth \
+    \( -name "*.framework" -o -name "*.xpc" -o -name "*.app" -o -name "*.dylib" \) \
+    -print0 | xargs -0 -I{} codesign --force --sign - --timestamp=none {} >/dev/null 2>&1
+  codesign --force --sign - --timestamp=none "$APP" >/dev/null 2>&1
+  codesign --verify --strict "$APP" && echo "re-signed ad-hoc (whole tree)"
+fi
+
 echo "built: $APP"
 
 if [[ "${2:-}" == "--install" ]]; then
