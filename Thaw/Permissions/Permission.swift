@@ -168,7 +168,14 @@ final class ScreenRecordingPermission: Permission {
                 String(localized: "Sample colors from the menu bar to adjust its tint and appearance."),
                 String(localized: "Find menu bar items visually when searching."),
             ],
-            isRequired: false,
+            // Upstream treats this as optional, but menu bar item windows are
+            // owned by Control Center and Thaw matches its own control items by
+            // window title — which macOS withholds without Screen Recording.
+            // Left optional, granting Accessibility first flips the app to
+            // .hasRequired, stopAllChecks() fires, the app stops requesting
+            // Screen Recording, and macOS never lists it so it can never be
+            // granted. The hidden section then never resolves.
+            isRequired: true,
             settingsURL: URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture"),
             check: {
                 ScreenCapture.checkPermissions()
