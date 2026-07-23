@@ -1,0 +1,19 @@
+build-local.sh
+  s_5aa49261fd1b47::t_2a269a8ad53114 49-69
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "cc26db61084fa72a48684242f69663f2249e85c1",
+  "prompts": {},
+  "sessions": {
+    "s_5aa49261fd1b47": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f1eccd67-a8a0-44d0-8345-e6bdc92091e1",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "clintoncodewell <clinton@advisewell.co>"
+    }
+  }
+}
