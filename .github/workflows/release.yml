@@ -1,13 +1,14 @@
 name: Release
 
+# Sparkle / channel releases are manual only (workflow_dispatch).
+# Pushing semver tags does NOT run this workflow — safe for backfilling
+# release history or pointing tags at old commits without distributing.
+
 on:
-  push:
-    tags:
-      - "*.*.*"
   workflow_dispatch:
     inputs:
       tag:
-        description: Release tag to publish (for example, 1.2.3 or 2.0.0-rc.1)
+        description: Existing release tag to publish (for example, 1.2.3 or 2.0.0-rc.1)
         required: true
         type: string
       channel:
@@ -44,13 +45,13 @@ jobs:
         uses: actions/checkout@v7
         with:
           fetch-depth: 0
-          ref: ${{ github.event_name == 'workflow_dispatch' && format('refs/tags/{0}', inputs.tag) || github.ref }}
+          ref: refs/tags/${{ inputs.tag }}
 
       - name: Resolve tag and channel
         id: meta
         env:
-          TAG_NAME: ${{ inputs.tag || github.ref_name }}
-          CHANNEL_INPUT: ${{ inputs.channel || 'auto' }}
+          TAG_NAME: ${{ inputs.tag }}
+          CHANNEL_INPUT: ${{ inputs.channel }}
         run: |
           set -euo pipefail
 
@@ -159,17 +160,14 @@ jobs:
           tag_name: ${{ steps.meta.outputs.tag }}
           files: ${{ steps.assets.outputs.files }}
           generate_release_notes: false
-          # Tag pushes publish immediately so Sparkle download URLs work.
-          # workflow_dispatch stays draft unless publish_release is checked.
-          draft: ${{ github.event_name == 'workflow_dispatch' && !inputs.publish_release }}
+          # Draft unless publish_release is checked.
+          draft: ${{ !inputs.publish_release }}
           prerelease: ${{ steps.meta.outputs.prerelease == 'true' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish appcast to gh-pages
-        if: >-
-          (github.event_name != 'workflow_dispatch' || inputs.publish_appcast)
-          && (github.event_name != 'workflow_dispatch' || inputs.publish_release)
+        if: inputs.publish_appcast && inputs.publish_release
         env:
           TAG: ${{ steps.meta.outputs.tag }}
           CHANNEL: ${{ steps.meta.outputs.channel }}
