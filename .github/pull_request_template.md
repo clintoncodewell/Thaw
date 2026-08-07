@@ -2,15 +2,26 @@
 
 A brief description of the changes proposed in this pull request.
 
-**Scope:** This PR changes one focused thing (bugfix or feature) plus minimal plumbing. Larger refactors need prior agreement in the issue.
+**Scope:** This PR changes one focused thing (bug fix or feature) plus minimal plumbing. Larger refactors need prior agreement in the issue.
 
-> **External contributors:** before opening a PR for a bug fix or new feature, please make sure there's a corresponding issue in the [issue tracker](https://github.com/stonerl/Thaw/issues). PRs that fix or change things that haven't been reported/agreed on may be closed without review.
+> We are on the process of migrating from XCTest to Swift Test. If you are adding new tests, please use Swift Test.
+> **External contributors:** before opening a PR for a bug fix or new feature, please make sure there's a corresponding issue in the [issue tracker](https://github.com/thaw-app/Thaw/issues). PRs that fix or change things that haven't been reported/agreed on may be closed without review.
 
-Closes: (Required for bugfix/feature PRs; use `Closes: #123` or `N/A`)
+## Linked issue (required)
+
+PR Metadata fails without a `Closes:` line in this exact form (keep it on its own line):
+
+```text
+Closes: N/A
+```
+
+Replace `N/A` with `#<issue_number>` (e.g. `Closes: #123`) when this PR fixes/implements a specific issue.
+
+Closes: N/A
 
 ## PR Type
 
-Describe **what this change does** (not the linked issue’s request kind). Bug *reports* use `bug` on issues; bug *fixes* use `fix` on PRs.
+Describe **what this change does** (not the linked issue’s request kind). Bug *reports* use the `Bug` Issue type; bug *fixes* use `fix` on PRs.
 
 If you tick **Feature** or **Refactor** and touch more than ~20 files, please mention why this can’t be split.
 
@@ -61,6 +72,7 @@ What does this PR change or add, and why?
 - [ ] I've documented new public APIs / non-obvious helpers.
 - [ ] I've updated documentation as needed.
 - [ ] This PR targets the `development` branch.
+- [ ] If this PR changes dependencies / lockfiles (`Package.resolved`, Actions pins, etc.), `dependency-sca` is green — or any `osv-scanner.toml` suppression includes both `reason` and `ignoreUntil` (see [SECURITY.md](SECURITY.md) § Dependency SCA policy).
 
 Test commands run:
 

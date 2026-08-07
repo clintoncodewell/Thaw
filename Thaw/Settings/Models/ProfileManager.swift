@@ -6,16 +6,30 @@
 //  Copyright (Thaw) © 2026 Toni Förster
 //  Licensed under the GNU GPLv3
 
+import AsyncAlgorithms
 import Cocoa
-import Combine
 import Foundation
 
 @MainActor
-final class ProfileManager: ObservableObject {
-    @Published private(set) var profiles: [ProfileMetadata] = []
+@Observable
+final class ProfileManager {
+    /// The manager's list of profile metadata.
+    ///
+    /// `didSet` does not fire for assignments made from within this class's
+    /// own `init` (matching the previous `$profiles.dropFirst()` Combine
+    /// subscription, which skipped the value delivered at subscribe time).
+    /// It does fire for every later assignment, including ones made before
+    /// ``performSetup(with:)`` is called; ``rebuildProfileHotkeys()`` no-ops
+    /// via its `appState` guard in that case, same as before when no
+    /// subscription existed yet.
+    private(set) var profiles: [ProfileMetadata] = [] {
+        didSet {
+            rebuildProfileHotkeys()
+        }
+    }
 
     /// The ID of the currently active profile, or `nil`.
-    @Published var activeProfileID: UUID?
+    var activeProfileID: UUID?
 
     private let diagLog = DiagLog(category: "ProfileManager")
     private let encoder: JSONEncoder
@@ -23,7 +37,14 @@ final class ProfileManager: ObservableObject {
     private let profilesDirectory: URL
     private let manifestURL: URL
     private(set) weak var appState: AppState?
-    private var cancellables = Set<AnyCancellable>()
+
+    /// Tasks backing the swift-async-algorithms debounces installed by
+    /// ``performSetup(with:)``. Each owns its own notification observer and
+    /// removes it when the task ends, so `deinit` only has to cancel them.
+    private(set) var screenParametersTask: Task<Void, Never>?
+    private(set) var focusFilterActivatedTask: Task<Void, Never>?
+    private(set) var focusFilterDeactivatedTask: Task<Void, Never>?
+
     /// Tracks the last seen active display UUID for auto-switch debouncing.
     private var lastActiveDisplayUUID: String?
     /// Whether a Focus Filter profile is currently applied.
@@ -36,11 +57,9 @@ final class ProfileManager: ObservableObject {
     private var layoutGeneration: UInt = 0
 
     /// Hotkeys for switching to each profile, keyed by profile ID.
-    @Published private(set) var profileHotkeys: [UUID: Hotkey] = [:]
+    private(set) var profileHotkeys: [UUID: Hotkey] = [:]
     /// Maps Hotkey identity to profile ID for the perform() lookup.
     var hotkeyProfileMap: [ObjectIdentifier: UUID] = [:]
-    /// Observers for profile hotkey changes.
-    private var profileHotkeyCancellables = Set<AnyCancellable>()
 
     /// - Parameter profilesDirectory: Where profile JSON and the manifest
     ///   live. Defaults to Application Support in production; tests pass a
@@ -75,6 +94,15 @@ final class ProfileManager: ObservableObject {
         loadManifest()
     }
 
+    @MainActor
+    deinit {
+        // Each observer task is manually owned, so cancel it here. Ending a
+        // task runs its defer, which removes its notification observer.
+        screenParametersTask?.cancel()
+        focusFilterActivatedTask?.cancel()
+        focusFilterDeactivatedTask?.cancel()
+    }
+
     /// Sets up the manager with the app state and configures auto-switch.
     /// If the current display has an associated profile, it is applied
     /// after the menu bar has settled.
@@ -83,53 +111,11 @@ final class ProfileManager: ObservableObject {
         lastActiveDisplayUUID = Bridging.getActiveMenuBarDisplayUUID()
         rebuildProfileHotkeys()
 
-        // Rebuild profile hotkeys when the profile list changes.
-        $profiles
-            .dropFirst()
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in
-                self?.rebuildProfileHotkeys()
-            }
-            .store(in: &cancellables)
+        // Note: profiles' didSet already calls rebuildProfileHotkeys() for
+        // every assignment after this class's own init, so no explicit
+        // subscription is needed here (see the doc comment on `profiles`).
 
-        // Listen for display changes to trigger auto-switch.
-        NotificationCenter.default
-            .publisher(for: NSApplication.didChangeScreenParametersNotification)
-            .debounce(for: .seconds(1.5), scheduler: DispatchQueue.main)
-            .sink { [weak self] _ in
-                guard let self else { return }
-                Task { [weak self] in
-                    guard let self else { return }
-                    await self.checkDisplayAndAutoSwitch()
-                }
-            }
-            .store(in: &cancellables)
-
-        // Listen for Focus Filter activation from the system.
-        DistributedNotificationCenter.default()
-            .publisher(for: Notification.Name("com.stonerl.Thaw.focusFilterActivated"))
-            .debounce(for: .seconds(0.5), scheduler: DispatchQueue.main)
-            .sink { [weak self] _ in
-                guard let self else { return }
-                Task { [weak self] in
-                    guard let self else { return }
-                    await self.applyFocusFilterProfile()
-                }
-            }
-            .store(in: &cancellables)
-
-        // Listen for Focus Filter deactivation (Focus mode turned off).
-        DistributedNotificationCenter.default()
-            .publisher(for: Notification.Name("com.stonerl.Thaw.focusFilterDeactivated"))
-            .debounce(for: .seconds(0.5), scheduler: DispatchQueue.main)
-            .sink { [weak self] _ in
-                guard let self else { return }
-                Task { [weak self] in
-                    guard let self else { return }
-                    await self.handleFocusFilterDeactivated()
-                }
-            }
-            .store(in: &cancellables)
+        startObservationTasks()
 
         // Check if a Focus Filter is currently active. If so, apply it;
         // otherwise fall back to display-based profile.
@@ -156,6 +142,49 @@ final class ProfileManager: ObservableObject {
             if let currentUUID = lastActiveDisplayUUID {
                 await self.applyProfileForDisplay(uuid: currentUUID)
             }
+        }
+    }
+
+    /// (Re)starts the three notification observation tasks. The observers
+    /// follow the pattern DisplaySettingsManager adopted:
+    /// `debouncedNotificationTask` wires a NotificationCenter observer into
+    /// an AsyncStream that `.debounce(for:)` coalesces, replacing Combine's
+    /// `.debounce(for:scheduler:)`.
+    ///
+    /// A repeated setup must not leave the previous task, and the observer
+    /// its defer owns, running; hence the cancel before each assignment.
+    ///
+    /// Extracted from `performSetup(with:)` — which needs a live `AppState`
+    /// — so the wiring stays exercisable in unit tests.
+    func startObservationTasks() {
+        // Listen for display changes to trigger auto-switch.
+        screenParametersTask?.cancel()
+        screenParametersTask = debouncedNotificationTask(
+            center: .default,
+            name: NSApplication.didChangeScreenParametersNotification,
+            interval: .seconds(1.5)
+        ) { [weak self] in
+            await self?.checkDisplayAndAutoSwitch()
+        }
+
+        // Listen for Focus Filter activation from the system.
+        focusFilterActivatedTask?.cancel()
+        focusFilterActivatedTask = debouncedNotificationTask(
+            center: DistributedNotificationCenter.default(),
+            name: Notification.Name("com.stonerl.Thaw.focusFilterActivated"),
+            interval: .seconds(0.5)
+        ) { [weak self] in
+            await self?.applyFocusFilterProfile()
+        }
+
+        // Listen for Focus Filter deactivation (Focus mode turned off).
+        focusFilterDeactivatedTask?.cancel()
+        focusFilterDeactivatedTask = debouncedNotificationTask(
+            center: DistributedNotificationCenter.default(),
+            name: Notification.Name("com.stonerl.Thaw.focusFilterDeactivated"),
+            interval: .seconds(0.5)
+        ) { [weak self] in
+            await self?.handleFocusFilterDeactivated()
         }
     }
 
@@ -303,7 +332,9 @@ final class ProfileManager: ObservableObject {
                 previousProfileID: baseContext.previousID,
                 previousProfileName: baseContext.previousName
             ))
-            if Task.isCancelled { return }
+            if Task.isCancelled {
+                return
+            }
             await HookRunner.runIfEnabled(profilePre, context: HookRunner.Context(
                 phase: .pre,
                 scope: .profile,
@@ -312,7 +343,9 @@ final class ProfileManager: ObservableObject {
                 previousProfileID: baseContext.previousID,
                 previousProfileName: baseContext.previousName
             ))
-            if Task.isCancelled { return }
+            if Task.isCancelled {
+                return
+            }
 
             // 2. Snapshot apply: push profile settings into the running
             //    app state.
@@ -446,11 +479,12 @@ final class ProfileManager: ObservableObject {
             }
         }
 
-        // Apply display configurations
-        appState.settings.displaySettings.configurations = profile.displayConfigurations
-
-        // Apply global display configuration template
+        // configurations.didSet derives active-display spacing synchronously,
+        // so install its global fallback before the per-display overrides.
         appState.settings.displaySettings.globalConfiguration = profile.globalDisplayConfiguration
+
+        // Apply display configurations.
+        appState.settings.displaySettings.configurations = profile.displayConfigurations
 
         // Apply the spacing-relaunch confirmation preferences
         appState.settings.displaySettings.confirmSpacingRelaunch = profile.confirmSpacingRelaunch
@@ -481,9 +515,27 @@ final class ProfileManager: ObservableObject {
     }
 
     /// Deletes a profile by its identifier.
+    ///
+    /// A profile file that is already absent is treated as success: the
+    /// manifest entry is still removed. Leaving the entry behind would have
+    /// made the profile permanently undeletable, since a subsequent attempt
+    /// would throw on the same missing file.
+    ///
+    /// Any other removal failure (permissions, a busy volume) leaves both the
+    /// file and the manifest entry in place and rethrows. Dropping the entry
+    /// while the file survived would orphan it: nothing would reference it,
+    /// and nothing would ever clean it up.
     func deleteProfile(id: UUID) throws {
         let url = profileURL(for: id)
-        try FileManager.default.removeItem(at: url)
+
+        do {
+            try FileManager.default.removeItem(at: url)
+        } catch let error as CocoaError where error.code == .fileNoSuchFile {
+            diagLog.debug(
+                "deleteProfile: file already absent for \(id), removing manifest entry anyway"
+            )
+        }
+
         profiles.removeAll { $0.id == id }
         saveManifest()
     }
@@ -597,13 +649,13 @@ final class ProfileManager: ObservableObject {
     /// (and UserDefaults), not the full app state, so the capture and re-arm
     /// paths can be exercised in tests without standing up an AppState.
     private func captureCurrentLayout(from itemManager: MenuBarItemManager) -> MenuBarLayoutSnapshot {
-        let savedSectionOrder = UserDefaults.standard.dictionary(
+        let savedSectionOrder = Defaults.store.dictionary(
             forKey: "MenuBarItemManager.savedSectionOrder"
         ) as? [String: [String]] ?? [:]
-        let pinnedHiddenBundleIDs = UserDefaults.standard.array(
+        let pinnedHiddenBundleIDs = Defaults.store.array(
             forKey: "MenuBarItemManager.pinnedHiddenBundleIDs"
         ) as? [String] ?? []
-        let pinnedAlwaysHiddenBundleIDs = UserDefaults.standard.array(
+        let pinnedAlwaysHiddenBundleIDs = Defaults.store.array(
             forKey: "MenuBarItemManager.pinnedAlwaysHiddenBundleIDs"
         ) as? [String] ?? []
         let customNames = Defaults.dictionary(
@@ -917,7 +969,6 @@ final class ProfileManager: ObservableObject {
             hotkey.disable()
         }
         hotkeyProfileMap.removeAll()
-        profileHotkeyCancellables.removeAll()
 
         // Clean up orphaned hotkey entries for deleted profiles.
         let profileIDs = Set(profiles.map(\.id.uuidString))
@@ -953,24 +1004,23 @@ final class ProfileManager: ObservableObject {
             // Map this hotkey to its profile ID for the perform() lookup.
             hotkeyProfileMap[ObjectIdentifier(hotkey)] = profileID
 
-            // Observe future changes from HotkeyRecorder.
-            hotkey.$keyCombination
-                .dropFirst() // Skip the initial value we just set.
-                .receive(on: DispatchQueue.main)
-                .sink { [weak self] newCombo in
-                    guard let self else { return }
-                    // Persist.
-                    var dict = Defaults.dictionary(forKey: .profileHotkeys) as? [String: Data] ?? [:]
-                    if let combo = newCombo, let data = try? enc.encode(combo) {
-                        dict[profileID.uuidString] = data
-                    } else {
-                        dict.removeValue(forKey: profileID.uuidString)
-                    }
-                    Defaults.set(dict, forKey: .profileHotkeys)
-                    // Update the hotkey→profile mapping.
-                    self.hotkeyProfileMap[ObjectIdentifier(hotkey)] = newCombo != nil ? profileID : nil
+            // Observe future changes from HotkeyRecorder. Assigned after the
+            // initial keyCombination is set above, so — like the previous
+            // dropFirst() Combine pipeline — the initial value is never
+            // redundantly persisted.
+            hotkey.keyCombinationDidChange = { [weak self, weak hotkey] in
+                guard let self, let hotkey else { return }
+                // Persist.
+                var dict = Defaults.dictionary(forKey: .profileHotkeys) as? [String: Data] ?? [:]
+                if let combo = hotkey.keyCombination, let data = try? enc.encode(combo) {
+                    dict[profileID.uuidString] = data
+                } else {
+                    dict.removeValue(forKey: profileID.uuidString)
                 }
-                .store(in: &profileHotkeyCancellables)
+                Defaults.set(dict, forKey: .profileHotkeys)
+                // Update the hotkey→profile mapping.
+                self.hotkeyProfileMap[ObjectIdentifier(hotkey)] = hotkey.keyCombination != nil ? profileID : nil
+            }
 
             newHotkeys[meta.id] = hotkey
         }
@@ -995,10 +1045,8 @@ final class ProfileManager: ObservableObject {
 
     /// Applies the profile requested by a Focus Filter activation.
     func applyFocusFilterProfile() async {
-        guard let idString = UserDefaults.standard.string(
-            forKey: "FocusFilterRequestedProfileID"
-        ),
-            let profileID = UUID(uuidString: idString)
+        guard let idString = Defaults.string(forKey: .focusFilterRequestedProfileID),
+              let profileID = UUID(uuidString: idString)
         else { return }
 
         guard profileID != activeProfileID else {

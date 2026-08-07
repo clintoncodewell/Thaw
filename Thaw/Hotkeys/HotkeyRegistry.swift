@@ -9,9 +9,10 @@
 import Carbon.HIToolbox
 import Cocoa
 import Combine
+import os.lock
 
 /// An object that manages the registration, storage, and unregistration of hotkeys.
-final class HotkeyRegistry {
+final nonisolated class HotkeyRegistry {
     private let diagLog = DiagLog(category: "HotkeyRegistry")
     /// The event kinds that a hotkey can be registered for.
     enum EventKind {
@@ -60,9 +61,17 @@ final class HotkeyRegistry {
 
     private var eventHandlerRef: EventHandlerRef?
 
-    private var registrations = [UInt32: Registration]()
+    /// Mutable registry storage (`registrations` and `cancellables`),
+    /// protected by an unfair lock so lookups and mutations are safe from
+    /// any isolation context. `Registration` is not `Sendable`, so access
+    /// goes through the unchecked lock variants; every touch of the stored
+    /// state happens while the lock is held.
+    private struct MutableState {
+        var registrations = [UInt32: Registration]()
+        var cancellables = Set<AnyCancellable>()
+    }
 
-    private var cancellables = Set<AnyCancellable>()
+    private let state = OSAllocatedUnfairLock(uncheckedState: MutableState())
 
     /// Installs the global event handler reference, if it isn't already installed.
     private func installIfNeeded() -> OSStatus {
@@ -70,19 +79,17 @@ final class HotkeyRegistry {
             return noErr
         }
 
-        NotificationCenter.default
+        let didBeginTrackingObserver = NotificationCenter.default
             .publisher(for: NSMenu.didBeginTrackingNotification)
             .sink { [weak self] _ in
                 self?.unregisterAndRetainAll()
             }
-            .store(in: &cancellables)
 
-        NotificationCenter.default
+        let didEndTrackingObserver = NotificationCenter.default
             .publisher(for: NSMenu.didEndTrackingNotification)
             .sink { [weak self] _ in
                 self?.registerAllRetained()
             }
-            .store(in: &cancellables)
 
         let handler: EventHandlerUPP = { _, event, userData in
             guard
@@ -100,7 +107,7 @@ final class HotkeyRegistry {
             EventTypeSpec(eventClass: OSType(kEventClassKeyboard), eventKind: UInt32(kEventHotKeyReleased)),
         ]
 
-        return InstallEventHandler(
+        let status = InstallEventHandler(
             GetEventDispatcherTarget(),
             handler,
             eventTypes.count,
@@ -108,6 +115,24 @@ final class HotkeyRegistry {
             Unmanaged.passUnretained(self).toOpaque(),
             &eventHandlerRef
         )
+
+        // Only retain the menu-tracking observers once the handler is
+        // actually installed. A failure leaves `eventHandlerRef` nil, so the
+        // next registration re-enters this function — storing them up front
+        // would add a duplicate pair of sinks on every retry, and each
+        // duplicate unregisters and re-registers every hotkey again.
+        guard status == noErr else {
+            didBeginTrackingObserver.cancel()
+            didEndTrackingObserver.cancel()
+            return status
+        }
+
+        state.withLockUnchecked { state in
+            didBeginTrackingObserver.store(in: &state.cancellables)
+            didEndTrackingObserver.store(in: &state.cancellables)
+        }
+
+        return status
     }
 
     /// Registers the given hotkey for the given event kind and returns the
@@ -147,7 +172,7 @@ final class HotkeyRegistry {
 
         let id = Context.currentID
 
-        guard registrations[id] == nil else {
+        guard state.withLockUnchecked({ $0.registrations[id] == nil }) else {
             diagLog.error("Hotkey already registered for id \(id)")
             return nil
         }
@@ -181,14 +206,19 @@ final class HotkeyRegistry {
             hotKeyRef: hotKeyRef,
             handler: handler
         )
-        registrations[id] = registration
+        state.withLockUnchecked { state in
+            state.registrations[id] = registration
+        }
 
         return id
     }
 
     /// Unregisters the key combination with the given identifier, retaining
     /// its registration in an inactive state.
-    private func retainedUnregister(_ id: UInt32) {
+    ///
+    /// Must be called while holding `state`'s lock, with the locked
+    /// dictionary passed inout.
+    private func retainedUnregister(_ id: UInt32, registrations: inout [UInt32: Registration]) {
         guard let registration = registrations[id] else {
             diagLog.error("No registered key combination for id \(id)")
             return
@@ -206,46 +236,52 @@ final class HotkeyRegistry {
     /// - Parameter id: An identifier returned from a call to the
     ///   ``register(hotkey:eventKind:handler:)`` function.
     func unregister(_ id: UInt32) {
-        retainedUnregister(id)
-        registrations.removeValue(forKey: id)
+        state.withLockUnchecked { state in
+            retainedUnregister(id, registrations: &state.registrations)
+            state.registrations.removeValue(forKey: id)
+        }
     }
 
     /// Unregisters all key combinations, retaining their registrations
     /// in an inactive state.
     private func unregisterAndRetainAll() {
-        for (id, _) in registrations {
-            retainedUnregister(id)
+        state.withLockUnchecked { state in
+            for (id, _) in state.registrations {
+                retainedUnregister(id, registrations: &state.registrations)
+            }
         }
     }
 
     /// Registers all registrations that were retained during a call to
     /// ``retainedUnregister(_:)``
     private func registerAllRetained() {
-        for registration in registrations.values {
-            guard registration.hotKeyRef == nil else {
-                continue
+        state.withLockUnchecked { state in
+            for registration in state.registrations.values {
+                guard registration.hotKeyRef == nil else {
+                    continue
+                }
+
+                var hotKeyRef: EventHotKeyRef?
+                let status = RegisterEventHotKey(
+                    UInt32(registration.key.rawValue),
+                    UInt32(registration.modifiers.carbonFlags),
+                    registration.hotKeyID,
+                    GetEventDispatcherTarget(),
+                    0,
+                    &hotKeyRef
+                )
+
+                guard
+                    status == noErr,
+                    let hotKeyRef
+                else {
+                    state.registrations.removeValue(forKey: registration.hotKeyID.id)
+                    diagLog.error("Hotkey registration failed with status \(status)")
+                    continue
+                }
+
+                registration.hotKeyRef = hotKeyRef
             }
-
-            var hotKeyRef: EventHotKeyRef?
-            let status = RegisterEventHotKey(
-                UInt32(registration.key.rawValue),
-                UInt32(registration.modifiers.carbonFlags),
-                registration.hotKeyID,
-                GetEventDispatcherTarget(),
-                0,
-                &hotKeyRef
-            )
-
-            guard
-                status == noErr,
-                let hotKeyRef
-            else {
-                registrations.removeValue(forKey: registration.hotKeyID.id)
-                diagLog.error("Hotkey registration failed with status \(status)")
-                continue
-            }
-
-            registration.hotKeyRef = hotKeyRef
         }
     }
 
@@ -277,7 +313,7 @@ final class HotkeyRegistry {
         // that an event handler is registered for the event
         guard
             hotKeyID.signature == signature,
-            let registration = registrations[hotKeyID.id],
+            let registration = state.withLockUnchecked({ $0.registrations[hotKeyID.id] }),
             registration.eventKind == EventKind(event: event)
         else {
             return OSStatus(eventNotHandledErr)

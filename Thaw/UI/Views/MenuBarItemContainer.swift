@@ -19,9 +19,9 @@ struct MenuBarItemContainer<Content: View>: View {
         case manual(MenuBarAverageColorInfo?)
     }
 
-    @ObservedObject private var appState: AppState
-    @ObservedObject private var appearanceManager: MenuBarAppearanceManager
-    @ObservedObject private var menuBarManager: MenuBarManager
+    private var appState: AppState
+    private var appearanceManager: MenuBarAppearanceManager
+    private var menuBarManager: MenuBarManager
 
     private let accessor: ColorInfoAccessor
     private let screen: NSScreen?

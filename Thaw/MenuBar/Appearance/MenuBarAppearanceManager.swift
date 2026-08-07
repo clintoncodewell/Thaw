@@ -6,36 +6,122 @@
 //  Copyright (Thaw) © 2026 Toni Förster
 //  Licensed under the GNU GPLv3
 
+import AsyncAlgorithms
 import Cocoa
 import Combine
+import Observation
 
 /// A manager for the appearance of the menu bar.
 @MainActor
-final class MenuBarAppearanceManager: ObservableObject {
+@Observable
+final class MenuBarAppearanceManager {
+    @ObservationIgnored
     private let diagLog = DiagLog(category: "MenuBarAppearanceManager")
+
     /// The current menu bar appearance configuration.
-    @Published var configuration = Defaults.DefaultValue.menuBarAppearanceConfigurationV2
+    ///
+    /// `didSet` persists the new value, replacing the old unthrottled
+    /// `$configuration.encode(encoder:).sink` pipeline — persistence always
+    /// ran on every change, so a direct `didSet` is a faithful replacement.
+    /// The throttled panel-reconfiguration reaction is handled separately by
+    /// `configurationPanelObservationTask` (wave 3), since it genuinely needs
+    /// rate-limiting and `didSet` has no equivalent.
+    var configuration = Defaults.DefaultValue.menuBarAppearanceConfigurationV2 {
+        didSet {
+            do {
+                let data = try encoder.encode(configuration)
+                Defaults.set(data, forKey: .menuBarAppearanceConfigurationV2)
+            } catch {
+                diagLog.error("Error encoding menu bar appearance configuration: \(error)")
+            }
+        }
+    }
 
     /// The currently previewed partial configuration.
-    @Published var previewConfiguration: MenuBarAppearancePartialConfiguration?
+    ///
+    /// `didSet` replaces the old (unthrottled) `$previewConfiguration.sink`.
+    var previewConfiguration: MenuBarAppearancePartialConfiguration? {
+        didSet {
+            if let previewConfiguration {
+                let needsPanels = previewConfiguration.hasShadow
+                    || previewConfiguration.hasBorder
+                    || configuration.shapeKind != .noShape
+                    || previewConfiguration.tintKind != .noTint
+                    || previewConfiguration.backgroundKind != .none
+                if overlayPanels.isEmpty, needsPanels {
+                    configureOverlayPanels(with: configuration, force: true)
+                }
+            } else {
+                if !needsOverlayPanels(for: configuration) {
+                    closeAllOverlayPanels()
+                }
+            }
+        }
+    }
+
+    /// Whether the system is currently drawing an opaque menu bar because
+    /// Accessibility's Reduce Transparency is enabled.
+    ///
+    /// The overlay panel composites behind the menu bar, so an opaque menu
+    /// bar material swallows the tint, background, and shape entirely. There
+    /// is no placement that avoids this — see
+    /// ``MenuBarOverlayPanel/updateWindowLevel()`` — so the appearance editor
+    /// tells the user about it instead of silently doing nothing.
+    private(set) var isReduceTransparencyEnabled =
+        NSWorkspace.shared.accessibilityDisplayShouldReduceTransparency
 
     /// The shared app state.
+    @ObservationIgnored
     private weak var appState: AppState?
 
     /// Encoder for UserDefaults values.
+    @ObservationIgnored
     private let encoder = JSONEncoder()
 
     /// Decoder for UserDefaults values.
+    @ObservationIgnored
     private let decoder = JSONDecoder()
 
     /// Storage for internal observers.
+    @ObservationIgnored
     private var cancellables = Set<AnyCancellable>()
+
+    /// Task observing `configuration`, throttled to match the old
+    /// `$configuration.throttle(for: 0.1, scheduler: DispatchQueue.main,
+    /// latest: true)` pipeline that decides whether the overlay panels need
+    /// to be created or torn down (wave 3).
+    ///
+    /// `configuration` is now a plain `@Observable` property rather than a
+    /// Combine `@Published` one, so there's no `$configuration` publisher to
+    /// throttle directly. Instead, `Observations { configuration }` (an
+    /// `AsyncSequence`) is wrapped with AsyncAlgorithms' `_throttle(for:
+    /// latest:)`. The leading underscore is not a typo: in the pinned
+    /// swift-async-algorithms 1.1.5 revision, the rate-limiting throttle
+    /// overloads are still exposed under the underscored name pending
+    /// stabilization — `_throttle(for:latest:)` is the only public throttle
+    /// operator this package version actually provides. The `latest: true`
+    /// argument preserves the original's "coalesce to the newest value seen
+    /// during the interval" semantics.
+    private var configurationPanelObservationTask: Task<Void, Never>?
 
     /// The currently managed menu bar overlay panels.
     private(set) var overlayPanels = Set<MenuBarOverlayPanel>()
 
+    /// The shared Mission Control detector used by all overlay panels.
+    ///
+    /// Owned here, alongside `overlayPanels`, rather than one per panel:
+    /// probing the window server for displacement is a synchronous IPC
+    /// call, and running it once for the whole app instead of once per
+    /// screen is the point of this type. See `MissionControlDetector`.
+    let missionControlDetector = MissionControlDetector()
+
     /// The amount to inset the menu bar if called for by the configuration.
     let menuBarInsetAmount: CGFloat = 3.5
+
+    @MainActor
+    deinit {
+        configurationPanelObservationTask?.cancel()
+    }
 
     /// Performs initial setup of the manager.
     func performSetup(with appState: AppState) {
@@ -66,32 +152,31 @@ final class MenuBarAppearanceManager: ObservableObject {
                 guard let self else {
                     return
                 }
-                while let panel = overlayPanels.popFirst() {
-                    panel.close()
-                }
-                if Set(overlayPanels.map(\.owningScreen)) != Set(NSScreen.managedScreens) {
+                closeAllOverlayPanels()
+                if Set(overlayPanels.map(\.owningScreen)) != Set(NSScreen.screens) {
                     configureOverlayPanels(with: configuration)
                 }
             }
             .store(in: &c)
 
-        $configuration
-            .encode(encoder: encoder)
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] completion in
-                if case let .failure(error) = completion {
-                    self?.diagLog.error("Error encoding menu bar appearance configuration: \(error)")
-                }
-            } receiveValue: { data in
-                Defaults.set(data, forKey: .menuBarAppearanceConfigurationV2)
+        NSWorkspace.shared.notificationCenter
+            .publisher(for: NSWorkspace.accessibilityDisplayOptionsDidChangeNotification)
+            .debounce(for: 0.1, scheduler: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.isReduceTransparencyEnabled =
+                    NSWorkspace.shared.accessibilityDisplayShouldReduceTransparency
             }
             .store(in: &c)
 
-        $configuration
-            .throttle(for: 0.1, scheduler: DispatchQueue.main, latest: true)
-            .sink { [weak self] configuration in
+        configurationPanelObservationTask?.cancel()
+        configurationPanelObservationTask = Task { [weak self] in
+            let changes = Observations { [weak self] in self?.configuration }
+            for await configuration in changes._throttle(for: .milliseconds(100), latest: true) {
                 guard let self else {
                     return
+                }
+                guard let configuration else {
+                    continue
                 }
                 // The overlay panels may not have been configured yet. Since some of the
                 // properties on the manager might call for them, try to configure now.
@@ -99,34 +184,10 @@ final class MenuBarAppearanceManager: ObservableObject {
                     configureOverlayPanels(with: configuration)
                 } else if !needsOverlayPanels(for: configuration) {
                     // Configuration no longer needs panels, close them
-                    while let panel = overlayPanels.popFirst() {
-                        panel.close()
-                    }
+                    closeAllOverlayPanels()
                 }
             }
-            .store(in: &c)
-
-        $previewConfiguration
-            .sink { [weak self] preview in
-                guard let self else { return }
-                if let preview {
-                    let needsPanels = preview.hasShadow
-                        || preview.hasBorder
-                        || configuration.shapeKind != .noShape
-                        || preview.tintKind != .noTint
-                        || preview.backgroundKind != .none
-                    if overlayPanels.isEmpty, needsPanels {
-                        configureOverlayPanels(with: configuration, force: true)
-                    }
-                } else {
-                    if !needsOverlayPanels(for: configuration) {
-                        while let panel = overlayPanels.popFirst() {
-                            panel.close()
-                        }
-                    }
-                }
-            }
-            .store(in: &c)
+        }
 
         cancellables = c
     }
@@ -159,9 +220,7 @@ final class MenuBarAppearanceManager: ObservableObject {
         force: Bool = false
     ) {
         // Close existing panels to prevent memory leaks and duplicate windows
-        while let panel = overlayPanels.popFirst() {
-            panel.close()
-        }
+        closeAllOverlayPanels()
 
         guard
             let appState,
@@ -171,12 +230,29 @@ final class MenuBarAppearanceManager: ObservableObject {
         }
 
         var overlayPanels = Set<MenuBarOverlayPanel>()
-        for screen in NSScreen.managedScreens {
+        for screen in NSScreen.screens {
             let panel = MenuBarOverlayPanel(appState: appState, owningScreen: screen)
             overlayPanels.insert(panel)
             panel.needsShow = true
         }
 
         self.overlayPanels = overlayPanels
+
+        // Mission Control displaces every on-screen window together, so one
+        // representative screen is enough to drive the shared detector for
+        // all panels.
+        if let representativeScreen = NSScreen.screens.first {
+            missionControlDetector.start(representativeScreen: representativeScreen)
+        }
+    }
+
+    /// Closes all currently managed overlay panels and stops the shared
+    /// Mission Control detector, since nothing needs it while there are no
+    /// panels to drive.
+    private func closeAllOverlayPanels() {
+        while let panel = overlayPanels.popFirst() {
+            panel.close()
+        }
+        missionControlDetector.stop()
     }
 }

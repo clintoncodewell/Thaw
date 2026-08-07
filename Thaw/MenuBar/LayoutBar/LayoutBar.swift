@@ -24,8 +24,8 @@ struct LayoutBar: View {
         }
     }
 
-    @EnvironmentObject var appState: AppState
-    @ObservedObject var imageCache: MenuBarItemImageCache
+    @Environment(AppState.self) var appState: AppState
+    let imageCache: MenuBarItemImageCache
 
     let section: MenuBarSection.Name
 

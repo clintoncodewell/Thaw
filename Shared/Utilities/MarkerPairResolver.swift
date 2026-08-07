@@ -30,7 +30,7 @@ import Foundation
 /// resolver pairs icons with markers by width and synthesizes the
 /// sourcePID via injected lookups so the algorithm stays pure and
 /// testable.
-enum MarkerPairResolver {
+nonisolated enum MarkerPairResolver {
     /// A marker window candidate distilled from the items-only list.
     /// Markers carry bundle-ID-shaped titles (titles containing a ".")
     /// and serve as the recovery handle for paired on-screen icons.
@@ -61,11 +61,23 @@ enum MarkerPairResolver {
     }
 
     /// Pairs unresolved icons with same-size marker windows and
-    /// resolves each icon to a sourcePID via the marker. Multi-match
-    /// cases (two unresolved icons sharing a size with two markers)
-    /// are skipped to prevent misattribution. Thaw and Control Center
-    /// are excluded from the resolution paths so a marker hosted by
-    /// either does not collapse the resolution back to those PIDs.
+    /// resolves each icon to a sourcePID via the marker. The pairing
+    /// must be unique in *both* directions: a width matching more than
+    /// one marker is ambiguous, and so is a width shared by more than
+    /// one unresolved icon. Thaw and Control Center are excluded from
+    /// the resolution paths so a marker hosted by either does not
+    /// collapse the resolution back to those PIDs.
+    ///
+    /// Both halves of that rule are load-bearing. Checking only the
+    /// marker side lets a single marker be claimed by every unresolved
+    /// icon that happens to share its width: a field log (2.0.0-rc.2,
+    /// a bar with 24 items) shows one marker resolving five distinct
+    /// icons to the same PID, which stamped Control Center's own Sound
+    /// and Wi-Fi modules with a third-party bundle identifier. A wrong
+    /// PID is worse than none — it renames the item, so its saved
+    /// position stops matching, and it slips past the unresolved-
+    /// sourcePID gates that keep a degraded snapshot from being acted
+    /// on or persisted.
     ///
     /// - Parameters:
     ///   - unresolvedIcons: candidate on-screen icons. Icons whose own
@@ -93,9 +105,27 @@ enum MarkerPairResolver {
         pidToBundleID: (pid_t) -> String?,
         bundleIDToPID: (String) -> pid_t?
     ) -> [Resolution] {
+        // Icons whose own title is bundle-ID-shaped are markers, not
+        // candidates; dropping them up front keeps them out of the
+        // per-width candidate census below as well as out of the
+        // pairing loop.
+        let candidates = unresolvedIcons.filter { icon in
+            guard let title = icon.title else { return true }
+            return !title.contains(".")
+        }
+
+        // How many candidate icons share each width. A marker may be
+        // claimed by exactly one of them; when several compete for the
+        // same width there is no evidence saying which one owns it, so
+        // none resolve.
+        var candidatesPerWidth = [CGFloat: Int]()
+        for icon in candidates {
+            candidatesPerWidth[icon.size.width, default: 0] += 1
+        }
+
         var result = [Resolution]()
-        for icon in unresolvedIcons {
-            if let title = icon.title, title.contains(".") { continue }
+        for icon in candidates {
+            guard candidatesPerWidth[icon.size.width] == 1 else { continue }
 
             // Match by width only, not exact size. The on-screen icon
             // and its off-screen marker share width (the widget's
@@ -105,9 +135,10 @@ enum MarkerPairResolver {
             // the marker carries a default placeholder height
             // (33pt observed in field logs). Exact size matching
             // rejected legitimate pairs whose widths agreed but whose
-            // heights drifted by 3pt. The uniqueness check on
-            // matching.count == 1 still prevents misattribution when
-            // multiple markers happen to share a width.
+            // heights drifted by 3pt. The two uniqueness checks — one
+            // candidate icon per width above, one marker per width
+            // here — still prevent misattribution when several windows
+            // happen to share a width.
             let matching = markers.filter {
                 $0.windowID != icon.windowID && $0.size.width == icon.size.width
             }
@@ -123,6 +154,7 @@ enum MarkerPairResolver {
                 }
                 if let pid = bundleIDToPID(marker.title),
                    let bundleID = pidToBundleID(pid),
+                   bundleID != ccBundleID,
                    bundleID != thawBundleID
                 {
                     return pid
@@ -152,8 +184,12 @@ enum MarkerPairResolver {
     ) -> [Marker] {
         windows.compactMap { window in
             guard let title = window.title, title.contains(".") else { return nil }
-            if title.hasPrefix(thawControlItemPrefix) { return nil }
-            if title == thawBundleID { return nil }
+            if title.hasPrefix(thawControlItemPrefix) {
+                return nil
+            }
+            if title == thawBundleID {
+                return nil
+            }
             return Marker(
                 windowID: window.windowID,
                 size: window.size,
@@ -179,9 +215,14 @@ enum MarkerPairResolver {
     /// matched app IS Control Center and the window carries a generic Item-N
     /// title, writing Control Center's PID would tag the item as a transient
     /// CC widget (isTransientControlCenterItem true, canBeHidden false), hiding
-    /// it from profile management and the virtual-display provoke's orphan
-    /// scan. The window must be left unresolved so marker-pair can supply the
-    /// real owner PID. Named CC items (BentoBox-0, Clock, WiFi, NowPlaying, ...)
+    /// it from profile management. The window is left unresolved so marker-pair
+    /// can supply the real owner PID.
+    ///
+    /// On a single display macOS 26 does not publish the bundle-ID marker
+    /// windows marker-pair needs, so these items can stay unresolved for the
+    /// session. That is accepted: attributing them to Control Center would
+    /// mislabel them permanently, which is worse than leaving them unowned.
+    /// Named CC items (BentoBox-0, Clock, WiFi, NowPlaying, ...)
     /// carry non-generic titles and are unaffected; a widget that publishes its
     /// own extras-bar child (The Clock, com.fabriceleyne.theclock) matches via
     /// that app, not Control Center, so it is never flagged here.
@@ -206,7 +247,7 @@ enum MarkerPairResolver {
 /// candidate app's bundle identifier corroborates a loose spatial match,
 /// so a nearby unrelated neighbor can never be mis-attributed the way a
 /// bare distance threshold would allow.
-enum HostedItemOwnership {
+nonisolated enum HostedItemOwnership {
     /// Returns true when title and bundleID, treated as reverse-DNS
     /// strings, are in an owner relationship: they agree on at least two
     /// leading components, and either one is a full component-prefix of
@@ -218,22 +259,49 @@ enum HostedItemOwnership {
     /// rejecting same-vendor different-app pairs such as
     /// pl.maketheweb.pixelsnap2 vs pl.maketheweb.cleanshotx and unrelated
     /// neighbors such as com.wireguard.macos vs app.updatest.Updatest.
-    /// Comparison is case-insensitive. Generic titles without a reverse-DNS
-    /// shape (Item-0, empty) never qualify.
+    /// Comparison is case-insensitive.
+    ///
+    /// A title with no reverse-DNS shape at all qualifies only when it is
+    /// exactly the bundle's final component — BetterTouchTool's slot titles
+    /// itself "BetterTouchTool" and belongs to com.hegenberg.BetterTouchTool.
+    /// Vendor components and generic titles (Item-0, empty) never qualify.
     static func titleIndicatesOwner(_ title: String?, bundleID: String) -> Bool {
         guard let title, !title.isEmpty else { return false }
         let titleParts = title.lowercased().split(separator: ".", omittingEmptySubsequences: false)
         let bundleParts = bundleID.lowercased().split(separator: ".", omittingEmptySubsequences: false)
-        // A reverse-DNS-shaped title has at least three components; a bundle
-        // id at least two. Demanding three on the title keeps two-component
-        // or generic titles out.
-        guard titleParts.count >= 3, bundleParts.count >= 2 else { return false }
+        // A bundle id has at least two components. Empty components are
+        // rejected outright: split(omittingEmptySubsequences: false) keeps a
+        // trailing empty component, and "" is a prefix of every string, so a
+        // malformed vendor-only title (pl.maketheweb.) would otherwise clear
+        // the prefix test against any app from that vendor.
+        guard bundleParts.count >= 2,
+              titleParts.allSatisfy({ !$0.isEmpty }),
+              bundleParts.allSatisfy({ !$0.isEmpty })
+        else { return false }
+
+        // A title with no reverse-DNS shape at all still identifies the app when
+        // it *is* the app's name: BetterTouchTool's slot titles itself
+        // "BetterTouchTool" and belongs to com.hegenberg.BetterTouchTool. Only the
+        // final component qualifies — a vendor component (apple, maketheweb) names
+        // a publisher, not an app, and matching on it would hand every widget that
+        // vendor ships to whichever of its apps happened to be checked first.
+        if titleParts.count == 1, let appComponent = bundleParts.last {
+            return titleParts[0] == appComponent
+        }
+
+        // Two-component titles are neither shape: too short to carry a
+        // distinctive component pair, too long to be a bare app name.
+        // A reverse-DNS-shaped title has at least three components.
+        guard titleParts.count >= 3 else { return false }
+
         let shared = zip(titleParts, bundleParts).prefix { $0 == $1 }.count
         // Require agreement on at least the vendor plus one component so a
         // bare vendor prefix (com.apple, pl.maketheweb) is never enough.
         guard shared >= 2 else { return false }
         // One component array is a full prefix of the other.
-        if shared == titleParts.count || shared == bundleParts.count { return true }
+        if shared == titleParts.count || shared == bundleParts.count {
+            return true
+        }
         // Otherwise the first differing component must be a prefix of its
         // counterpart (airbuddy vs airbuddyhelper), which is what separates
         // AirBuddy from same-vendor different-app pairs.

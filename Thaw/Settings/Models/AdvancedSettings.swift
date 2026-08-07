@@ -6,6 +6,7 @@
 //  Copyright (Thaw) © 2026 Toni Förster
 //  Licensed under the GNU GPLv3
 
+import Algorithms
 import Combine
 import SwiftUI
 
@@ -13,84 +14,224 @@ import SwiftUI
 
 /// Model for the app's Advanced settings.
 @MainActor
-final class AdvancedSettings: ObservableObject {
+@Observable
+final class AdvancedSettings {
     /// A Boolean value that indicates whether the always-hidden section
     /// is enabled.
-    @Published var enableAlwaysHiddenSection = Defaults.DefaultValue.enableAlwaysHiddenSection
-    @Published var useOptionClickToShowAlwaysHiddenSection = Defaults.DefaultValue.useOptionClickToShowAlwaysHiddenSection
-    @Published var useDoubleClickToShowAlwaysHiddenSection = Defaults.DefaultValue.useDoubleClickToShowAlwaysHiddenSection
+    var enableAlwaysHiddenSection = Defaults.DefaultValue.enableAlwaysHiddenSection {
+        didSet {
+            guard oldValue != enableAlwaysHiddenSection else { return }
+            Defaults.set(enableAlwaysHiddenSection, forKey: .enableAlwaysHiddenSection)
+        }
+    }
+
+    var useOptionClickToShowAlwaysHiddenSection = Defaults.DefaultValue.useOptionClickToShowAlwaysHiddenSection {
+        didSet {
+            guard oldValue != useOptionClickToShowAlwaysHiddenSection else { return }
+            Defaults.set(useOptionClickToShowAlwaysHiddenSection, forKey: .useOptionClickToShowAlwaysHiddenSection)
+        }
+    }
+
+    var useDoubleClickToShowAlwaysHiddenSection = Defaults.DefaultValue.useDoubleClickToShowAlwaysHiddenSection {
+        didSet {
+            guard oldValue != useDoubleClickToShowAlwaysHiddenSection else { return }
+            Defaults.set(useDoubleClickToShowAlwaysHiddenSection, forKey: .useDoubleClickToShowAlwaysHiddenSection)
+        }
+    }
 
     /// A Boolean value that indicates whether to show all sections when
     /// the user is dragging items in the menu bar.
-    @Published var showAllSectionsOnUserDrag = Defaults.DefaultValue.showAllSectionsOnUserDrag
+    var showAllSectionsOnUserDrag = Defaults.DefaultValue.showAllSectionsOnUserDrag {
+        didSet {
+            guard oldValue != showAllSectionsOnUserDrag else { return }
+            Defaults.set(showAllSectionsOnUserDrag, forKey: .showAllSectionsOnUserDrag)
+        }
+    }
 
     /// The display style for section divider control items.
-    @Published var sectionDividerStyle = Defaults.DefaultValue.sectionDividerStyle
+    var sectionDividerStyle = Defaults.DefaultValue.sectionDividerStyle {
+        didSet {
+            guard oldValue != sectionDividerStyle else { return }
+            Defaults.set(sectionDividerStyle.rawValue, forKey: .sectionDividerStyle)
+        }
+    }
 
     /// A Boolean value that indicates whether the application menus
     /// should be hidden if needed to show all menu bar items.
-    @Published var hideApplicationMenus = Defaults.DefaultValue.hideApplicationMenus
+    var hideApplicationMenus = Defaults.DefaultValue.hideApplicationMenus {
+        didSet {
+            guard oldValue != hideApplicationMenus else { return }
+            Defaults.set(hideApplicationMenus, forKey: .hideApplicationMenus)
+        }
+    }
 
     /// A Boolean value that indicates whether to show a context menu
     /// when the user right-clicks the menu bar.
-    @Published var enableSecondaryContextMenu = Defaults.DefaultValue.enableSecondaryContextMenu
+    var enableSecondaryContextMenu = Defaults.DefaultValue.enableSecondaryContextMenu {
+        didSet {
+            guard oldValue != enableSecondaryContextMenu else { return }
+            Defaults.set(enableSecondaryContextMenu, forKey: .enableSecondaryContextMenu)
+        }
+    }
 
     /// A Boolean value that indicates whether the secondary context menu
     /// includes a Quit item.
-    @Published var enableSecondaryContextMenuQuit = Defaults.DefaultValue.enableSecondaryContextMenuQuit
+    var enableSecondaryContextMenuQuit = Defaults.DefaultValue.enableSecondaryContextMenuQuit {
+        didSet {
+            guard oldValue != enableSecondaryContextMenuQuit else { return }
+            Defaults.set(enableSecondaryContextMenuQuit, forKey: .enableSecondaryContextMenuQuit)
+        }
+    }
 
     /// The delay before showing on hover.
-    @Published var showOnHoverDelay = Defaults.DefaultValue.showOnHoverDelay
+    var showOnHoverDelay = Defaults.DefaultValue.showOnHoverDelay {
+        didSet {
+            guard oldValue != showOnHoverDelay else { return }
+            Defaults.set(showOnHoverDelay, forKey: .showOnHoverDelay)
+        }
+    }
 
     /// The delay before showing a tooltip when hovering over a menu bar item.
-    @Published var tooltipDelay = Defaults.DefaultValue.tooltipDelay
+    var tooltipDelay = Defaults.DefaultValue.tooltipDelay {
+        didSet {
+            guard oldValue != tooltipDelay else { return }
+            Defaults.set(tooltipDelay, forKey: .tooltipDelay)
+        }
+    }
 
     /// A Boolean value that indicates whether tooltips are shown when hovering
     /// over menu bar items in the actual menu bar (not just in the IceBar or settings).
-    @Published var showMenuBarTooltips = Defaults.DefaultValue.showMenuBarTooltips
+    var showMenuBarTooltips = Defaults.DefaultValue.showMenuBarTooltips {
+        didSet {
+            guard oldValue != showMenuBarTooltips else { return }
+            Defaults.set(showMenuBarTooltips, forKey: .showMenuBarTooltips)
+        }
+    }
 
     /// The interval between icon image refreshes in panels (Thaw Bar, search, layout).
-    @Published var iconRefreshInterval = Defaults.DefaultValue.iconRefreshInterval
+    var iconRefreshInterval = Defaults.DefaultValue.iconRefreshInterval {
+        didSet {
+            guard oldValue != iconRefreshInterval else { return }
+            Defaults.set(iconRefreshInterval, forKey: .iconRefreshInterval)
+        }
+    }
 
     /// A Boolean value that indicates whether diagnostic logging to file is enabled.
-    @Published var enableDiagnosticLogging = Defaults.DefaultValue.enableDiagnosticLogging
+    var enableDiagnosticLogging = Defaults.DefaultValue.enableDiagnosticLogging {
+        didSet {
+            guard oldValue != enableDiagnosticLogging else { return }
+            Defaults.set(enableDiagnosticLogging, forKey: .enableDiagnosticLogging)
+            #if DEBUG
+                // Debug builds keep logging on regardless of profile swaps
+                // or user toggles so we never miss capture during dev.
+                DiagnosticLogger.shared.isEnabled = true
+            #else
+                DiagnosticLogger.shared.isEnabled = enableDiagnosticLogging
+            #endif
+        }
+    }
 
     /// A Boolean value that indicates whether to use LCS sorting instead of
     /// full sorting on notched displays.
-    @Published var useLCSSortingOnNotchedDisplays = Defaults.DefaultValue.useLCSSortingOnNotchedDisplays
+    var useLCSSortingOnNotchedDisplays = Defaults.DefaultValue.useLCSSortingOnNotchedDisplays {
+        didSet {
+            guard oldValue != useLCSSortingOnNotchedDisplays else { return }
+            Defaults.set(useLCSSortingOnNotchedDisplays, forKey: .useLCSSortingOnNotchedDisplays)
+        }
+    }
 
     /// A Boolean value that controls whether profile-apply overflows menu bar
     /// items from visible to hidden when they don't fit on a notched display.
     /// Only affects notched displays; non-notched displays never use this path.
-    @Published var enableMenuBarItemOverflow = Defaults.DefaultValue.enableMenuBarItemOverflow
+    var enableMenuBarItemOverflow = Defaults.DefaultValue.enableMenuBarItemOverflow {
+        didSet {
+            guard oldValue != enableMenuBarItemOverflow else { return }
+            Defaults.set(enableMenuBarItemOverflow, forKey: .enableMenuBarItemOverflow)
+        }
+    }
+
+    /// A Boolean value that controls whether the Thaw Bar is used to reveal
+    /// hidden items while notch overflow has items ejected.
+    ///
+    /// Expanding the hidden section inline cannot show items that overflow
+    /// ejected: they were ejected precisely because the visible row had no room
+    /// left beside the notch. When this is on, a display with ejected items
+    /// reveals through the Thaw Bar regardless of its per-display Thaw Bar
+    /// setting. Only affects displays that currently have ejected items.
+    var useThawBarOnNotchOverflow = Defaults.DefaultValue.useThawBarOnNotchOverflow {
+        didSet {
+            guard oldValue != useThawBarOnNotchOverflow else { return }
+            Defaults.set(useThawBarOnNotchOverflow, forKey: .useThawBarOnNotchOverflow)
+        }
+    }
+
+    /// A Boolean value that controls whether left-clicks on menu bar items
+    /// from the IceBar are delivered via an accessibility action (AXShowMenu,
+    /// falling back to AXPress) instead of a synthetic mouse click.
+    /// Experimental; automatically falls back to the synthetic click on any
+    /// failure. Moves and right-clicks are unaffected.
+    var useAXClickDelivery = Defaults.DefaultValue.useAXClickDelivery {
+        didSet {
+            guard oldValue != useAXClickDelivery else { return }
+            Defaults.set(useAXClickDelivery, forKey: .useAXClickDelivery)
+        }
+    }
 
     /// The order in which menu bar sections appear in the search panel.
-    @Published var searchSectionOrder: [MenuBarSection.Name] = Defaults.DefaultValue.searchSectionOrder
+    var searchSectionOrder: [MenuBarSection.Name] = Defaults.DefaultValue.searchSectionOrder
         .compactMap(MenuBarSection.Name.init(rawValue:))
+    {
+        didSet {
+            guard oldValue != searchSectionOrder else { return }
+            Defaults.set(searchSectionOrder.map(\.rawValue), forKey: .searchSectionOrder)
+        }
+    }
 
     /// A Boolean value that indicates whether items from the visible section
     /// are included in the menu bar search panel.
-    @Published var searchIncludeVisible = Defaults.DefaultValue.searchIncludeVisible
+    var searchIncludeVisible = Defaults.DefaultValue.searchIncludeVisible {
+        didSet {
+            guard oldValue != searchIncludeVisible else { return }
+            Defaults.set(searchIncludeVisible, forKey: .searchIncludeVisible)
+        }
+    }
 
     /// A Boolean value that indicates whether items from the hidden section
     /// are included in the menu bar search panel.
-    @Published var searchIncludeHidden = Defaults.DefaultValue.searchIncludeHidden
+    var searchIncludeHidden = Defaults.DefaultValue.searchIncludeHidden {
+        didSet {
+            guard oldValue != searchIncludeHidden else { return }
+            Defaults.set(searchIncludeHidden, forKey: .searchIncludeHidden)
+        }
+    }
 
     /// A Boolean value that indicates whether items from the always-hidden section
     /// are included in the menu bar search panel.
-    @Published var searchIncludeAlwaysHidden = Defaults.DefaultValue.searchIncludeAlwaysHidden
+    var searchIncludeAlwaysHidden = Defaults.DefaultValue.searchIncludeAlwaysHidden {
+        didSet {
+            guard oldValue != searchIncludeAlwaysHidden else { return }
+            Defaults.set(searchIncludeAlwaysHidden, forKey: .searchIncludeAlwaysHidden)
+        }
+    }
 
     /// Storage for internal observers.
+    @ObservationIgnored
     private var cancellables = Set<AnyCancellable>()
 
     /// The shared app state.
+    @ObservationIgnored
     private(set) weak var appState: AppState?
 
     /// Performs the initial setup of the model.
-    func performSetup(with appState: AppState) {
+    ///
+    /// The app state is only stored, never read, by this model: the setup it
+    /// performs is reading `Defaults` and subscribing to the Settings-URI
+    /// notification. The parameter is optional so that setup can be driven
+    /// without standing up an ``AppState``; the app always passes one.
+    func performSetup(with appState: AppState? = nil) {
         self.appState = appState
         loadInitialState()
-        configureCancellables()
+        configureObservers()
     }
 
     /// Loads the model's initial state.
@@ -109,6 +250,8 @@ final class AdvancedSettings: ObservableObject {
         Defaults.ifPresent(key: .enableDiagnosticLogging, assign: &enableDiagnosticLogging)
         Defaults.ifPresent(key: .useLCSSortingOnNotchedDisplays, assign: &useLCSSortingOnNotchedDisplays)
         Defaults.ifPresent(key: .enableMenuBarItemOverflow, assign: &enableMenuBarItemOverflow)
+        Defaults.ifPresent(key: .useThawBarOnNotchOverflow, assign: &useThawBarOnNotchOverflow)
+        Defaults.ifPresent(key: .useAXClickDelivery, assign: &useAXClickDelivery)
         Defaults.ifPresent(key: .searchIncludeVisible, assign: &searchIncludeVisible)
         Defaults.ifPresent(key: .searchIncludeHidden, assign: &searchIncludeHidden)
         Defaults.ifPresent(key: .searchIncludeAlwaysHidden, assign: &searchIncludeAlwaysHidden)
@@ -129,82 +272,31 @@ final class AdvancedSettings: ObservableObject {
     /// and filling any missing cases at the end. Returns the default order if
     /// the input is unusable.
     static func sanitizedSearchSectionOrder(from rawValues: [String]) -> [MenuBarSection.Name] {
-        var seen = Set<MenuBarSection.Name>()
-        var ordered: [MenuBarSection.Name] = []
-        for raw in rawValues {
-            guard let name = MenuBarSection.Name(rawValue: raw), !seen.contains(name) else {
-                continue
-            }
-            ordered.append(name)
-            seen.insert(name)
-        }
-        for name in MenuBarSection.Name.allCases where !seen.contains(name) {
-            ordered.append(name)
-        }
-        return ordered
+        let preferred = Array(
+            rawValues.compactMap(MenuBarSection.Name.init(rawValue:)).uniqued()
+        )
+        return preferred + MenuBarSection.Name.allCases.filter { !preferred.contains($0) }
     }
 
     /// Configures the internal observers for the model.
-    private func configureCancellables() {
-        var c = Set<AnyCancellable>()
-
-        $enableAlwaysHiddenSection.persistToDefaults(key: .enableAlwaysHiddenSection, in: &c)
-        $useOptionClickToShowAlwaysHiddenSection.persistToDefaults(key: .useOptionClickToShowAlwaysHiddenSection, in: &c)
-        $useDoubleClickToShowAlwaysHiddenSection.persistToDefaults(key: .useDoubleClickToShowAlwaysHiddenSection, in: &c)
-        $showAllSectionsOnUserDrag.persistToDefaults(key: .showAllSectionsOnUserDrag, in: &c)
-        $sectionDividerStyle.persistToDefaults(key: .sectionDividerStyle, transform: \.rawValue, in: &c)
-        $hideApplicationMenus.persistToDefaults(key: .hideApplicationMenus, in: &c)
-        $enableSecondaryContextMenu.persistToDefaults(key: .enableSecondaryContextMenu, in: &c)
-        $enableSecondaryContextMenuQuit.persistToDefaults(key: .enableSecondaryContextMenuQuit, in: &c)
-        $showOnHoverDelay.persistToDefaults(key: .showOnHoverDelay, in: &c)
-        $tooltipDelay.persistToDefaults(key: .tooltipDelay, in: &c)
-        $showMenuBarTooltips.persistToDefaults(key: .showMenuBarTooltips, in: &c)
-        $iconRefreshInterval.persistToDefaults(key: .iconRefreshInterval, in: &c)
-        $enableDiagnosticLogging.persistToDefaults(
-            key: .enableDiagnosticLogging,
-            sideEffect: { enabled in
-                #if DEBUG
-                    // Debug builds keep logging on regardless of profile swaps
-                    // or user toggles so we never miss capture during dev.
-                    DiagnosticLogger.shared.isEnabled = true
-                #else
-                    DiagnosticLogger.shared.isEnabled = enabled
-                #endif
+    ///
+    /// Persistence for most properties is now driven by `didSet` on each
+    /// property (see above), replacing the previous `$property.persistToDefaults`
+    /// Combine pipelines. Only the Settings-URI notification subscription
+    /// remains Combine-based here.
+    private func configureObservers() {
+        cancellables = [
+            NotificationCenter.observeSettingsChangesViaURI { [weak self] change in
+                self?.handleExternalSettingsChange(change)
             },
-            in: &c
-        )
-        $useLCSSortingOnNotchedDisplays.persistToDefaults(key: .useLCSSortingOnNotchedDisplays, in: &c)
-        $enableMenuBarItemOverflow.persistToDefaults(key: .enableMenuBarItemOverflow, in: &c)
-        $searchSectionOrder.persistToDefaults(
-            key: .searchSectionOrder,
-            transform: { $0.map(\.rawValue) },
-            in: &c
-        )
-        $searchIncludeVisible.persistToDefaults(key: .searchIncludeVisible, in: &c)
-        $searchIncludeHidden.persistToDefaults(key: .searchIncludeHidden, in: &c)
-        $searchIncludeAlwaysHidden.persistToDefaults(key: .searchIncludeAlwaysHidden, in: &c)
-
-        // Observe external settings changes via Settings URI
-        NotificationCenter.default
-            .publisher(for: .settingsDidChangeViaURI)
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] notification in
-                self?.handleExternalSettingsChange(notification)
-            }
-            .store(in: &c)
-
-        cancellables = c
+        ]
     }
 
     /// Handles settings changed externally via Settings URI scheme.
-    private func handleExternalSettingsChange(_ notification: Notification) {
-        guard let key = notification.userInfo?["key"] as? String else {
-            return
-        }
-
+    private func handleExternalSettingsChange(_ change: ExternalSettingsChange) {
         // Handle boolean values
-        if let boolValue = notification.userInfo?["value"] as? Bool {
-            switch key {
+        if let boolValue = change.boolValue {
+            switch change.key {
             case "enableAlwaysHiddenSection":
                 enableAlwaysHiddenSection = boolValue
             case "useOptionClickToShowAlwaysHiddenSection":
@@ -227,6 +319,10 @@ final class AdvancedSettings: ObservableObject {
                 useLCSSortingOnNotchedDisplays = boolValue
             case "enableMenuBarItemOverflow":
                 enableMenuBarItemOverflow = boolValue
+            case "useThawBarOnNotchOverflow":
+                useThawBarOnNotchOverflow = boolValue
+            case "useAXClickDelivery":
+                useAXClickDelivery = boolValue
             case "searchIncludeVisible":
                 searchIncludeVisible = boolValue
             case "searchIncludeHidden":
@@ -240,8 +336,8 @@ final class AdvancedSettings: ObservableObject {
         }
 
         // Handle double values
-        if let doubleValue = notification.userInfo?["doubleValue"] as? Double {
-            switch key {
+        if let doubleValue = change.doubleValue {
+            switch change.key {
             case "showOnHoverDelay":
                 showOnHoverDelay = doubleValue
             case "tooltipDelay":

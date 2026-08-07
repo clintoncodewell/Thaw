@@ -6,15 +6,19 @@ on:
     paths:
       - "**/*.xcstrings"
 
+permissions:
+  contents: read
+
 jobs:
   block-manual-translations:
-    runs-on: ubuntu-slim
+    if: github.repository == 'thaw-app/Thaw'
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     permissions:
       pull-requests: write
       issues: write
     steps:
       - name: Close PR and Comment
-        uses: actions/github-script@v9
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
 

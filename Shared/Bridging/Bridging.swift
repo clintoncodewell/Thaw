@@ -7,19 +7,18 @@
 //  Licensed under the GNU GPLv3
 
 import Cocoa
-import os
-@preconcurrency import ScreenCaptureKit
+import ScreenCaptureKit
 
 // MARK: - Bridging
 
 /// A namespace for bridged or wrapped APIs.
-enum Bridging {
+nonisolated enum Bridging {
     private static let diagLog = DiagLog(category: "Bridging")
 }
 
 // MARK: - CGSConnection
 
-extension Bridging {
+nonisolated extension Bridging {
     // MARK: Private Connection Helpers
 
     /// The identifier for the `null` window server connection.
@@ -77,29 +76,8 @@ extension Bridging {
 
 // MARK: - CGDisplay / CGSDisplay
 
-extension Bridging {
+nonisolated extension Bridging {
     // MARK: Private Display Helpers
-
-    /// A display to exclude from Thaw's display enumeration while it exists.
-    ///
-    /// Set to the identifier of the transient virtual display that
-    /// VirtualDisplayProvoker creates to provoke marker-pair resolution on a
-    /// single-display machine, and cleared when it is removed. Filtering it
-    /// here keeps the phantom out of every display list derived from
-    /// getActiveDisplayList (including the active-menu-bar-display lookup),
-    /// so it never drives profile auto-switch or per-display state. nil during
-    /// normal operation, which makes the filter a no-op.
-    ///
-    /// Backed by an unfair lock: the MainActor writer (VirtualDisplayProvoker)
-    /// and the off-MainActor readers (the nonisolated image-capture tasks reach
-    /// it through getActiveMenuBarDisplayID) would otherwise race on this
-    /// non-atomic optional.
-    static var excludedDisplayID: CGDirectDisplayID? {
-        get { excludedDisplayIDStorage.withLock { $0 } }
-        set { excludedDisplayIDStorage.withLock { $0 = newValue } }
-    }
-
-    private static let excludedDisplayIDStorage = OSAllocatedUnfairLock<CGDirectDisplayID?>(initialState: nil)
 
     private static func getActiveDisplayCount() -> UInt32? {
         var count: UInt32 = 0
@@ -120,9 +98,6 @@ extension Bridging {
         guard result == .success else {
             diagLog.error("CGGetActiveDisplayList failed with error \(result.logString)")
             return []
-        }
-        if let excluded = excludedDisplayID {
-            list.removeAll { $0 == excluded }
         }
         return list
     }
@@ -191,7 +166,7 @@ extension Bridging {
 
 // MARK: - CGSEvent
 
-extension Bridging {
+nonisolated extension Bridging {
     /// Returns a Boolean value indicating whether the given process
     /// is unresponsive.
     ///
@@ -200,7 +175,13 @@ extension Bridging {
         var psn = ProcessSerialNumber()
         let result = getProcessForPID(pid, &psn)
         guard result == noErr else {
-            diagLog.error("getProcessForPID failed with error \(result)")
+            // procNotFound just means the owner has already quit — that is not
+            // "unresponsive", and it is an expected, frequent condition (an
+            // item's owner terminating while a view still polls it), so treat
+            // it quietly instead of logging an error on every tick.
+            if result != procNotFound {
+                diagLog.error("getProcessForPID failed with error \(result)")
+            }
             return false
         }
         return cgsEventIsAppUnresponsive(getMainConnection(), &psn)
@@ -219,7 +200,7 @@ extension Bridging {
 
 // MARK: - CGSSpace
 
-extension Bridging {
+nonisolated extension Bridging {
     /// Returns the identifier for the active space.
     static func getActiveSpaceID() -> CGSSpaceID {
         cgsGetActiveSpace(getMainConnection())
@@ -272,7 +253,7 @@ extension Bridging {
 
 // MARK: - CGSWindow
 
-extension Bridging {
+nonisolated extension Bridging {
     /// Returns the bounds for the given window.
     ///
     /// - Parameter windowID: An identifier for a window.
@@ -544,7 +525,7 @@ extension Bridging {
 
 // MARK: - SkyLight Window Capture
 
-extension Bridging {
+nonisolated extension Bridging {
     /// Captures a composite image of an array of windows using SkyLight's private API.
     ///
     /// This is the replacement for the deprecated `CGWindowListCreateImageFromArray` API,
@@ -576,6 +557,12 @@ extension Bridging {
         let boundsDesc = bounds.isNull ? "null (auto)" : String(format: "(%.0f,%.0f %.0fx%.0f)", bounds.origin.x, bounds.origin.y, bounds.width, bounds.height)
         diagLog.debug("captureWindowsImage: using SkyLight API, bounds=\(boundsDesc), windowCount=\(windowIDs.count), options=\(options.rawValue)")
 
+        let scale = maximumActiveDisplayScale()
+        guard isValidCaptureBounds(bounds, scale: scale) else {
+            diagLog.error("captureWindowsImage: refusing capture with invalid bounds \(boundsDesc) at scale \(scale) for \(windowIDs.count) windows — see issue #759")
+            return nil
+        }
+
         // Use SkyLight's private API instead of deprecated CGWindowListCreateImageFromArray
         guard let image = fn(bounds, windowArray as CFArray, options)?.takeRetainedValue() else {
             diagLog.warning("captureWindowsImage: SLWindowListCreateImageFromArray returned nil for \(windowIDs.count) windows (IDs: \(windowIDs.prefix(5)))")
@@ -585,11 +572,105 @@ extension Bridging {
         diagLog.debug("captureWindowsImage: captured \(windowIDs.count) windows → \(image.width)×\(image.height)px")
         return image
     }
+
+    /// The largest point-to-pixel scale among the active displays, or `1`
+    /// when none can be read.
+    ///
+    /// `SLWindowListCreateImageFromArray` allocates the *pixel* size of the
+    /// rect it is handed, so a rect that is safe in points can still exceed
+    /// ``maximumCaptureDimension`` in pixels on a Retina display — the check
+    /// has to scale, the way both ScreenCaptureKit paths already do with
+    /// their filter's `pointPixelScale`.
+    ///
+    /// The SkyLight path has no filter to ask, and cannot resolve the scale
+    /// by intersecting the capture rect with a display: it exists precisely
+    /// to capture status-item windows parked at large negative x, which
+    /// intersect no display at all. Resolving that way would refuse exactly
+    /// the captures this path is for. The largest scale in use is taken
+    /// instead — it can only over-estimate the pixel size, which fails safe,
+    /// and a menu-bar-sized rect is orders of magnitude below the limit
+    /// either way.
+    private static func maximumActiveDisplayScale() -> CGFloat {
+        var maximum: CGFloat = 1
+        for displayID in getActiveDisplayList() {
+            guard
+                let mode = CGDisplayCopyDisplayMode(displayID),
+                mode.width > 0
+            else {
+                continue
+            }
+            maximum = max(maximum, CGFloat(mode.pixelWidth) / CGFloat(mode.width))
+        }
+        return maximum
+    }
+
+    /// The largest texture dimension the window server will accept for a
+    /// capture, in pixels.
+    ///
+    /// Metal's texture limit on every Apple silicon family is 16384; the
+    /// window server builds an `MTLTexture` for the requested capture size,
+    /// and `-[MTLTextureDescriptorInternal validateWithDevice:]` calls
+    /// `abort()` — inside **WindowServer**, taking down the whole graphical
+    /// session — when the descriptor exceeds it. See issue #759.
+    static let maximumCaptureDimension = 16384
+
+    /// Returns `true` if `bounds` is safe to send to the window server as a
+    /// capture rectangle.
+    ///
+    /// `CGRect.null` is explicitly allowed: both `SLWindowListCreateImageFromArray`
+    /// and this file's ScreenCaptureKit path treat a null rect as "compute the
+    /// bounds automatically", which is a legitimate and common request.
+    ///
+    /// Everything else must describe a real, drawable region. A degenerate
+    /// rectangle does not fail gracefully — it crashes WindowServer for the
+    /// whole machine (issue #759), so this is a hard precondition, not a
+    /// tidiness check.
+    ///
+    /// - Parameters:
+    ///   - bounds: The capture rectangle, in points.
+    ///   - scale: The point-to-pixel scale that will be applied. The window
+    ///     server allocates the *pixel* size, so the limit must be checked
+    ///     after scaling.
+    static func isValidCaptureBounds(_ bounds: CGRect, scale: CGFloat = 1.0) -> Bool {
+        if bounds.isNull {
+            return true
+        }
+        // NOTE: there is no public `CGRect.isFinite`. A member by that name
+        // exists, but it is `package`-visibility inside SwiftUICore and is
+        // inaccessible here. Check the four components instead —
+        // `FloatingPoint.isFinite` is genuinely public and rejects both NaN
+        // and infinity, which also covers the `CGRect.infinite` sentinel.
+        guard
+            bounds.origin.x.isFinite,
+            bounds.origin.y.isFinite,
+            bounds.size.width.isFinite,
+            bounds.size.height.isFinite,
+            scale.isFinite,
+            scale > 0
+        else {
+            return false
+        }
+        // `width`/`height` return the standardized (absolute) extents, so a
+        // negatively-sized rect would pass a `> 0` test against them. Check
+        // the raw `size` components, which keep the sign.
+        guard bounds.size.width > 0, bounds.size.height > 0 else {
+            return false
+        }
+        let pixelWidth = (bounds.width * scale).rounded()
+        let pixelHeight = (bounds.height * scale).rounded()
+        guard
+            pixelWidth <= CGFloat(maximumCaptureDimension),
+            pixelHeight <= CGFloat(maximumCaptureDimension)
+        else {
+            return false
+        }
+        return true
+    }
 }
 
 // MARK: - ScreenCaptureKit Window Capture
 
-extension Bridging {
+nonisolated extension Bridging {
     /// Captures a composite image of an array of windows using ScreenCaptureKit.
     ///
     /// Async, leak-free replacement for captureWindowsImage. Use this for any
@@ -619,10 +700,7 @@ extension Bridging {
 
         let content: SCShareableContent
         do {
-            content = try await SCShareableContent.excludingDesktopWindows(
-                false,
-                onScreenWindowsOnly: false
-            )
+            content = try await shareableContentIncludingOffscreen()
         } catch {
             diagLog.error("captureWindowsImageSCK: SCShareableContent failed: \(error)")
             return nil
@@ -654,6 +732,11 @@ extension Bridging {
             }
             return unionBounds
         }()
+
+        guard isValidCaptureBounds(effectiveBounds) else {
+            diagLog.error("captureWindowsImageSCK: refusing capture with invalid effectiveBounds=\(effectiveBounds) (screenBounds=\(String(describing: screenBounds)), unionBounds=\(unionBounds)) — see issue #759")
+            return nil
+        }
 
         // Pick the display that holds the largest share of unionBounds. A
         // strict frame.contains check rejected status-item windows whose
@@ -689,6 +772,11 @@ extension Bridging {
             ? 1.0
             : CGFloat(filter.pointPixelScale)
 
+        guard isValidCaptureBounds(effectiveBounds, scale: scale) else {
+            diagLog.error("captureWindowsImageSCK: refusing capture, scaled size exceeds \(maximumCaptureDimension)px: effectiveBounds=\(effectiveBounds) scale=\(scale) — see issue #759")
+            return nil
+        }
+
         configuration.sourceRect = CGRect(
             x: effectiveBounds.origin.x - display.frame.origin.x,
             y: effectiveBounds.origin.y - display.frame.origin.y,
@@ -710,4 +798,108 @@ extension Bridging {
             return nil
         }
     }
+
+    /// Cached equivalent of `SCShareableContent.excludingDesktopWindows(false,
+    /// onScreenWindowsOnly: false)`.
+    ///
+    /// `captureWindowsImageSCK` is a hot path — the 4 fps live-refresh loop
+    /// and every other `captureWindowsAsync` call site fetch shareable
+    /// content on each tick, each a full window/display enumeration.
+    /// `ShareableContentCache` coalesces calls within `maxAge` of each other
+    /// into a single underlying fetch.
+    ///
+    /// This is a *different* content shape than
+    /// `ScreenCapture.getShareableContent()`, which wraps
+    /// `SCShareableContent.getWithCompletionHandler`'s default (equivalent to
+    /// `.current`, i.e. `excludingDesktopWindows: true, onScreenWindowsOnly:
+    /// true`): this one explicitly asks for desktop windows and offscreen
+    /// windows too, because captureWindowsImageSCK needs to be able to
+    /// resolve menu-bar item windows that ScreenCaptureKit still enumerates
+    /// while offscreen even though its capture path later rejects them.
+    /// Since the two callers request genuinely different content, they are
+    /// cached under separate `ShareableContentCache` instances (keys) rather
+    /// than being coalesced into one fetch. `ShareableContentCache` lives
+    /// here (rather than alongside `ScreenCapture.getShareableContent()`)
+    /// because this file is shared between the Thaw and MenuBarItemService
+    /// targets, and only the shared file's symbols are visible to both.
+    private static func shareableContentIncludingOffscreen(maxAge: Duration = .milliseconds(150)) async throws -> SCShareableContent {
+        let snapshot = try await shareableContentIncludingOffscreenCache.content(
+            maxAge: maxAge,
+            fetch: fetchShareableContentIncludingOffscreenUncached
+        )
+        return snapshot.content
+    }
+
+    private static let shareableContentIncludingOffscreenCache = ShareableContentCache<ShareableContentSnapshot>()
+
+    private static func fetchShareableContentIncludingOffscreenUncached() async throws -> ShareableContentSnapshot {
+        let content = try await SCShareableContent.excludingDesktopWindows(
+            false,
+            onScreenWindowsOnly: false
+        )
+        return ShareableContentSnapshot(content: content)
+    }
+}
+
+/// Coalesces concurrent/rapid shareable-content fetches into one underlying
+/// fetch.
+///
+/// Holds the most recent result plus an in-flight fetch task. Callers that
+/// arrive while a fetch is already running await the same task rather than
+/// starting a second enumeration; only the caller that started the task
+/// records the result and clears `inFlightTask`, so joiners never race each
+/// other over the cache bookkeeping.
+///
+/// Generic over the cached payload so tests can exercise the coalescing
+/// logic with a lightweight fake instead of a real `SCShareableContent`.
+actor ShareableContentCache<Content: Sendable> {
+    private var cached: (content: Content, timestamp: ContinuousClock.Instant)?
+    private var inFlightTask: Task<Content, any Error>?
+
+    func content(
+        maxAge: Duration,
+        fetch: @Sendable @escaping () async throws -> Content
+    ) async throws -> Content {
+        if let cached, ContinuousClock.now - cached.timestamp < maxAge {
+            return cached.content
+        }
+
+        if let inFlightTask {
+            return try await awaitWithoutCancelling(inFlightTask)
+        }
+
+        let task = Task<Content, any Error> {
+            try await fetch()
+        }
+        inFlightTask = task
+        do {
+            let content = try await awaitWithoutCancelling(task)
+            cached = (content, .now)
+            inFlightTask = nil
+            return content
+        } catch {
+            inFlightTask = nil
+            throw error
+        }
+    }
+
+    /// A caller cancelling must not cancel the shared task — other callers
+    /// may still be awaiting its result.
+    private func awaitWithoutCancelling(_ task: Task<Content, any Error>) async throws -> Content {
+        try await withTaskCancellationHandler {
+            try await task.value
+        } onCancel: {
+            // Intentionally empty: the shared task keeps running for other callers.
+        }
+    }
+}
+
+/// An immutable ScreenCaptureKit snapshot passed across the cache actor.
+///
+/// `SCShareableContent` is an Objective-C reference type without a Sendable
+/// annotation. It is returned as a completed framework snapshot and this
+/// wrapper never mutates or exposes any mutable state, so sharing that
+/// reference among the capture readers is safe.
+nonisolated struct ShareableContentSnapshot: @unchecked Sendable {
+    let content: SCShareableContent
 }

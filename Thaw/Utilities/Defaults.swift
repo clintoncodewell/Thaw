@@ -9,11 +9,25 @@
 import Foundation
 import SwiftUI
 
-enum Defaults {
+nonisolated enum Defaults {
+    /// The store every accessor below reads and writes.
+    ///
+    /// Production never assigns this; it stays `.standard` for the life of
+    /// the process. It exists so tests can point the whole `Defaults` facade
+    /// at a scratch suite instead of the user's real `com.stonerl.Thaw`
+    /// domain. Without it, exercising anything that persists a setting
+    /// rewrites the defaults of whoever is running the tests, and the suite
+    /// has to defend itself with per-key snapshot/restore that is not safe
+    /// once tests run in parallel.
+    ///
+    /// `UserDefaults` is itself thread-safe, so the unchecked annotation
+    /// covers only the reassignment, which is confined to test setup.
+    static nonisolated(unsafe) var store: UserDefaults = .standard
+
     /// Returns a dictionary containing the keys and values for
     /// the defaults meant to be seen by all applications.
     static var globalDomain: [String: Any] {
-        UserDefaults.standard.persistentDomain(forName: UserDefaults.globalDomain) ?? [:]
+        store.persistentDomain(forName: UserDefaults.globalDomain) ?? [:]
     }
 
     /// Returns the object for the specified key.
@@ -21,7 +35,7 @@ enum Defaults {
     /// - Parameter key: The key in the UserDefaults database
     ///   to retrieve the value for.
     static func object(forKey key: Key) -> Any? {
-        UserDefaults.standard.object(forKey: key.rawValue)
+        store.object(forKey: key.rawValue)
     }
 
     /// Returns the string for the specified key.
@@ -29,7 +43,7 @@ enum Defaults {
     /// - Parameter key: The key in the UserDefaults database
     ///   to retrieve the value for.
     static func string(forKey key: Key) -> String? {
-        UserDefaults.standard.string(forKey: key.rawValue)
+        store.string(forKey: key.rawValue)
     }
 
     /// Returns the array for the specified key.
@@ -37,7 +51,7 @@ enum Defaults {
     /// - Parameter key: The key in the UserDefaults database
     ///   to retrieve the value for.
     static func array(forKey key: Key) -> [Any]? {
-        UserDefaults.standard.array(forKey: key.rawValue)
+        store.array(forKey: key.rawValue)
     }
 
     /// Returns the dictionary for the specified key.
@@ -45,7 +59,7 @@ enum Defaults {
     /// - Parameter key: The key in the UserDefaults database
     ///   to retrieve the value for.
     static func dictionary(forKey key: Key) -> [String: Any]? {
-        UserDefaults.standard.dictionary(forKey: key.rawValue)
+        store.dictionary(forKey: key.rawValue)
     }
 
     /// Returns the data for the specified key.
@@ -53,7 +67,7 @@ enum Defaults {
     /// - Parameter key: The key in the UserDefaults database
     ///   to retrieve the value for.
     static func data(forKey key: Key) -> Data? {
-        UserDefaults.standard.data(forKey: key.rawValue)
+        store.data(forKey: key.rawValue)
     }
 
     /// Returns the string array for the specified key.
@@ -61,7 +75,7 @@ enum Defaults {
     /// - Parameter key: The key in the UserDefaults database
     ///   to retrieve the value for.
     static func stringArray(forKey key: Key) -> [String]? {
-        UserDefaults.standard.stringArray(forKey: key.rawValue)
+        store.stringArray(forKey: key.rawValue)
     }
 
     /// Returns the integer value for the specified key.
@@ -69,7 +83,7 @@ enum Defaults {
     /// - Parameter key: The key in the UserDefaults database
     ///   to retrieve the value for.
     static func integer(forKey key: Key) -> Int {
-        UserDefaults.standard.integer(forKey: key.rawValue)
+        store.integer(forKey: key.rawValue)
     }
 
     /// Returns the single precision floating point value for
@@ -78,7 +92,7 @@ enum Defaults {
     /// - Parameter key: The key in the UserDefaults database
     ///   to retrieve the value for.
     static func float(forKey key: Key) -> Float {
-        UserDefaults.standard.float(forKey: key.rawValue)
+        store.float(forKey: key.rawValue)
     }
 
     /// Returns the double precision floating point value for
@@ -87,7 +101,7 @@ enum Defaults {
     /// - Parameter key: The key in the UserDefaults database
     ///   to retrieve the value for.
     static func double(forKey key: Key) -> Double {
-        UserDefaults.standard.double(forKey: key.rawValue)
+        store.double(forKey: key.rawValue)
     }
 
     /// Returns the Boolean value for the specified key.
@@ -95,7 +109,7 @@ enum Defaults {
     /// - Parameter key: The key in the UserDefaults database
     ///   to retrieve the value for.
     static func bool(forKey key: Key) -> Bool {
-        UserDefaults.standard.bool(forKey: key.rawValue)
+        store.bool(forKey: key.rawValue)
     }
 
     /// Returns the url for the specified key.
@@ -103,7 +117,7 @@ enum Defaults {
     /// - Parameter key: The key in the UserDefaults database
     ///   to retrieve the value for.
     static func url(forKey key: Key) -> URL? {
-        UserDefaults.standard.url(forKey: key.rawValue)
+        store.url(forKey: key.rawValue)
     }
 
     /// Sets the value for the specified key.
@@ -111,7 +125,7 @@ enum Defaults {
     /// - Parameter key: The key in the UserDefaults database
     ///   to set the value for.
     static func set(_ value: Any?, forKey key: Key) {
-        UserDefaults.standard.set(value, forKey: key.rawValue)
+        store.set(value, forKey: key.rawValue)
     }
 
     /// Removes the value of the specified key.
@@ -119,7 +133,7 @@ enum Defaults {
     /// - Parameter key: The key in the UserDefaults database
     ///   to remove the value for.
     static func removeObject(forKey key: Key) {
-        UserDefaults.standard.removeObject(forKey: key.rawValue)
+        store.removeObject(forKey: key.rawValue)
     }
 
     /// Retrieves the value for the given key, and, if it is
@@ -139,7 +153,7 @@ enum Defaults {
     }
 }
 
-extension Defaults {
+nonisolated extension Defaults {
     enum DefaultValue {
         // MARK: General Settings
 
@@ -171,7 +185,7 @@ extension Defaults {
         static let showOnHoverDelay: TimeInterval = 0.2
         static let tooltipDelay: TimeInterval = 0.5
         static let showMenuBarTooltips = false
-        static let iconRefreshInterval: TimeInterval = 0.1
+        static let iconRefreshInterval: TimeInterval = 0.25
         #if DEBUG
             static let enableDiagnosticLogging = true
         #else
@@ -181,6 +195,8 @@ extension Defaults {
         static let useOptionClickToShowAlwaysHiddenSection = false
         static let useDoubleClickToShowAlwaysHiddenSection = false
         static let enableMenuBarItemOverflow = true
+        static let useThawBarOnNotchOverflow = true
+        static let useAXClickDelivery = false
 
         // MARK: Search
 
@@ -204,10 +220,17 @@ extension Defaults {
         static let globalDisplayConfiguration: DisplayIceBarConfiguration = .defaultConfiguration
         static let confirmSpacingRelaunch = true
         static let unconfirmedSpacingProfileScope: SpacingProfileSaveScope = .activeProfile
+
+        // MARK: Hidden Diagnostic Flags
+
+        static let inputPauseThresholdMs = 50
+        static let discardStrayMoveEvents = true
+        static let failFastOnEventWindowMismatch = false
+        static let axMessagingTimeout = SharedConstants.axMessagingTimeout
     }
 }
 
-extension Defaults {
+nonisolated extension Defaults {
     enum Key: String {
         // MARK: General Settings
 
@@ -256,6 +279,8 @@ extension Defaults {
         case useOptionClickToShowAlwaysHiddenSection = "UseOptionClickToShowAlwaysHiddenSection"
         case useDoubleClickToShowAlwaysHiddenSection = "UseDoubleClickToShowAlwaysHiddenSection"
         case enableMenuBarItemOverflow = "EnableMenuBarItemOverflow"
+        case useThawBarOnNotchOverflow = "UseThawBarOnNotchOverflow"
+        case useAXClickDelivery = "UseAXClickDelivery"
 
         // MARK: Search
 
@@ -274,18 +299,25 @@ extension Defaults {
 
         case menuBarItemCustomNames = "MenuBarItemCustomNames"
 
+        // MARK: Internal (Event Delivery)
+
+        /// Items whose owners have recently failed to answer synthetic
+        /// events, keyed by namespace and title. Managed by
+        /// ``UnresponsiveItemStore``; not exposed in Settings.
+        case unresponsiveMenuBarItems = "UnresponsiveMenuBarItems"
+
+        /// The app build the persisted unresponsive-item marks were recorded
+        /// against. A change drops the marks, so a fix that makes a
+        /// previously stuck item movable is not hidden behind the two-week
+        /// mark lifetime. Managed by ``MenuBarItemFailureLedger``.
+        case unresponsiveMenuBarItemsBuild = "UnresponsiveMenuBarItemsBuild"
+
         // MARK: Appearance Settings
 
         case menuBarAppearanceConfigurationV2 = "MenuBarAppearanceConfigurationV2"
 
         // MARK: Migration
 
-        case hasMigrated0_8_0
-        case hasMigrated0_10_0
-        case hasMigrated0_10_1
-        case hasMigrated0_11_10
-        case hasMigrated0_11_13
-        case hasMigrated0_11_13_1
         case hasMigratedPerDisplayIceBar
 
         // MARK: First Launch
@@ -311,27 +343,40 @@ extension Defaults {
         case globalPreProfileHook = "GlobalPreProfileHook"
         case globalPostProfileHook = "GlobalPostProfileHook"
 
-        // MARK: Deprecated (Appearance Settings)
+        // MARK: Focus Filter
 
-        case menuBarHasBorder = "MenuBarHasBorder"
-        case menuBarBorderColor = "MenuBarBorderColor"
-        case menuBarBorderWidth = "MenuBarBorderWidth"
-        case menuBarHasShadow = "MenuBarHasShadow"
-        case menuBarTintKind = "MenuBarTintKind"
-        case menuBarTintColor = "MenuBarTintColor"
-        case menuBarTintGradient = "MenuBarTintGradient"
-        case menuBarShapeKind = "MenuBarShapeKind"
-        case menuBarFullShapeInfo = "MenuBarFullShapeInfo"
-        case menuBarSplitShapeInfo = "MenuBarSplitShapeInfo"
-        case menuBarAppearanceConfiguration = "MenuBarAppearanceConfiguration"
+        /// Profile ID requested by the most recent Focus Filter
+        /// activation. Written by ``ThawFocusFilter`` and consumed by
+        /// ``ProfileManager/applyFocusFilterProfile()``.
+        case focusFilterRequestedProfileID = "FocusFilterRequestedProfileID"
 
-        // MARK: Deprecated (Advanced Settings)
+        // MARK: Hidden Diagnostic Flags
 
-        case showSectionDividers = "ShowSectionDividers"
-        case canToggleAlwaysHiddenSection = "CanToggleAlwaysHiddenSection"
+        /// Milliseconds of input inactivity required before a menu-bar item
+        /// reorder move proceeds.
+        ///
+        /// Hidden diagnostic flag; not exposed in Settings. Default: 50.
+        case inputPauseThresholdMs = "inputPauseThresholdMs"
 
-        // MARK: Deprecated (Other)
+        /// Whether stray echoes of synthetic move events are discarded
+        /// before they can be delivered against the wrong window.
+        ///
+        /// Hidden diagnostic flag; not exposed in Settings. Default: true.
+        case discardStrayMoveEvents = "discardStrayMoveEvents"
 
-        case sections = "Sections"
+        /// Whether a synthetic event that comes back addressed to a
+        /// different window than it was posted with fails its operation
+        /// immediately rather than running to timeout.
+        ///
+        /// Hidden diagnostic flag; not exposed in Settings. Default: false.
+        case failFastOnEventWindowMismatch = "failFastOnEventWindowMismatch"
+
+        /// Seconds an accessibility message may block before it fails.
+        ///
+        /// Applied to every element AXSwift6 creates. `0` restores the
+        /// system default of six seconds.
+        ///
+        /// Hidden diagnostic flag; not exposed in Settings. Default: 1.0.
+        case axMessagingTimeout = "axMessagingTimeout"
     }
 }

@@ -4,6 +4,7 @@
 .DS_Store
 .idea/
 .lefthook.yml
+.swiftpm-overrides/**
 .vscode/
 *.dSYM
 *.ipa
@@ -17,3 +18,7 @@ xcode-skills
 xcuserdata/
 # local build output (build-local.sh -derivedDataPath)
 /build/
+plans/
+
+# Local badge mockups
+.tmp-badge-preview/

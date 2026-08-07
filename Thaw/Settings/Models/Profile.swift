@@ -11,7 +11,7 @@ import Foundation
 // MARK: - ProfileMetadata
 
 /// Lightweight struct for listing profiles without loading full data.
-struct ProfileMetadata: Codable, Identifiable, Hashable {
+nonisolated struct ProfileMetadata: Codable, Identifiable, Hashable {
     let id: UUID
     var name: String
     var createdAt: Date
@@ -25,7 +25,7 @@ struct ProfileMetadata: Codable, Identifiable, Hashable {
 // MARK: - GeneralSettingsSnapshot
 
 /// A codable snapshot of all General settings properties.
-struct GeneralSettingsSnapshot: Codable {
+nonisolated struct GeneralSettingsSnapshot: Codable {
     var showIceIcon: Bool
     var iceIcon: ControlItemImageSet
     var lastCustomIceIcon: ControlItemImageSet?
@@ -66,9 +66,14 @@ struct GeneralSettingsSnapshot: Codable {
     @MainActor
     func apply(to settings: GeneralSettings) {
         settings.showIceIcon = showIceIcon
-        settings.lastCustomIceIcon = lastCustomIceIcon
         settings.customIceIconIsTemplate = customIceIconIsTemplate
         settings.iceIcon = iceIcon
+        // Assigned after `iceIcon`, not before. Setting a `.custom` icon makes
+        // that property's `didSet` mirror the new value into
+        // `lastCustomIceIcon`, so assigning first meant the snapshot's own
+        // value was immediately overwritten and every profile carrying a custom
+        // icon came back with the two fields identical.
+        settings.lastCustomIceIcon = lastCustomIceIcon
         settings.useIceBar = useIceBar
         settings.useIceBarOnlyOnNotchedDisplay = useIceBarOnlyOnNotchedDisplay
         settings.iceBarLocation = iceBarLocation
@@ -88,7 +93,7 @@ struct GeneralSettingsSnapshot: Codable {
 // MARK: - AdvancedSettingsSnapshot
 
 /// A codable snapshot of all Advanced settings properties.
-struct AdvancedSettingsSnapshot: Codable {
+nonisolated struct AdvancedSettingsSnapshot: Codable {
     var enableAlwaysHiddenSection: Bool
     var showAllSectionsOnUserDrag: Bool
     var sectionDividerStyle: Int
@@ -104,6 +109,7 @@ struct AdvancedSettingsSnapshot: Codable {
     var useOptionClickToShowAlwaysHiddenSection: Bool
     var useLCSSortingOnNotchedDisplays: Bool
     var enableMenuBarItemOverflow: Bool
+    var useThawBarOnNotchOverflow: Bool
     var searchSectionOrder: [String]
     var searchIncludeVisible: Bool
     var searchIncludeHidden: Bool
@@ -127,6 +133,7 @@ struct AdvancedSettingsSnapshot: Codable {
             useOptionClickToShowAlwaysHiddenSection: settings.useOptionClickToShowAlwaysHiddenSection,
             useLCSSortingOnNotchedDisplays: settings.useLCSSortingOnNotchedDisplays,
             enableMenuBarItemOverflow: settings.enableMenuBarItemOverflow,
+            useThawBarOnNotchOverflow: settings.useThawBarOnNotchOverflow,
             searchSectionOrder: settings.searchSectionOrder.map(\.rawValue),
             searchIncludeVisible: settings.searchIncludeVisible,
             searchIncludeHidden: settings.searchIncludeHidden,
@@ -153,6 +160,7 @@ struct AdvancedSettingsSnapshot: Codable {
         settings.useOptionClickToShowAlwaysHiddenSection = useOptionClickToShowAlwaysHiddenSection
         settings.useLCSSortingOnNotchedDisplays = useLCSSortingOnNotchedDisplays
         settings.enableMenuBarItemOverflow = enableMenuBarItemOverflow
+        settings.useThawBarOnNotchOverflow = useThawBarOnNotchOverflow
         settings.searchSectionOrder = AdvancedSettings.sanitizedSearchSectionOrder(from: searchSectionOrder)
         settings.searchIncludeVisible = searchIncludeVisible
         settings.searchIncludeHidden = searchIncludeHidden
@@ -175,6 +183,7 @@ struct AdvancedSettingsSnapshot: Codable {
         case useOptionClickToShowAlwaysHiddenSection
         case useLCSSortingOnNotchedDisplays
         case enableMenuBarItemOverflow
+        case useThawBarOnNotchOverflow
         case searchSectionOrder
         case searchIncludeVisible
         case searchIncludeHidden
@@ -197,6 +206,7 @@ struct AdvancedSettingsSnapshot: Codable {
         useOptionClickToShowAlwaysHiddenSection: Bool,
         useLCSSortingOnNotchedDisplays: Bool,
         enableMenuBarItemOverflow: Bool,
+        useThawBarOnNotchOverflow: Bool = Defaults.DefaultValue.useThawBarOnNotchOverflow,
         searchSectionOrder: [String],
         searchIncludeVisible: Bool,
         searchIncludeHidden: Bool,
@@ -217,6 +227,7 @@ struct AdvancedSettingsSnapshot: Codable {
         self.useOptionClickToShowAlwaysHiddenSection = useOptionClickToShowAlwaysHiddenSection
         self.useLCSSortingOnNotchedDisplays = useLCSSortingOnNotchedDisplays
         self.enableMenuBarItemOverflow = enableMenuBarItemOverflow
+        self.useThawBarOnNotchOverflow = useThawBarOnNotchOverflow
         self.searchSectionOrder = searchSectionOrder
         self.searchIncludeVisible = searchIncludeVisible
         self.searchIncludeHidden = searchIncludeHidden
@@ -270,6 +281,9 @@ struct AdvancedSettingsSnapshot: Codable {
         enableMenuBarItemOverflow = try container.decodeIfPresent(
             Bool.self, forKey: .enableMenuBarItemOverflow
         ) ?? Defaults.DefaultValue.enableMenuBarItemOverflow
+        useThawBarOnNotchOverflow = try container.decodeIfPresent(
+            Bool.self, forKey: .useThawBarOnNotchOverflow
+        ) ?? Defaults.DefaultValue.useThawBarOnNotchOverflow
         searchSectionOrder = try container.decodeIfPresent(
             [String].self, forKey: .searchSectionOrder
         ) ?? Defaults.DefaultValue.searchSectionOrder
@@ -288,7 +302,7 @@ struct AdvancedSettingsSnapshot: Codable {
 // MARK: - MenuBarLayoutSnapshot
 
 /// A codable snapshot of the menu bar item layout.
-struct MenuBarLayoutSnapshot: Codable {
+nonisolated struct MenuBarLayoutSnapshot: Codable {
     var savedSectionOrder: [String: [String]]
     var pinnedHiddenBundleIDs: [String]
     var pinnedAlwaysHiddenBundleIDs: [String]
@@ -317,8 +331,19 @@ struct MenuBarLayoutSnapshot: Codable {
     /// Resolves the ordering representation used by the layout apply path.
     /// Profiles written before `itemOrder` was added contain the equivalent
     /// `savedSectionOrder` representation, so preserve their layout intent.
+    ///
+    /// An *empty* `itemOrder` falls back too, not just a missing one.
+    /// `captureCurrentLayout` derives `itemOrder` from the item manager's
+    /// cache, which is empty while the menu bar is still settling, so a
+    /// capture taken at the wrong moment writes `[:]` rather than `nil`. Under
+    /// a plain `??` that empty dictionary shadows a perfectly good
+    /// `savedSectionOrder`, and the next apply sees no layout at all. Treating
+    /// it as absent also repairs profiles already written that way.
     var resolvedItemOrder: [String: [String]] {
-        itemOrder ?? savedSectionOrder
+        guard let itemOrder, !itemOrder.isEmpty else {
+            return savedSectionOrder
+        }
+        return itemOrder
     }
 
     /// Resolves per-item section assignments for both current and legacy
@@ -342,47 +367,28 @@ struct MenuBarLayoutSnapshot: Codable {
 // MARK: - ProfileContent
 
 /// Groups all settings data for a profile, used to reduce init parameter count.
-struct ProfileContent {
+///
+/// The initializer is left to synthesis rather than written out. The defaults
+/// below carry the same values the explicit initializer supplied, and the
+/// synthesized memberwise initializer takes its parameter order from the
+/// property order here, so every call site is unaffected.
+nonisolated struct ProfileContent {
     var generalSettings: GeneralSettingsSnapshot
     var advancedSettings: AdvancedSettingsSnapshot
     var hotkeys: [String: Data]
     var displayConfigurations: [String: DisplayIceBarConfiguration]
-    var globalDisplayConfiguration: DisplayIceBarConfiguration
-    var confirmSpacingRelaunch: Bool
-    var unconfirmedSpacingProfileScope: SpacingProfileSaveScope
+    var globalDisplayConfiguration = Defaults.DefaultValue.globalDisplayConfiguration
+    var confirmSpacingRelaunch = Defaults.DefaultValue.confirmSpacingRelaunch
+    var unconfirmedSpacingProfileScope = Defaults.DefaultValue.unconfirmedSpacingProfileScope
     var appearanceConfiguration: MenuBarAppearanceConfigurationV2
     var menuBarLayout: MenuBarLayoutSnapshot
     var automation: ProfileAutomation?
-
-    init(
-        generalSettings: GeneralSettingsSnapshot,
-        advancedSettings: AdvancedSettingsSnapshot,
-        hotkeys: [String: Data],
-        displayConfigurations: [String: DisplayIceBarConfiguration],
-        globalDisplayConfiguration: DisplayIceBarConfiguration = Defaults.DefaultValue.globalDisplayConfiguration,
-        confirmSpacingRelaunch: Bool = Defaults.DefaultValue.confirmSpacingRelaunch,
-        unconfirmedSpacingProfileScope: SpacingProfileSaveScope = Defaults.DefaultValue.unconfirmedSpacingProfileScope,
-        appearanceConfiguration: MenuBarAppearanceConfigurationV2,
-        menuBarLayout: MenuBarLayoutSnapshot,
-        automation: ProfileAutomation? = nil
-    ) {
-        self.generalSettings = generalSettings
-        self.advancedSettings = advancedSettings
-        self.hotkeys = hotkeys
-        self.displayConfigurations = displayConfigurations
-        self.globalDisplayConfiguration = globalDisplayConfiguration
-        self.confirmSpacingRelaunch = confirmSpacingRelaunch
-        self.unconfirmedSpacingProfileScope = unconfirmedSpacingProfileScope
-        self.appearanceConfiguration = appearanceConfiguration
-        self.menuBarLayout = menuBarLayout
-        self.automation = automation
-    }
 }
 
 // MARK: - Profile
 
 /// A complete settings profile that can be saved to and restored from disk.
-struct Profile: Codable, Identifiable {
+nonisolated struct Profile: Codable, Identifiable {
     let id: UUID
     var name: String
     var createdAt: Date
@@ -514,6 +520,7 @@ struct Profile: Codable, Identifiable {
             useOptionClickToShowAlwaysHiddenSection: Defaults.DefaultValue.useOptionClickToShowAlwaysHiddenSection,
             useLCSSortingOnNotchedDisplays: Defaults.DefaultValue.useLCSSortingOnNotchedDisplays,
             enableMenuBarItemOverflow: Defaults.DefaultValue.enableMenuBarItemOverflow,
+            useThawBarOnNotchOverflow: Defaults.DefaultValue.useThawBarOnNotchOverflow,
             searchSectionOrder: Defaults.DefaultValue.searchSectionOrder,
             searchIncludeVisible: Defaults.DefaultValue.searchIncludeVisible,
             searchIncludeHidden: Defaults.DefaultValue.searchIncludeHidden,
@@ -571,14 +578,14 @@ struct Profile: Codable, Identifiable {
 
 /// A single profile bundled with its metadata for export/import.
 /// Preserves display associations that live on the manifest.
-struct ProfileExportEntry: Codable {
+nonisolated struct ProfileExportEntry: Codable {
     var profile: Profile
     var associatedDisplayUUID: String?
     var associatedDisplayName: String?
 }
 
 /// Wrapper for exporting multiple profiles as a single file.
-struct ProfileExportBundle: Codable {
+nonisolated struct ProfileExportBundle: Codable {
     var version: Int = 1
     var entries: [ProfileExportEntry]
 }

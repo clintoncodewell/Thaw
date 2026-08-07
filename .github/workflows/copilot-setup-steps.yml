@@ -7,10 +7,14 @@ on:
     paths:
       - .github/workflows/copilot-setup-steps.yml
 
+permissions:
+  contents: read
+
 jobs:
   # The job MUST be called 'copilot-setup-steps' to be recognized by GitHub Copilot Agent
   copilot-setup-steps:
-    runs-on: ubuntu-latest
+    if: github.repository == 'thaw-app/Thaw'
+    runs-on: blacksmith-4vcpu-ubuntu-2404
 
     # Set minimal permissions for setup steps
     # Copilot Agent receives its own token with appropriate permissions
@@ -19,8 +23,8 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Install gh-aw extension
-        uses: github/gh-aw-actions/setup-cli@b6d1443e05b8716267fa19425b99aa4f12006b4a # v0.82.14
+        uses: github/gh-aw-actions/setup-cli@fd783ac87efde5e0c0e05d593f1906ea25b5d92e # v0.84.2
         with:
           version: v0.82.14

@@ -2,35 +2,76 @@ name: CI
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
   cancel-in-progress: true
+# Always run on PRs and on pushes to the default branch (development) so
+# Scorecard CI-Tests / SAST see checks on nearly every merge. Heavy macOS
+# work stays gated behind path detection below.
 on:
   pull_request:
-    paths:
-      - ".github/workflows/ci.yml"
-      - "Package.swift"
-      - "sonar-project.properties"
-      - "**/*.swift"
-      - "**/*.xcstrings"
   push:
     branches:
-      - main
       - development
-    paths:
-      - ".github/workflows/ci.yml"
-      - "Package.swift"
-      - "sonar-project.properties"
-      - "**/*.swift"
-      - "**/*.xcstrings"
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
-  static_analysis:
-    runs-on: ubuntu-latest
+  changes:
+    if: github.repository == 'thaw-app/Thaw'
+    runs-on: blacksmith-4vcpu-ubuntu-2404
+    outputs:
+      code: ${{ steps.filter.outputs.code }}
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+      - name: Detect code-related paths
+        id: filter
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            git fetch --no-tags --depth=1 origin "${{ github.base_ref }}"
+            range="origin/${{ github.base_ref }}...HEAD"
+          elif [[ "${{ github.event_name }}" == "push" ]]; then
+            before="${{ github.event.before }}"
+            if [[ -z "$before" || "$before" =~ ^0+$ ]]; then
+              echo "code=true" >> "$GITHUB_OUTPUT"
+              echo "No usable before SHA; treating as code change."
+              exit 0
+            fi
+            range="${before}...${{ github.sha }}"
+          else
+            echo "code=true" >> "$GITHUB_OUTPUT"
+            echo "workflow_dispatch: treating as code change."
+            exit 0
+          fi
+
+          patterns='(\.swift$|(^|/)Package\.swift$|(^|/)Package\.resolved$|^sonar-project\.properties$|^\.swiftlint|^\.swiftformat|^Thaw\.xcodeproj/|^scripts/|\.xcstrings$|^\.github/workflows/ci\.yml$)'
+          if git diff --name-only "$range" | grep -E "$patterns" >/dev/null; then
+            echo "code=true" >> "$GITHUB_OUTPUT"
+            echo "Code-related paths changed."
+          else
+            echo "code=false" >> "$GITHUB_OUTPUT"
+            echo "No code-related paths changed; heavy jobs will no-op."
+          fi
+
+  static_analysis:
+    needs: changes
+    if: github.repository == 'thaw-app/Thaw'
+    runs-on: blacksmith-4vcpu-ubuntu-2404
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: needs.changes.outputs.code == 'true'
+        with:
+          fetch-depth: 0
+
+      - name: Skip lint (no code changes)
+        if: needs.changes.outputs.code != 'true'
+        run: echo "No code-related paths changed; skipping SwiftLint."
+
       - name: Validate XCStrings
-        if: github.event_name == 'pull_request'
+        if: needs.changes.outputs.code == 'true' && github.event_name == 'pull_request'
         shell: bash
         run: |
           set -euo pipefail
@@ -45,6 +86,7 @@ jobs:
           done
 
       - name: Verify SwiftLint input file list
+        if: needs.changes.outputs.code == 'true'
         run: |
           set -euo pipefail
           chmod +x scripts/generate-swiftlint-inputs.sh
@@ -52,22 +94,31 @@ jobs:
           diff -u scripts/swiftlint-inputs.xcfilelist /tmp/swiftlint-inputs.xcfilelist
 
       - name: Run SwiftLint
+        if: needs.changes.outputs.code == 'true'
         run: |
           docker run --rm -v "$PWD:/work" -w /work \
-            ghcr.io/realm/swiftlint:0.63.3 \
+            ghcr.io/realm/swiftlint:0.63.3@sha256:b70b763c949399cc3e4fdcfbc7588944d9503d498b6d96e853dfa07a944256e6 \
             swiftlint --strict
 
   build:
-    runs-on: macos-26
-    needs: static_analysis
+    if: github.repository == 'thaw-app/Thaw'
+    runs-on: blacksmith-6vcpu-macos-26
+    needs: [changes, static_analysis]
     env:
       HOMEBREW_NO_AUTO_UPDATE: 1
     steps:
-      - uses: actions/checkout@v7
+      - name: Skip macOS build (no code changes)
+        if: needs.changes.outputs.code != 'true'
+        run: echo "No code-related paths changed; skipping xcodebuild test."
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: needs.changes.outputs.code == 'true'
       - run: sudo xcode-select -s /Applications/Xcode_26.5.app/Contents/Developer
+        if: needs.changes.outputs.code == 'true'
 
       - name: Cache SwiftPM
-        uses: actions/cache@v6
+        if: needs.changes.outputs.code == 'true'
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: |
             Build/SourcePackages
@@ -77,6 +128,7 @@ jobs:
             spm-${{ runner.os }}-
 
       - name: Compute cache week
+        if: needs.changes.outputs.code == 'true'
         id: cache-week
         run: echo "week=$(date +%Y-%U)" >> "$GITHUB_OUTPUT"
 
@@ -86,7 +138,8 @@ jobs:
       # a full recompile. Keyed by week so the cache periodically rotates rather than
       # growing unbounded; restore-keys still reuses the prior week's cache as a base.
       - name: Cache Swift compilation cache
-        uses: actions/cache@v6
+        if: needs.changes.outputs.code == 'true'
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: Build/CompilationCache.noindex
           key: compilation-cache-${{ runner.os }}-${{ github.ref_name }}-${{ steps.cache-week.outputs.week }}
@@ -95,6 +148,7 @@ jobs:
             compilation-cache-${{ runner.os }}-
 
       - name: Build and Test
+        if: needs.changes.outputs.code == 'true'
         run: |
           xcodebuild test \
             -project Thaw.xcodeproj \
@@ -107,7 +161,7 @@ jobs:
             CODE_SIGNING_ALLOWED=NO
 
       - name: Convert coverage to XML
-        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+        if: needs.changes.outputs.code == 'true' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
         env:
           XCRESULTPARSER_VERSION: "2.0.1"
         run: |
@@ -117,42 +171,100 @@ jobs:
           unzip -oq xcresultparser.zip
           NEWEST_BUNDLE=$(ls -td Build/Logs/Test/*.xcresult 2>/dev/null | head -n1)
           ./product/xcresultparser -c -o xml "$NEWEST_BUNDLE" > coverage.xml
+          # xcresultparser emits absolute paths from this macOS runner
+          # (/Users/runner/work/Thaw/Thaw/...). The Sonar scan runs on a
+          # separate Linux runner and matches coverage entries to sources by
+          # path, so without this every entry fails to resolve and the analysis
+          # reports 0% coverage. The script also drops DerivedData and
+          # SourcePackages entries, and exits non-zero if nothing resolves
+          # rather than shipping an empty report.
+          python3 scripts/normalize-coverage.py coverage.xml
 
       - name: Upload Coverage XML
-        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
-        uses: actions/upload-artifact@v7
+        if: needs.changes.outputs.code == 'true' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: coverage-data
           path: coverage.xml
           retention-days: 1
           if-no-files-found: error
 
+      # Persist the last successful report so docs/chore pushes (code=false) can
+      # still feed Sonar. Without this, those scans omit coverageReportPaths and
+      # Sonar's Zero Coverage Sensor publishes 0% for the whole branch.
+      # Key omits runner.os so the Linux sonarqube job can restore a macOS save.
+      - name: Cache Coverage XML for Sonar reuse
+        if: needs.changes.outputs.code == 'true' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: coverage.xml
+          key: sonar-coverage-${{ github.ref_name }}-${{ github.sha }}
+
+  # Always run so Scorecard SAST sees a Sonar-related check on nearly every PR,
+  # including docs/chore changes that skip the macOS build. Forks / Dependabot
+  # no-op without secrets (same job name keeps required checks satisfiable).
   sonarqube:
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
-    needs: build
-    runs-on: ubuntu-latest
+    needs: [changes, build]
+    if: github.repository == 'thaw-app/Thaw'
+    runs-on: blacksmith-4vcpu-ubuntu-2404
+    env:
+      # Forks and Dependabot get no SONAR_TOKEN on pull_request.
+      SONAR_ENABLED: ${{ github.actor != 'dependabot[bot]' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
     steps:
-      - uses: actions/checkout@v7
+      - name: Skip SonarQube for fork / Dependabot PRs
+        if: env.SONAR_ENABLED != 'true'
+        run: |
+          echo "Skipping SonarQube analysis (fork or Dependabot PR; no SONAR_TOKEN access)"
+          echo "Analysis will be performed after merge to the default branch"
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: env.SONAR_ENABLED == 'true'
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Download Coverage XML
-        uses: actions/download-artifact@v8
+        if: env.SONAR_ENABLED == 'true' && needs.changes.outputs.code == 'true'
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: coverage-data
 
+      # Docs/chore scans skip the macOS build, so reuse the last report cached
+      # for this branch (or the PR base / development). Prefer that over
+      # analyzing with no report — Sonar would otherwise publish 0% coverage.
+      - name: Restore cached Coverage XML
+        if: env.SONAR_ENABLED == 'true' && needs.changes.outputs.code != 'true'
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: coverage.xml
+          key: sonar-coverage-${{ github.ref_name }}-${{ github.sha }}
+          restore-keys: |
+            sonar-coverage-${{ github.ref_name }}-
+            sonar-coverage-${{ github.base_ref || 'development' }}-
+            sonar-coverage-development-
+          fail-on-cache-miss: false
+
+      - name: Resolve Sonar coverage args
+        if: env.SONAR_ENABLED == 'true'
+        id: coverage
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -f coverage.xml ]]; then
+            echo "args=-Dsonar.coverageReportPaths=coverage.xml" >> "$GITHUB_OUTPUT"
+            echo "Using coverage.xml ($(wc -c < coverage.xml | tr -d ' ') bytes)"
+          else
+            echo "args=" >> "$GITHUB_OUTPUT"
+            echo "::warning::No coverage.xml available; Sonar will publish zero coverage for this analysis."
+          fi
+
+      # coverage.xml only exists when this run built tests or restored a cached
+      # report. Never put sonar.coverageReportPaths in sonar-project.properties:
+      # a missing file would fail the scanner on cold branches.
       - name: SonarQube Scan
-        uses: SonarSource/sonarqube-scan-action@v8.2.1
+        if: env.SONAR_ENABLED == 'true'
+        uses: SonarSource/sonarqube-scan-action@22918119ff8e1ca75a623e15c8296b6ea4fbe28f # v8.2.1
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-
-  # Dummy job that passes for forks (no access to SONAR_TOKEN secret)
-  sonarqube-skip-forks:
-    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository
-    runs-on: ubuntu-slim
-    needs: build
-    steps:
-      - name: Skip SonarQube for fork PRs
-        run: |
-          echo "Skipping SonarQube analysis for PR from fork"
-          echo "Analysis will be performed after merge to main branch"
+        with:
+          args: ${{ steps.coverage.outputs.args }}

@@ -14,7 +14,7 @@ import OSLog
 /// debug logs for troubleshooting without requiring a debug build.
 ///
 /// Log files are written to `~/Library/Logs/Thaw/`.
-final class DiagnosticLogger: @unchecked Sendable {
+final nonisolated class DiagnosticLogger: @unchecked Sendable {
     /// The shared diagnostic logger instance.
     static let shared = DiagnosticLogger()
 
@@ -30,10 +30,17 @@ final class DiagnosticLogger: @unchecked Sendable {
                 current = newValue
                 return old
             }
+            // Ordered against queued writes on the same serial queue. `log`
+            // accepts a message, then hands the actual write to `writeQueue`;
+            // opening or closing the handle off-queue could run in that gap
+            // and either drop the message (handle already nil) or land it in
+            // whichever file was swapped in behind it. Going through the
+            // queue makes the handle a message sees the one that was current
+            // when it was accepted.
             if newValue, !oldValue {
-                openLogFile()
+                writeQueue.sync { openLogFile() }
             } else if !newValue, oldValue {
-                closeLogFile()
+                writeQueue.sync { closeLogFile() }
             }
         }
     }
@@ -129,10 +136,16 @@ final class DiagnosticLogger: @unchecked Sendable {
             current = true
             return was
         }
-        if wasEnabled {
-            closeLogFile()
+        // Close and open as one unit on the write queue, for the reason given
+        // on `isEnabled`. Doing them as two separate hops would leave a gap
+        // in which an accepted message could be written to the handle being
+        // torn down, or to neither.
+        writeQueue.sync {
+            if wasEnabled {
+                closeLogFile()
+            }
+            openLogFile(at: fileURL)
         }
-        openLogFile(at: fileURL)
     }
 
     /// Creates the log directory if needed and opens a freshly minted
@@ -257,8 +270,22 @@ final class DiagnosticLogger: @unchecked Sendable {
 
                 if logFiles.count > keepCount {
                     for file in logFiles.dropFirst(keepCount) {
-                        try FileManager.default.removeItem(at: file)
-                        osLog.debug("Removed old log file: \(file.lastPathComponent, privacy: .public)")
+                        // Each removal is isolated so one stubborn file cannot
+                        // abort the rest of the prune and leave the directory
+                        // permanently above `keepCount`.
+                        do {
+                            try FileManager.default.removeItem(at: file)
+                            osLog.debug("Removed old log file: \(file.lastPathComponent, privacy: .public)")
+                        } catch CocoaError.fileNoSuchFile {
+                            // The main app and the MenuBarItemService XPC target
+                            // prune the same shared directory on every open, so
+                            // losing the race to a concurrent pruner is expected
+                            // and not worth a diagnostic.
+                        } catch {
+                            osLog.warning(
+                                "Failed to remove old log file \(file.lastPathComponent, privacy: .public): \(error)"
+                            )
+                        }
                     }
                 }
             } catch {
@@ -270,7 +297,7 @@ final class DiagnosticLogger: @unchecked Sendable {
     // MARK: - Logging
 
     /// Log levels matching OSLog conventions.
-    enum Level: String {
+    enum Level: String, CaseIterable {
         case debug = "DEBUG"
         case info = "INFO"
         case notice = "NOTICE"
@@ -312,7 +339,7 @@ final class DiagnosticLogger: @unchecked Sendable {
 /// private let log = DiagLog(category: "MenuBarItemManager")
 /// log.debug("something happened")
 /// ```
-struct DiagLog {
+nonisolated struct DiagLog {
     private let osLogger: Logger
     private let category: String
 

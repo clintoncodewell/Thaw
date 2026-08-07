@@ -125,7 +125,29 @@ final class MenuBarSearchPanel: NSPanel {
             names[uniqueIdentifier] = newName
         }
         Defaults.set(names, forKey: .menuBarItemCustomNames)
-        model.objectWillChange.send()
+        // Renaming is the one thing that can change a display name while the
+        // panel is open, so it owns invalidating the memo.
+        ItemNameCache.clear()
+        // The rendered row (`MenuBarSearchItemView`) reads its display name
+        // from `Defaults`/`item.customName` directly rather than from a
+        // tracked `model` property, so writing to `Defaults` above doesn't
+        // register as an Observation mutation. The old code forced a
+        // refresh with `model.objectWillChange.send()`; @Observable has no
+        // such escape hatch. `MenuBarSearchContentView.updateDisplayedItems()`
+        // (the function that actually rebuilds the row list) isn't reachable
+        // from here across the panel/view boundary, so instead we write
+        // `displayedItems` back unchanged: @Observable's generated setter
+        // unconditionally calls `withMutation(keyPath:)` (no implicit
+        // equality check), so this is a genuine, Observation-visible
+        // mutation of the exact property the row list renders from, forcing
+        // SwiftUI to re-evaluate each row (and pick up the new name).
+        //
+        // Routed through a local rather than written as a direct
+        // self-assignment: the round trip is the point, and spelling it out
+        // keeps it from reading — to a human or a static analyser — as a
+        // typo'd `x = x`.
+        let itemsToRerender = model.displayedItems
+        model.displayedItems = itemsToRerender
     }
 
     /// The default screen to show the panel on.
@@ -305,7 +327,11 @@ final class MenuBarSearchPanel: NSPanel {
 
     /// Toggles the panel's visibility.
     func toggle() {
-        if isVisible { close() } else { show() }
+        if isVisible {
+            close()
+        } else {
+            show()
+        }
     }
 
     /// Dismisses the search panel.
@@ -321,6 +347,8 @@ final class MenuBarSearchPanel: NSPanel {
             model.searchText = ""
         }
         model.editingItemTag = nil
+        AppIconCache.clear()
+        ItemNameCache.clear()
         super.close()
         contentView = nil
         mouseDownMonitor.stop()
@@ -370,8 +398,8 @@ final class MenuBarSearchPanel: NSPanel {
         )
 
         let keyString = "\(Defaults.Key.menuBarSearchPanelFrameWithConfig.rawValue)\(uuidString)"
-        UserDefaults.standard.set(relativeFrame.dictionaryRepresentation as NSDictionary, forKey: keyString)
-        UserDefaults.standard.synchronize()
+        Defaults.store.set(relativeFrame.dictionaryRepresentation as NSDictionary, forKey: keyString)
+        Defaults.store.synchronize()
     }
 
     /// Loads the saved frame for a specific display.
@@ -381,7 +409,7 @@ final class MenuBarSearchPanel: NSPanel {
         }
         let keyString = "\(Defaults.Key.menuBarSearchPanelFrameWithConfig.rawValue)\(uuidString)"
 
-        guard let frameDict = UserDefaults.standard.dictionary(forKey: keyString) else {
+        guard let frameDict = Defaults.store.dictionary(forKey: keyString) else {
             return nil
         }
 
@@ -405,13 +433,12 @@ private final class MenuBarSearchHostingView: NSHostingView<AnyView> {
     ) {
         super.init(
             rootView: AnyView(
-                MenuBarSearchContentView(displayID: displayID, panel: panel) { [weak panel] in
+                MenuBarSearchContentView(model: model, displayID: displayID, panel: panel) { [weak panel] in
                     panel?.close()
                 }
-                .environmentObject(appState)
-                .environmentObject(appState.itemManager)
-                .environmentObject(appState.imageCache)
-                .environmentObject(model)
+                .environment(appState)
+                .environment(appState.itemManager)
+                .environment(appState.imageCache)
             )
         )
     }
@@ -430,10 +457,16 @@ private final class MenuBarSearchHostingView: NSHostingView<AnyView> {
 private struct MenuBarSearchContentView: View {
     private typealias ListItem = SectionedListItem<MenuBarSearchModel.ItemID>
 
-    @EnvironmentObject var appState: AppState
-    @EnvironmentObject var itemManager: MenuBarItemManager
-    @EnvironmentObject var imageCache: MenuBarItemImageCache
-    @EnvironmentObject var model: MenuBarSearchModel
+    @Environment(AppState.self) var appState: AppState
+    @Environment(MenuBarItemManager.self) var itemManager: MenuBarItemManager
+    @Environment(MenuBarItemImageCache.self) var imageCache: MenuBarItemImageCache
+    // `MenuBarSearchModel` is @Observable (wave 3). `$model.property`
+    // bindings are needed in several of this view's computed properties
+    // (searchField, mainContent), not just `body`, so a local `@Bindable`
+    // re-declaration inside `body` alone wouldn't reach them. Passed in
+    // explicitly and held as `@Bindable` here instead of via `@Environment`,
+    // which keeps bindings available anywhere in the type.
+    @Bindable var model: MenuBarSearchModel
     @FocusState private var searchFieldIsFocused: Bool
     @AppStorage(Defaults.Key.rememberSearchQuery.rawValue) private var rememberSearchQuery = Defaults.DefaultValue.rememberSearchQuery
 
@@ -687,9 +720,9 @@ private struct MenuBarSearchContentView: View {
                     let listItem = ListItem.item(id: .item(item.tag, windowID: item.windowID)) {
                         performAction(for: item)
                     } content: {
-                        MenuBarSearchItemView(item: item)
+                        MenuBarSearchItemView(model: model, item: item)
                     }
-                    items.append(SearchItem(listItem: listItem, title: item.displayName))
+                    items.append(SearchItem(listItem: listItem, title: ItemNameCache.displayName(for: item)))
                 }
             }
 
@@ -872,40 +905,83 @@ private let controlCenterIcon: NSImage? = {
     return app.icon
 }()
 
+/// Memoizes owning-application icons for the search rows.
+///
+/// `NSRunningApplication(processIdentifier:)` is a Launch Services lookup and
+/// `.icon` decodes on first access per instance. Row bodies re-evaluate for
+/// every item on every keystroke, and each one built a fresh instance, so the
+/// lookup ran N times per keypress. Cleared when the panel closes, which also
+/// keeps a recycled PID from being served a dead app's icon.
+@MainActor
+private enum AppIconCache {
+    private static var icons = [pid_t: NSImage?]()
+
+    static func icon(forPID pid: pid_t) -> NSImage? {
+        if let cached = icons[pid] {
+            return cached
+        }
+        let icon = NSRunningApplication(processIdentifier: pid)?.icon
+        icons[pid] = icon
+        return icon
+    }
+
+    static func clear() {
+        icons.removeAll()
+    }
+}
+
+/// Memoizes item display names for the search rows.
+///
+/// `MenuBarItem.displayName` is far from a stored property: it reads the whole
+/// `menuBarItemCustomNames` dictionary out of `UserDefaults` and bridges it,
+/// then — for the common case with no custom name — resolves the owning
+/// application through Launch Services and runs the title through a couple of
+/// regexes. The search panel asks for it once per item to build the fuzzy
+/// search corpus *and* once per rendered row, on every keystroke, so the cost
+/// scaled with item count × typing speed.
+///
+/// Cleared when the panel closes and when a name is edited, which is the only
+/// thing that can change an item's name while the panel is open.
+@MainActor
+private enum ItemNameCache {
+    private static var names = [MenuBarItemTag: String]()
+
+    static func displayName(for item: MenuBarItem) -> String {
+        if let cached = names[item.tag] {
+            return cached
+        }
+        let name = item.displayName
+        names[item.tag] = name
+        return name
+    }
+
+    static func clear() {
+        names.removeAll()
+    }
+}
+
 private struct MenuBarSearchItemView: View {
     @Environment(\.menuBarSearchPanel) var panel
-    @EnvironmentObject var appState: AppState
-    @EnvironmentObject var imageCache: MenuBarItemImageCache
-    @EnvironmentObject var model: MenuBarSearchModel
+    @Environment(AppState.self) var appState: AppState
+    @Environment(MenuBarItemImageCache.self) var imageCache: MenuBarItemImageCache
+    @Bindable var model: MenuBarSearchModel
 
     let item: MenuBarItem
     @FocusState private var isEditing: Bool
 
     private var itemImage: NSImage {
-        guard
-            let cached = imageCache.images[item.tag],
-            let trimmed = cached.cgImage.trimmingTransparency(around: [
-                .minXEdge, .maxXEdge,
-            ])
-        else {
-            return NSImage()
-        }
-        let size = CGSize(
-            width: CGFloat(trimmed.width) / cached.scale,
-            height: CGFloat(trimmed.height) / cached.scale
-        )
-        return NSImage(cgImage: trimmed, size: size)
+        imageCache.trimmedImage(for: item.tag) ?? NSImage()
     }
 
     private var appIcon: NSImage? {
-        guard let app = item.sourceApplication else {
-            return nil
-        }
         switch item.tag.namespace {
         case .controlCenter, .systemUIServer, .textInputMenuAgent:
             return controlCenterIcon
         default:
-            return app.icon
+            guard let sourcePID = item.sourcePID else {
+                return nil
+            }
+            return AppIconCache.icon(forPID: sourcePID)
         }
     }
 
@@ -961,7 +1037,7 @@ private struct MenuBarSearchItemView: View {
     }
 
     private var labelText: some View {
-        Text(item.displayName)
+        Text(ItemNameCache.displayName(for: item))
     }
 
     @ViewBuilder

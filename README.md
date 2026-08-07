@@ -1,120 +1,70 @@
+![Thaw](https://raw.githubusercontent.com/thaw-app/brand-assets/main/headers/light_header.svg#gh-light-mode-only)
+![Thaw](https://raw.githubusercontent.com/thaw-app/brand-assets/main/headers/dark_header.svg#gh-dark-mode-only)
+
+<!-- Badges: shieldcn — individuals + small related groups (light/dark) -->
 <p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" width="400" srcset="https://raw.githubusercontent.com/thaw-app/brand-assets/main/headers/thaw-dark.svg">
-    <source media="(prefers-color-scheme: light)" width="400" srcset="https://raw.githubusercontent.com/thaw-app/brand-assets/main/headers/thaw-light.svg">
-    <img src="https://raw.githubusercontent.com/thaw-app/brand-assets/main/headers/thaw-light.svg" width="400" alt="Thaw Header" />
-  </picture>
+  <picture><source media="(prefers-color-scheme: dark)" srcset="https://www.shieldcn.dev/badge/macOS-26%2B.svg?variant=outline&amp;size=sm&amp;mode=dark&amp;font=geist" /><img alt="macOS 26+" src="https://www.shieldcn.dev/badge/macOS-26%2B.svg?variant=outline&amp;size=sm&amp;mode=light&amp;font=geist" /></picture>
+  <a href="https://crowdin.com/project/thaw"><picture><source media="(prefers-color-scheme: dark)" srcset="https://www.shieldcn.dev/badge/translated-20_languages.svg?variant=outline&amp;size=sm&amp;mode=dark&amp;font=geist&amp;logo=crowdin" /><img alt="Translated into 20 languages" src="https://www.shieldcn.dev/badge/translated-20_languages.svg?variant=outline&amp;size=sm&amp;mode=light&amp;font=geist&amp;logo=crowdin" /></picture></a>
+  <a href="https://discord.gg/5cnKkKbMFd"><picture><source media="(prefers-color-scheme: dark)" srcset="https://www.shieldcn.dev/badge/Discord-join.svg?variant=outline&amp;size=sm&amp;mode=dark&amp;font=geist&amp;logo=discord&amp;" /><img alt="Discord" src="https://www.shieldcn.dev/badge/Discord-join.svg?variant=outline&amp;size=sm&amp;mode=light&amp;font=geist&amp;logo=discord&amp;" /></picture></a>
+  <a href="https://github.com/sponsors/stonerl"><picture><source media="(prefers-color-scheme: dark)" srcset="https://www.shieldcn.dev/badge/Sponsor-GitHub.svg?logo=githubsponsors&amp;variant=outline&amp;size=sm&amp;mode=dark&amp;font=geist" /><img alt="Sponsor" src="https://www.shieldcn.dev/badge/Sponsor-GitHub.svg?logo=githubsponsors&amp;variant=outline&amp;size=sm&amp;mode=light&amp;font=geist" /></picture></a>
+  <a href="LICENSE"><picture><source media="(prefers-color-scheme: dark)" srcset="https://www.shieldcn.dev/github/license/thaw-app/Thaw.svg?variant=outline&amp;size=sm&amp;mode=dark&amp;font=geist" /><img alt="License" src="https://www.shieldcn.dev/github/license/thaw-app/Thaw.svg?variant=outline&amp;size=sm&amp;mode=light&amp;font=geist" /></picture></a>
 </p>
 
 <p align="center">
-  Thaw hides and shows macOS menu bar items and adds search, hotkeys, profiles, and appearance controls to keep the bar clean without losing access.
-  <br>
-  Free and open source. Private by design: no tracking, no account required.
+  <a href="https://github.com/thaw-app/Thaw/actions/workflows/ci.yml"><picture><source media="(prefers-color-scheme: dark)" srcset="https://www.shieldcn.dev/github/ci/thaw-app/Thaw.svg?variant=outline&amp;size=sm&amp;mode=dark&amp;font=geist&amp;statusDot=true" /><img alt="CI" src="https://www.shieldcn.dev/github/ci/thaw-app/Thaw.svg?variant=outline&amp;size=sm&amp;mode=light&amp;font=geist&amp;statusDot=true" /></picture></a>
+<picture><source media="(prefers-color-scheme: dark)" srcset="https://www.shieldcn.dev/group/badge/OpenSSF+badge/Scorecard-9%2E1+badge/Best_Practices-Silver+badge/Baseline-3.svg?variant=outline&amp;size=sm&amp;mode=dark&amp;font=geist" /><img alt="OpenSSF: Scorecard 9.1, Best Practices Silver, Baseline Level 3" src="https://www.shieldcn.dev/group/badge/OpenSSF+badge/Scorecard-9%2E1+badge/Best_Practices-Silver+badge/Baseline-3.svg?variant=outline&amp;size=sm&amp;mode=light&amp;font=geist" /></picture>
+  <a href="docs/VERIFYING_RELEASES.md"><picture><source media="(prefers-color-scheme: dark)" srcset="https://www.shieldcn.dev/badge/SLSA-Build_L3.svg?variant=outline&amp;size=sm&amp;mode=dark&amp;font=geist&amp;logo=ri:GoPackage" /><img alt="SLSA 3" src="https://www.shieldcn.dev/badge/SLSA-3.svg?variant=outline&amp;size=sm&amp;mode=light&amp;font=geist&amp;logo=ri:GoPackage" /></picture></a>
+<a href="https://sonarcloud.io/component_measures?id=thaw-app_Thaw&amp;metric=coverage"><picture><source media="(prefers-color-scheme: dark)" srcset="https://www.shieldcn.dev/sonar/coverage/thaw-app_Thaw.svg?variant=outline&amp;size=sm&amp;mode=dark&amp;font=geist&amp;logo=sonarqubecloud" /><img alt="Sonar coverage" src="https://www.shieldcn.dev/sonar/coverage/thaw-app_Thaw.svg?variant=outline&amp;size=sm&amp;mode=light&amp;font=geist&amp;logo=sonarqubecloud" /></picture></a>
+</p>
+
+
+<p align="center">
+  <b>Take back your menu bar. Hide what you don't need, find anything in a keystroke,<br />  and make the bar look the way you want.</b><br />
+  <b>Free and open source. Private by design: no tracking, no account, nothing ever leaves your Mac.</b>
 </p>
 
 <p align="center">
-  <a href="https://github.com/stonerl/Thaw/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/stonerl/Thaw?style=flat-square&label=latest&color=555555" /></a>
-  <a href="https://github.com/stonerl/Thaw/releases"><img alt="Beta / pre-release" src="https://img.shields.io/github/v/release/stonerl/Thaw?include_prereleases&style=flat-square&label=beta&color=555555" /></a>
-  <img alt="Requirements" src="https://img.shields.io/badge/macOS-26%2B-555555?style=flat-square" />
-  <a href="https://github.com/stonerl/Thaw/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/stonerl/Thaw/ci.yml?style=flat-square&label=CI" /></a>
-  <a href="https://www.bestpractices.dev/projects/13303"><img alt="OpenSSF Best Practices" src="https://img.shields.io/cii/summary/13303?style=flat-square&label=OpenSSF" /></a>
-  <a href="https://github.com/sponsors/stonerl"><img alt="Sponsor" src="https://img.shields.io/badge/Sponsor-%E2%9D%A4-555555?style=flat-square" /></a>
-  <a href="https://discord.gg/5cnKkKbMFd"><img alt="Discord" src="https://img.shields.io/badge/Discord-7289DA?style=flat-square&logo=discord&logoColor=white" /></a>
-  <a href="LICENSE"><img alt="License" src="https://img.shields.io/github/license/stonerl/Thaw?style=flat-square&color=555555" /></a>
+  <a href="https://github.com/thaw-app/Thaw/releases">Download</a> ·
+  <a href="#install">Install</a> ·
+  <a href="#features">Features</a> ·
+  <a href="#integrations">Integrations</a> ·
+  <a href="https://github.com/thaw-app/Thaw/issues/687">macOS 27 status</a> ·
+  <a href=".github/CONTRIBUTING.md">Contributing</a>
 </p>
 
 <p align="center">
-  <a href="https://www.raycast.com/diazdesandi/thaw"><img alt="Works with Raycast" src="https://raw.githubusercontent.com/thaw-app/brand-assets/main/badges/works-with-raycast.svg" height="42" /></a>
-  &nbsp;&nbsp;
-  <a href="https://getdroppy.app/"><img alt="Works with Droppy" src="https://raw.githubusercontent.com/thaw-app/brand-assets/main/badges/works-with-droppy.svg" height="42" /></a>
-</p>
-
-<p align="center">
-  <strong>
-    <a href="https://github.com/stonerl/Thaw/issues/687">
-      macOS 27 (Golden Gate) status and preview builds
-    </a>
-  </strong>
+  <a href="https://www.raycast.com/diazdesandi/thaw"><img alt="Works with Raycast" src="https://raw.githubusercontent.com/thaw-app/brand-assets/main/badges/works-with-raycast.svg" height="36" /></a>
+  <a href="https://getdroppy.app/"><img alt="Works with Droppy" src="https://raw.githubusercontent.com/thaw-app/brand-assets/main/badges/works-with-droppy.svg" height="36" /></a>
 </p>
 
 <div align="center">
-<a href="https://trendshift.io/repositories/21173" target="_blank"><img src="https://trendshift.io/api/badge/repositories/21173" alt="stonerl%2FThaw | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
+  <a href="https://trendshift.io/repositories/21173" target="_blank"><img src="https://trendshift.io/api/badge/repositories/21173" alt="thaw-app/Thaw | Trendshift" style="width: 250px; height: 55px;" width="250" height="55" /></a>
 </div>
 
-<br>
+<p align="center">
+  <a href="https://github.com/user-attachments/assets/9584065d-f840-4545-9a42-cfc5534b5ac3"><img alt="Thaw overview" src="https://github.com/user-attachments/assets/9584065d-f840-4545-9a42-cfc5534b5ac3" width="800" /></a>
+</p>
 
-![thaw-banner](https://github.com/user-attachments/assets/9584065d-f840-4545-9a42-cfc5534b5ac3)
+## Why Thaw
 
-> [!NOTE]
-> Thaw is an actively maintained fork of [Ice](https://github.com/jordanbaird/Ice), focused on fixes, compatibility, and new features.
+- **Free, and free to keep.** No purchase, no subscription, and no upgrade fee when macOS ships a new version.
+- **Open source, GPL-3.0.** Read the code, build it yourself, fork it.
+- **No tracking, no account.** No analytics, no telemetry, no sign-up.
+- **Screen Recording is optional.** Hiding, revealing, and rearranging items all work without it. Grant it only if you want menu bar item previews and appearance tinting.
+- **Light on your Mac.** A small, steady memory footprint, and no background bloat.
+- **Signed and notarized by Apple**, with [verifiable releases](docs/VERIFYING_RELEASES.md), security practices tracked against the [OpenSSF Best Practices](https://www.bestpractices.dev/projects/13303) criteria, and an [OpenSSF Scorecard](https://scorecard.dev/viewer/?uri=github.com/thaw-app/Thaw) for supply-chain posture.
 
-## Install
-
-### Latest release (.zip)
-
-Download `Thaw_<version>.zip` from [latest release](https://github.com/stonerl/Thaw/releases/latest), unzip it, then move `Thaw.app` to `Applications`.
-
-### Homebrew
-
-```sh
-brew install thaw
-```
-
-Beta (or stable, whichever is newer):
-
-```sh
-brew install thaw@beta
-```
-
-## Language Support
-
-Thaw is translated into the languages listed below. Translations are managed on [Crowdin](https://crowdin.com/project/thaw), and you can request additional languages there.
-
-<table frame="void" rules="none">
-    <tr>
-        <td>🇮🇩 <b>Bahasa Indonesia</b><br /><img alt="id translation" src="https://img.shields.io/badge/dynamic/json?color=blue&label=id&style=square&logo=crowdin&query=%24.progress.5.data.translationProgress&url=https%3A%2F%2Fbadges.awesome-crowdin.com%2Fstats-12858911-889934.json" /></td>
-        <td>🇨🇿 <b>Čeština</b><br /><img alt="cs translation" src="https://img.shields.io/badge/dynamic/json?color=blue&label=cs&style=square&logo=crowdin&query=%24.progress.0.data.translationProgress&url=https%3A%2F%2Fbadges.awesome-crowdin.com%2Fstats-12858911-889934.json" /></td>
-        <td>🇩🇪 🇦🇹 <b>Deutsch</b><br /><img alt="de translation" src="https://img.shields.io/badge/dynamic/json?color=blue&label=de&style=square&logo=crowdin&query=%24.progress.1.data.translationProgress&url=https%3A%2F%2Fbadges.awesome-crowdin.com%2Fstats-12858911-889934.json" /></td>
-        <td>🇬🇧 🇺🇸 <b>English</b><br /><img alt="en translation" src="https://img.shields.io/badge/en-100%25-blue?style=square&logo=crowdin" /></td>
-        <td>🇪🇸 🇲🇽 <b>Español</b><br /><img alt="es-ES translation" src="https://img.shields.io/badge/dynamic/json?color=blue&label=es-ES&style=square&logo=crowdin&query=%24.progress.2.data.translationProgress&url=https%3A%2F%2Fbadges.awesome-crowdin.com%2Fstats-12858911-889934.json" /></td>
-    </tr>
-    <tr>
-        <td>🇫🇷 <b>Français</b><br /><img alt="fr translation" src="https://img.shields.io/badge/dynamic/json?color=blue&label=fr&style=square&logo=crowdin&query=%24.progress.3.data.translationProgress&url=https%3A%2F%2Fbadges.awesome-crowdin.com%2Fstats-12858911-889934.json" /></td>
-        <td>🇮🇹 <b>Italiano</b><br /><img alt="it translation" src="https://img.shields.io/badge/dynamic/json?color=blue&label=it&style=square&logo=crowdin&query=%24.progress.6.data.translationProgress&url=https%3A%2F%2Fbadges.awesome-crowdin.com%2Fstats-12858911-889934.json" /></td>
-        <td>🇯🇵 <b>日本語</b><br /><img alt="ja translation" src="https://img.shields.io/badge/dynamic/json?color=blue&label=ja&style=square&logo=crowdin&query=%24.progress.7.data.translationProgress&url=https%3A%2F%2Fbadges.awesome-crowdin.com%2Fstats-12858911-889934.json" /></td>
-        <td>🇰🇷 <b>한국어</b><br /><img alt="ko translation" src="https://img.shields.io/badge/dynamic/json?color=blue&label=ko&style=square&logo=crowdin&query=%24.progress.8.data.translationProgress&url=https%3A%2F%2Fbadges.awesome-crowdin.com%2Fstats-12858911-889934.json" /></td>
-        <td>🇭🇺 <b>Magyar</b><br /><img alt="hu translation" src="https://img.shields.io/badge/dynamic/json?color=blue&label=hu&style=square&logo=crowdin&query=%24.progress.4.data.translationProgress&url=https%3A%2F%2Fbadges.awesome-crowdin.com%2Fstats-12858911-889934.json" /></td>
-    </tr>
-    <tr>
-        <td>🇳🇱 🇧🇪 <b>Nederlands</b><br /><img alt="nl translation" src="https://img.shields.io/badge/dynamic/json?color=blue&label=nl&style=square&logo=crowdin&query=%24.progress.9.data.translationProgress&url=https%3A%2F%2Fbadges.awesome-crowdin.com%2Fstats-12858911-889934.json" /></td>
-        <td>🇧🇷 <b>Português (Brasil)</b><br /><img alt="pt-BR translation" src="https://img.shields.io/badge/dynamic/json?color=blue&label=pt-BR&style=square&logo=crowdin&query=%24.progress.11.data.translationProgress&url=https%3A%2F%2Fbadges.awesome-crowdin.com%2Fstats-12858911-889934.json" /></td>
-        <td>🇷🇺 <b>Русский</b><br /><img alt="ru translation" src="https://img.shields.io/badge/dynamic/json?color=blue&label=ru&style=square&logo=crowdin&query=%24.progress.12.data.translationProgress&url=https%3A%2F%2Fbadges.awesome-crowdin.com%2Fstats-12858911-889934.json" /></td>
-        <td>🇨🇳 <b>简体中文</b><br /><img alt="zh-CN translation" src="https://img.shields.io/badge/dynamic/json?color=blue&label=zh-CN&style=square&logo=crowdin&query=%24.progress.17.data.translationProgress&url=https%3A%2F%2Fbadges.awesome-crowdin.com%2Fstats-12858911-889934.json" /></td>
-        <td>🇹🇼 <b>正體中文</b><br /><img alt="zh-TW translation" src="https://img.shields.io/badge/dynamic/json?color=blue&label=zh-TW&style=square&logo=crowdin&query=%24.progress.18.data.translationProgress&url=https%3A%2F%2Fbadges.awesome-crowdin.com%2Fstats-12858911-889934.json" /></td>
-    </tr>
-    <tr>
-        <td>🇹🇭 <b>ภาษาไทย</b><br /><img alt="th translation" src="https://img.shields.io/badge/dynamic/json?color=blue&label=th&style=square&logo=crowdin&query=%24.progress.13.data.translationProgress&url=https%3A%2F%2Fbadges.awesome-crowdin.com%2Fstats-12858911-889934.json" /></td>
-        <td>🇵🇱 <b>Polski</b><br /><img alt="pl translation" src="https://img.shields.io/badge/dynamic/json?color=blue&label=pl&style=square&logo=crowdin&query=%24.progress.10.data.translationProgress&url=https%3A%2F%2Fbadges.awesome-crowdin.com%2Fstats-12858911-889934.json" /></td>
-        <td>🇹🇷 <b>Türkçe</b><br /><img alt="tr translation" src="https://img.shields.io/badge/dynamic/json?color=blue&label=tr&style=square&logo=crowdin&query=%24.progress.14.data.translationProgress&url=https%3A%2F%2Fbadges.awesome-crowdin.com%2Fstats-12858911-889934.json" /></td>
-        <td>🇺🇦 <b>Українська(*)</b><br /><img alt="uk translation" src="https://img.shields.io/badge/dynamic/json?color=blue&label=uk&style=square&logo=crowdin&query=%24.progress.15.data.translationProgress&url=https%3A%2F%2Fbadges.awesome-crowdin.com%2Fstats-12858911-889934.json" /></td>
-        <td>🇻🇳 <b>Tiếng Việt(*)</b><br /><img alt="vi translation" src="https://img.shields.io/badge/dynamic/json?color=blue&label=vi&style=square&logo=crowdin&query=%24.progress.16.data.translationProgress&url=https%3A%2F%2Fbadges.awesome-crowdin.com%2Fstats-12858911-889934.json" /></td>
-    </tr>
-</table>
-
-_Languages marked with (\*) are currently only available in the development branch._
-
-## Highlights
+## Features
 
 - **Declutter your menu bar**: hide icons you do not need and keep an always-hidden section for the rest
 - **Reveal items fast**: show hidden icons by hover, click, scroll/swipe, or hotkey
 - **Search and jump**: find any menu bar item instantly from the keyboard
 - **Switch layouts by context**: save profiles for work, focus, and presenting
+- **Style the bar**: tint, gradient, shadow, border, and custom shapes, per light/dark mode
 - **Built for modern macOS**: supports macOS 26 and 27, including notch-friendly layouts via the Thaw Bar
 
-Automation via `thaw://` URI schemes: [docs/URI_SCHEMES.md](docs/URI_SCHEMES.md).
-
 <details>
-<summary>Full feature list</summary>
+<summary><b>Full feature list</b> — 20+ more, including drag-and-drop arrangement, item spacing, and hotkeys</summary>
 
 ### Menu bar item management
 
@@ -150,16 +100,8 @@ Automation via `thaw://` URI schemes: [docs/URI_SCHEMES.md](docs/URI_SCHEMES.md)
 
 </details>
 
-## Roadmap
-
-- **Menu bar item management**: individual spacer items; menu bar item groups; show menu bar items when trigger conditions are met
-- **Menu bar appearance**: rounded screen corners
-- **Hotkeys**: enable/disable auto rehide; temporarily show individual menu bar items
-- **Other**: menu bar widgets
-
-## Gallery
-
-> Click any screenshot to view it full size.
+<details>
+<summary><b>Screenshots</b></summary>
 
 <table>
   <tr>
@@ -191,23 +133,99 @@ Automation via `thaw://` URI schemes: [docs/URI_SCHEMES.md](docs/URI_SCHEMES.md)
   </tr>
 </table>
 
+</details>
+
+## Integrations
+
+Every core action is a `thaw://` deep link, so Thaw plugs into the launcher you already use.
+
+- **[Raycast](https://www.raycast.com/diazdesandi/thaw)** — official extension. Toggle sections, open search, and change settings without leaving Raycast.
+- **[Droppy](https://getdroppy.app/)** — pair Thaw with Droppy's shelf and extras for a full menu bar suite.
+- **Anything else** — Alfred, Shortcuts, Keyboard Maestro, BetterTouchTool, or a shell script.
+
+```sh
+open "thaw://toggle-hidden"
+open "thaw://search"
+open "thaw://open-settings"
+```
+
+Full reference, including reading and writing settings: [docs/URI_SCHEMES.md](docs/URI_SCHEMES.md).
+
+## Install
+
+```sh
+brew install thaw        # stable
+brew install thaw@beta   # beta, or stable if it is newer
+```
+
+Or grab the `.dmg` from the [latest release](https://github.com/thaw-app/Thaw/releases/latest) and drag Thaw to Applications.
+
+Needs macOS 26+. Thaw asks for Accessibility on first launch to move menu bar items; Screen Recording is optional. Stuck? See [Frequent issues](FREQUENT_ISSUES.md).
+
+> [!NOTE]
+> Thaw is an actively maintained fork of [Ice](https://github.com/jordanbaird/Ice), focused on fixes, compatibility, and new features.
+
+## Languages
+
+Thaw speaks 20 languages, thanks to translators around the world.
+
+<table frame="void" rules="none">
+  <tr>
+    <td>🇮🇩 Bahasa Indonesia</td>
+    <td>🇨🇿 Čeština</td>
+    <td>🇩🇪 🇦🇹 Deutsch</td>
+    <td>🇬🇧 🇺🇸 English</td>
+  </tr>
+  <tr>
+    <td>🇪🇸 🇲🇽 Español</td>
+    <td>🇫🇷 Français</td>
+    <td>🇮🇹 Italiano</td>
+    <td>🇭🇺 Magyar</td>
+  </tr>
+  <tr>
+    <td>🇳🇱 🇧🇪 Nederlands</td>
+    <td>🇵🇱 Polski</td>
+    <td>🇧🇷 Português (Brasil)</td>
+    <td>🇹🇷 Türkçe</td>
+  </tr>
+  <tr>
+    <td>🇷🇺 Русский</td>
+    <td>🇺🇦 Українська<sup>*</sup></td>
+    <td>🇹🇭 ภาษาไทย</td>
+    <td>🇻🇳 Tiếng Việt<sup>*</sup></td>
+  </tr>
+  <tr>
+    <td>🇯🇵 日本語</td>
+    <td>🇰🇷 한국어</td>
+    <td>🇨🇳 简体中文</td>
+    <td>🇹🇼 正體中文</td>
+  </tr>
+</table>
+
+Missing yours, or spotted something off? [Translate Thaw on Crowdin](https://crowdin.com/project/thaw) — you can request new languages there too. Everyone who has translated Thaw is named in [Credits](CREDITS.md).
+
+<sub>\* Currently only in the <code>development</code> branch.</sub>
+
 ## Contributors
 
-This project exists thanks to the awesome people who contribute code and documentation:
+This project exists thanks to the awesome people who contribute code and documentation. Translations happen on Crowdin rather than in git, so translators are credited separately in [Credits](CREDITS.md).
 
-Want to contribute? Start with [Ways to contribute](https://github.com/stonerl/Thaw/issues/316). Pull requests are welcome against the `development` branch (see [Contributing](.github/CONTRIBUTING.md)).
+Want to contribute? Start with [Ways to contribute](https://github.com/thaw-app/Thaw/issues/316). Pull requests are welcome against the `development` branch (see [Contributing](.github/CONTRIBUTING.md)).
 
-<a href="https://github.com/stonerl/Thaw/graphs/contributors"><img alt="Gallery of all contributors' profile photos" src="https://contrib.rocks/image?repo=stonerl/Thaw&columns=16" width="100%" /></a>
+<a href="https://github.com/thaw-app/Thaw/graphs/contributors"><img alt="Gallery of all contributors' profile photos" src="https://contrib.rocks/image?repo=thaw-app/Thaw&columns=16" width="100%" /></a>
 
-## Project Stats
+## Project documentation
 
-<a href="https://star-history.com/#stonerl/Thaw&Date">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=stonerl/Thaw&type=Date&theme=dark" />
-    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=stonerl/Thaw&type=Date" />
-    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=stonerl/Thaw&type=Date" width="100%" />
-  </picture>
-</a>
+- [Contributing](.github/CONTRIBUTING.md)
+- [Credits](CREDITS.md)
+- [Governance](.github/GOVERNANCE.md)
+- [Security policy](.github/SECURITY.md)
+- [Roadmap](docs/ROADMAP.md)
+- [Architecture](docs/ARCHITECTURE.md)
+- [Assurance case](docs/ASSURANCE_CASE.md)
+- [Verifying releases](docs/VERIFYING_RELEASES.md)
+- [Release and update distribution](docs/RELEASES.md)
+- [URI schemes](docs/URI_SCHEMES.md)
 
 ## License
 

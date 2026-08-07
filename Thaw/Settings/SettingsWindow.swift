@@ -11,7 +11,7 @@ import SwiftUI
 // MARK: - SettingsWindow
 
 struct SettingsWindow: Scene {
-    @ObservedObject var appState: AppState
+    @Bindable var appState: AppState
 
     var body: some Scene {
         IceWindow(id: .settings) {
@@ -32,10 +32,12 @@ struct SettingsWindow: Scene {
                     }
                 }
                 .sheet(isPresented: $appState.isOnboardingPresented) {
-                    OnboardingSheet {
+                    ThawOnboardingView {
                         Defaults.set(true, forKey: .hasSeenOnboarding)
                         appState.isOnboardingPresented = false
                     }
+                    .environment(appState.permissions)
+                    .frame(width: ThawOnboardingWindowMetrics.width, height: ThawOnboardingWindowMetrics.height)
                 }
                 .frame(minWidth: 850, minHeight: 600)
         }
@@ -43,6 +45,6 @@ struct SettingsWindow: Scene {
         .defaultSize(width: 950, height: 650)
         .windowStyle(.titleBar)
         .windowToolbarStyle(.unified)
-        .environmentObject(appState)
+        .environment(appState)
     }
 }

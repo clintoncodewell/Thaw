@@ -75,7 +75,7 @@ struct MenuBarShapePicker: View {
             MenuBarFullShapePicker(
                 info: Binding(
                     get: { configuration.fullShapeInfo },
-                    set: { newValue in DispatchQueue.main.async { configuration.fullShapeInfo = newValue } }
+                    set: { newValue in Task { @MainActor in configuration.fullShapeInfo = newValue } }
                 ),
                 leftMargin: $configuration.leftMargin,
                 rightMargin: $configuration.rightMargin,
@@ -85,7 +85,7 @@ struct MenuBarShapePicker: View {
             MenuBarSplitShapePicker(
                 info: Binding(
                     get: { configuration.splitShapeInfo },
-                    set: { newValue in DispatchQueue.main.async { configuration.splitShapeInfo = newValue } }
+                    set: { newValue in Task { @MainActor in configuration.splitShapeInfo = newValue } }
                 ),
                 leftMargin: $configuration.leftMargin,
                 rightMargin: $configuration.rightMargin,
@@ -101,7 +101,7 @@ struct MenuBarShapePicker: View {
                         )
                     },
                     set: { newValue in
-                        DispatchQueue.main.async {
+                        Task { @MainActor in
                             configuration.notchShapeInfo.leading = newValue.leading
                             configuration.notchShapeInfo.trailing = newValue.trailing
                         }
@@ -115,7 +115,7 @@ struct MenuBarShapePicker: View {
     }
 }
 
-private struct MenuBarFullShapePicker: View, @preconcurrency Equatable {
+private struct MenuBarFullShapePicker: View, @MainActor Equatable {
     @Environment(\.colorScheme) private var colorScheme
     @Binding var info: MenuBarFullShapeInfo
     @Binding var leftMargin: Double
@@ -242,7 +242,7 @@ private struct MenuBarFullShapePicker: View, @preconcurrency Equatable {
     }
 }
 
-private struct MenuBarSplitShapePicker: View, @preconcurrency Equatable {
+private struct MenuBarSplitShapePicker: View, @MainActor Equatable {
     @Binding var info: MenuBarSplitShapeInfo
     @Binding var leftMargin: Double
     @Binding var rightMargin: Double

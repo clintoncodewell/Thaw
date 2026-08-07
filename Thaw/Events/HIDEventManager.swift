@@ -6,38 +6,74 @@
 //  Copyright (Thaw) © 2026 Toni Förster
 //  Licensed under the GNU GPLv3
 
-@preconcurrency import AXSwift
+import AXSwift6
 import Cocoa
-@preconcurrency import Combine
+import Combine
+import Observation
 import os
 
 /// Manager that monitors input events and implements the features
 /// that are triggered by them, such as showing hidden items on
 /// click/hover/scroll.
 @MainActor
-final class HIDEventManager: ObservableObject {
+@Observable
+final class HIDEventManager {
     private static nonisolated let diagLog = DiagLog(category: "HIDEventManager")
 
     /// A Boolean value that indicates whether the user is dragging
     /// a menu bar item.
-    @Published private(set) var isDraggingMenuBarItem = false
+    private(set) var isDraggingMenuBarItem = false
 
     /// The shared app state.
     private weak var appState: AppState?
 
-    /// Thread-safe counter for mouse-moved event throttling.
-    private nonisolated let mouseMovedThrottleCounter = OSAllocatedUnfairLock(initialState: 0)
+    /// Minimum interval between processed mouse-moved events (~30 fps).
+    ///
+    /// Time-based, not count-based: a count divisor scales its effective
+    /// work rate with the input device's polling rate, so a 1000 Hz mouse
+    /// would do 8x the work of a 125 Hz mouse for identical physical
+    /// motion. A wall-clock gate keeps the cost independent of the device.
+    static nonisolated let mouseMovedThrottleInterval: TimeInterval = 1.0 / 30.0
+
+    /// Timestamp of the last processed mouse-moved event, used to rate
+    /// limit the mouse-moved tap on wall-clock time.
+    private nonisolated let lastMouseMovedProcessTime = OSAllocatedUnfairLock(initialState: TimeInterval(0))
+
+    /// Cursor location at the last processed mouse-moved event.
+    ///
+    /// Compared against the current location as a cheap gate: a sub-point
+    /// move cannot change which screen the cursor is on or which display
+    /// owns the active menu bar, so the screen queries below would return
+    /// the same answers. Only updated when a mouse-moved event actually
+    /// proceeds past this gate, not on every observed event — comparing
+    /// against the last *observed* location instead would let a slow drift
+    /// of less than a point per tick accumulate past the threshold without
+    /// ever being caught, since the reference point would keep creeping
+    /// along with it.
+    private nonisolated let lastMouseMovedLocation = OSAllocatedUnfairLock(initialState: CGPoint.zero)
 
     /// Timestamp of the last forwarded app menu click, used to debounce
     /// duplicate events from a single physical interaction.
     private var lastAppMenuClickTime: CFAbsoluteTime = 0
 
     /// Storage for internal observers.
+    @ObservationIgnored
     private var cancellables = Set<AnyCancellable>()
+
+    /// Task observing `GeneralSettings.showOnHover`, `AdvancedSettings.
+    /// showMenuBarTooltips`, and `DisplaySettingsManager.configurations` —
+    /// all `@Observable` rather than Combine `ObservableObject`s, so they
+    /// can no longer feed the `Publishers.CombineLatest3` this used to be.
+    private var hoverSettingsObservationTask: Task<Void, Never>?
+
+    /// Task observing `itemManager.itemCache` (wave 4), which is
+    /// `@Observable` rather than a Combine `ObservableObject`, replacing the
+    /// old `$itemCache.removeDuplicates().receive(on:).sink` pipeline.
+    private var itemCacheWindowBoundsObservationTask: Task<Void, Never>?
 
     /// Timer that periodically checks whether the event tap is still
     /// valid and attempts to recreate it if the Mach port was invalidated.
-    private nonisolated(unsafe) var healthCheckTimer: Timer?
+    private var healthCheckTimer: Timer?
 
     /// The currently pending show-on-hover delay task.
     private var hoverTask: Task<Void, any Error>?
@@ -162,6 +198,7 @@ final class HIDEventManager: ObservableObject {
     // MARK: Monitors
 
     /// Monitor for mouse down events.
+    @ObservationIgnored
     private(set) lazy var mouseDownMonitor = EventMonitor.universal(
         for: [.leftMouseDown, .rightMouseDown]
     ) { [weak self] event in
@@ -223,6 +260,7 @@ final class HIDEventManager: ObservableObject {
     }
 
     /// Monitor for mouse up events.
+    @ObservationIgnored
     private(set) lazy var mouseUpMonitor = EventMonitor.universal(
         for: .leftMouseUp
     ) { [weak self] event in
@@ -234,6 +272,7 @@ final class HIDEventManager: ObservableObject {
     }
 
     /// Monitor for mouse dragged events.
+    @ObservationIgnored
     private(set) lazy var mouseDraggedMonitor = EventMonitor.universal(
         for: .leftMouseDragged
     ) { [weak self] event in
@@ -248,6 +287,7 @@ final class HIDEventManager: ObservableObject {
     }
 
     /// Tap for mouse moved events.
+    @ObservationIgnored
     private(set) lazy var mouseMovedTap = EventTap(
         type: .mouseMoved,
         location: .hidEventTap,
@@ -258,18 +298,29 @@ final class HIDEventManager: ObservableObject {
             return event
         }
 
-        // Throttling: Only process every 5th event to reduce CPU usage.
-        let shouldProcess = mouseMovedThrottleCounter.withLock { count -> Bool in
-            count += 1
-            if count >= 5 {
-                count = 0
-                return true
-            }
-            return false
-        }
-        guard shouldProcess else {
+        // Throttling: rate limit on wall-clock time so cost stays bounded
+        // regardless of the input device's polling rate.
+        let now = CACurrentMediaTime()
+        guard Self.shouldProcessMouseMoved(now: now, lastProcessTime: lastMouseMovedProcessTime) else {
             return event
         }
+
+        // Cheap gate: skip the screen queries below when the cursor hasn't
+        // moved meaningfully since the last processed event. A sub-point
+        // move cannot put the cursor on a different screen or change which
+        // display owns the active menu bar, so those queries would return
+        // the same answers. Compared against the last *processed* location
+        // (only updated when we proceed past this gate) rather than the
+        // last *observed* one, so a slow drift of under a point per tick
+        // still accumulates past the threshold instead of never triggering.
+        let currentLocation = NSEvent.mouseLocation
+        let lastLocation = lastMouseMovedLocation.withLock { $0 }
+        let dx = currentLocation.x - lastLocation.x
+        let dy = currentLocation.y - lastLocation.y
+        guard (dx * dx) + (dy * dy) >= Self.mouseMovedLocationEpsilonSquared else {
+            return event
+        }
+        lastMouseMovedLocation.withLock { $0 = currentLocation }
 
         if let appState {
             guard let screen = NSScreen.screenWithMouse ?? NSScreen.main else {
@@ -295,7 +346,37 @@ final class HIDEventManager: ObservableObject {
         return event
     }
 
+    /// The minimum squared distance (in points) the cursor must move
+    /// between processed mouse-moved events before the screen queries in
+    /// `mouseMovedTap` run again. Squared so the hot-path comparison can
+    /// avoid a square root.
+    private static let mouseMovedLocationEpsilonSquared: CGFloat = 1.0 * 1.0
+
+    /// Determines whether a mouse-moved event observed at `now` should be
+    /// processed, given the timestamp of the last processed event, and
+    /// atomically records `now` as the new last-processed time when it
+    /// does.
+    ///
+    /// The read-and-set happens under a single lock acquisition so two
+    /// concurrent callers can't both observe an elapsed interval and both
+    /// pass the gate. Extracted as a pure function of `now` (rather than
+    /// reading `CACurrentMediaTime()` internally) so it's directly testable
+    /// without a real event tap.
+    static nonisolated func shouldProcessMouseMoved(
+        now: TimeInterval,
+        lastProcessTime: OSAllocatedUnfairLock<TimeInterval>
+    ) -> Bool {
+        lastProcessTime.withLock { last in
+            guard now - last >= mouseMovedThrottleInterval else {
+                return false
+            }
+            last = now
+            return true
+        }
+    }
+
     /// Monitor for scroll wheel events.
+    @ObservationIgnored
     private(set) lazy var scrollWheelMonitor = EventMonitor.universal(
         for: .scrollWheel
     ) { [weak self] event in
@@ -308,6 +389,7 @@ final class HIDEventManager: ObservableObject {
     /// Active tap that temporarily swallows clicks in the protected region
     /// after a first show-on-click reveal, so a double-click can still be
     /// recognized even though hidden items have appeared under the cursor.
+    @ObservationIgnored
     private(set) lazy var showOnClickGuardTap = EventTap(
         label: "showOnClickGuardTap",
         types: [.leftMouseDown, .leftMouseUp],
@@ -368,6 +450,7 @@ final class HIDEventManager: ObservableObject {
     // MARK: All Monitors
 
     /// All monitors maintained by the manager.
+    @ObservationIgnored
     private lazy var allMonitors: [any EventMonitorProtocol] = [
         mouseDownMonitor,
         mouseUpMonitor,
@@ -481,24 +564,50 @@ final class HIDEventManager: ObservableObject {
 
             // Start or stop the mouse-moved tap when show-on-hover,
             // menu-bar-tooltips, or per-display configurations change.
-            Publishers.CombineLatest3(
-                appState.settings.general.$showOnHover,
-                appState.settings.advanced.$showMenuBarTooltips,
-                appState.settings.displaySettings.$configurations
-            )
-            .sink { [weak self] showOnHover, _, _ in
-                guard let self, isEnabled else {
-                    return
+            //
+            // `GeneralSettings`, `AdvancedSettings`, and `DisplaySettingsManager`
+            // are `@Observable` rather than Combine `ObservableObject`s, so
+            // this is now driven by the `Observations` async sequence instead
+            // of `Publishers.CombineLatest3`. `continue` below (rather than
+            // `return`) preserves the old sink's per-event early-outs without
+            // ending the observation.
+            let generalSettings = appState.settings.general
+            let advancedSettings = appState.settings.advanced
+            let displaySettings = appState.settings.displaySettings
+            hoverSettingsObservationTask = Task { [weak self] in
+                let changes = Observations {
+                    (generalSettings.showOnHover, advancedSettings.showMenuBarTooltips, displaySettings.configurations)
                 }
-                if needsMouseMovedTap(appState: appState) {
-                    mouseMovedTap.start()
-                } else {
-                    mouseMovedTap.stop()
-                }
+                for await (showOnHover, _, _) in changes {
+                    guard let self else { return }
+                    guard isEnabled else { continue }
+                    if needsMouseMovedTap(appState: appState) {
+                        mouseMovedTap.start()
+                    } else {
+                        mouseMovedTap.stop()
+                    }
 
-                defer { lastShowOnHover = showOnHover }
+                    defer { lastShowOnHover = showOnHover }
 
-                if !showOnHover {
+                    if !showOnHover {
+                        hoverRearmTask?.cancel()
+                        hoverRearmTask = nil
+                        hoverRearmTaskToken = nil
+                        hoverTask?.cancel()
+                        hoverTask = nil
+                        hoverTaskToken = nil
+                        pendingHoverAction = nil
+                        continue
+                    }
+
+                    // Only rearm when showOnHover transitions false→true; skip the
+                    // rearm path when other inputs (tooltips, display config) change
+                    // while showOnHover was already enabled.
+                    guard lastShowOnHover != true else {
+                        continue
+                    }
+
+                    appState.menuBarManager.showOnHoverAllowed = true
                     hoverRearmTask?.cancel()
                     hoverRearmTask = nil
                     hoverRearmTaskToken = nil
@@ -506,37 +615,25 @@ final class HIDEventManager: ObservableObject {
                     hoverTask = nil
                     hoverTaskToken = nil
                     pendingHoverAction = nil
-                    return
+                    scheduleHoverRearmChecks(appState: appState)
                 }
-
-                // Only rearm when showOnHover transitions false→true; skip the
-                // rearm path when other inputs (tooltips, display config) change
-                // while showOnHover was already enabled.
-                guard lastShowOnHover != true else {
-                    return
-                }
-
-                appState.menuBarManager.showOnHoverAllowed = true
-                hoverRearmTask?.cancel()
-                hoverRearmTask = nil
-                hoverRearmTaskToken = nil
-                hoverTask?.cancel()
-                hoverTask = nil
-                hoverTaskToken = nil
-                pendingHoverAction = nil
-                scheduleHoverRearmChecks(appState: appState)
             }
-            .store(in: &c)
 
             // Rebuild the window bounds lookup whenever the item cache changes.
             // This replaces per-event Window Server IPC calls with an in-memory lookup.
-            appState.itemManager.$itemCache
-                .removeDuplicates()
-                .receive(on: DispatchQueue.main)
-                .sink { [weak self] cache in
-                    self?.rebuildWindowBoundsLookup(from: cache)
+            // `itemManager` is now `@Observable` (wave 4), so it no longer has
+            // an `$itemCache` publisher.
+            let itemManagerForWindowBounds = appState.itemManager
+            itemCacheWindowBoundsObservationTask = Task { [weak self] in
+                var previous: MenuBarItemManager.ItemCache?
+                let changes = Observations { itemManagerForWindowBounds.itemCache }
+                for await cache in changes {
+                    guard let self else { return }
+                    guard cache != previous else { continue }
+                    previous = cache
+                    self.rebuildWindowBoundsLookup(from: cache)
                 }
-                .store(in: &c)
+            }
 
             // When any section's control item state changes, the menu bar layout shifts.
             // Merge all sections into a single publisher so only one cache refresh fires
@@ -666,8 +763,11 @@ final class HIDEventManager: ObservableObject {
         dismissMenuBarTooltip()
     }
 
+    @MainActor
     deinit {
         healthCheckTimer?.invalidate()
+        hoverSettingsObservationTask?.cancel()
+        itemCacheWindowBoundsObservationTask?.cancel()
     }
 }
 
@@ -985,8 +1085,9 @@ extension HIDEventManager {
         let initialSpaceID = Bridging.getActiveSpaceID()
 
         Task {
-            // Give the window under the mouse a chance to focus.
-            try await Task.sleep(for: .milliseconds(250))
+            // Give the window under the mouse a chance to focus. A cancelled
+            // sleep aborts the check instead of running it early.
+            guard await (try? Task.sleep(for: .milliseconds(250))) != nil else { return }
 
             // Don't bother checking the window if the click caused
             // a space change.

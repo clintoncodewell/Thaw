@@ -11,9 +11,16 @@ import SwiftUI
 /// The standalone permissions screen: shows a card per required permission,
 /// an optional Ice settings import prompt, and Quit/Continue actions that
 /// gate first-launch setup.
+///
+/// `manager` is a plain stored property rather than an `@Environment`-sourced
+/// one: `PermissionsManaging` is generic over `Manager`, and `@Environment`
+/// injection needs a concrete type at both the injection and read site,
+/// which a generic parameter doesn't provide. Observation still tracks reads
+/// of `manager`'s properties normally regardless of how the reference itself
+/// arrived at the view.
 struct PermissionsView<Manager: PermissionsManaging>: View {
-    @EnvironmentObject var appState: AppState
-    @EnvironmentObject var manager: Manager
+    @Environment(AppState.self) var appState: AppState
+    let manager: Manager
 
     @State private var hasIceSettings = false
     @State private var showImportIceSettings = false
@@ -229,8 +236,8 @@ struct PermissionsView<Manager: PermissionsManaging>: View {
 /// A card describing a single permission — its icon, title, details, and a
 /// button to request it (or a confirmation once it's been granted).
 struct PermissionCard: View {
-    @EnvironmentObject var appState: AppState
-    @ObservedObject var permission: Permission
+    @Environment(AppState.self) var appState: AppState
+    let permission: Permission
 
     /// Whether granting the permission should bring the permissions window
     /// back to the front. Disabled when hosted in a context — like the
@@ -299,8 +306,10 @@ struct PermissionCard: View {
 
 /// A lightweight stand-in for ``AppPermissions`` used by the preview, so it
 /// doesn't need to spin up the real manager and its app machinery.
+@MainActor
+@Observable
 private final class MockPermissionsManager: PermissionsManaging {
-    @Published var permissionsState: AppPermissions.PermissionsState = .missing
+    var permissionsState: AppPermissions.PermissionsState = .missing
 
     let allPermissions: [Permission] = [
         AccessibilityPermission(),
@@ -309,7 +318,6 @@ private final class MockPermissionsManager: PermissionsManaging {
 }
 
 #Preview {
-    PermissionsView<MockPermissionsManager>()
-        .environmentObject(AppState())
-        .environmentObject(MockPermissionsManager())
+    PermissionsView(manager: MockPermissionsManager())
+        .environment(AppState())
 }

@@ -24,7 +24,7 @@ import CoreGraphics
 /// anchors stored across cycles). The boundary follows the council's
 /// temporality split: LayoutSolver decides over the current snapshot,
 /// PendingLedger decides over per-entry retry state.
-enum LayoutSolver {
+nonisolated enum LayoutSolver {
     // MARK: - Result types
 
     /// A decision emitted by the leftmost-item relocation planner.
@@ -117,6 +117,15 @@ enum LayoutSolver {
         )
     }
 
+    /// The nearest eligible neighbors on either side of an item, as
+    /// indices into the item list the search ran over.
+    struct ReturnAnchors: Equatable {
+        /// The neighbor to the right, preferred as the anchor.
+        let successor: Int?
+        /// The neighbor to the left, used when there is no successor.
+        let predecessor: Int?
+    }
+
     /// A position within the saved section order: a section and the
     /// zero-based index of the item within that section's saved array.
     struct SavedPosition: Equatable {
@@ -131,11 +140,26 @@ enum LayoutSolver {
     /// rebuilt from cache state. previousWindowIDs is the windowID
     /// snapshot from the prior cache cycle, used to distinguish a
     /// genuinely new item from one whose identifier migrated when
-    /// sourcePID resolution succeeded.
+    /// sourcePID resolution succeeded. recentWindowIDs widens that
+    /// same test over the last several cycles so one degraded
+    /// enumeration cannot make an established item look new.
     struct LeftmostObservation {
         let hiddenBounds: CGRect
         let sectionByWindowID: [CGWindowID: MenuBarSection.Name]
         let previousWindowIDs: [CGWindowID]
+        let recentWindowIDs: Set<CGWindowID>
+
+        init(
+            hiddenBounds: CGRect,
+            sectionByWindowID: [CGWindowID: MenuBarSection.Name],
+            previousWindowIDs: [CGWindowID],
+            recentWindowIDs: Set<CGWindowID> = []
+        ) {
+            self.hiddenBounds = hiddenBounds
+            self.sectionByWindowID = sectionByWindowID
+            self.previousWindowIDs = previousWindowIDs
+            self.recentWindowIDs = recentWindowIDs
+        }
     }
 
     // MARK: - Current flat construction
@@ -206,15 +230,19 @@ enum LayoutSolver {
         hiddenCtrlUID: String?,
         ahCtrlUID: String?,
         visibleCtrlUID: String?,
-        unresolvedGenericCCUIDs: Set<String>
+        provisionalIdentityUIDs: Set<String>
     ) -> [String] {
         currentFlat.filter { uid in
             !desiredUIDs.contains(uid)
                 && uid != hiddenCtrlUID
                 && uid != ahCtrlUID
                 && uid != visibleCtrlUID
-                && !unresolvedGenericCCUIDs.contains(uid)
+                && !provisionalIdentityUIDs.contains(uid)
         }
+    }
+
+    static nonisolated func provisionalIdentityUIDs(items: [MenuBarItem]) -> Set<String> {
+        Set(items.filter(\.hasProvisionalIdentity).map(\.uniqueIdentifier))
     }
 
     // MARK: - Leftmost relocation
@@ -243,7 +271,7 @@ enum LayoutSolver {
     ) -> LeftmostMove {
         // Items sitting left of the hidden divider. The Thaw icon is a
         // control item but must always be visible, so we admit it here.
-        let leftmostItems = items
+        let leftmostCandidates = items
             .filter { item in
                 // Generic Control Center placeholders are not draggable, but
                 // the planner must still see them so the unresolved-sourcePID
@@ -256,7 +284,10 @@ enum LayoutSolver {
                     (item.isMovable || isUnresolvedControlCenterPlaceholder) &&
                     (!item.isControlItem || item.tag == .visibleControlItem)
             }
-            .sorted { $0.bounds.minX < $1.bounds.minX }
+        // Tie-broken: `first` on this list picks the item to relocate, so a
+        // minX tie during reflow must not hand the decision to a different
+        // item on an otherwise identical pass.
+        let leftmostItems = MenuBarItem.sortByLeadingEdgeThenIdentifier(leftmostCandidates)
 
         guard !leftmostItems.isEmpty else {
             return .noop(reason: .noLeftmostItems)
@@ -278,7 +309,14 @@ enum LayoutSolver {
 
         // Path 3: hideable candidate selection.
         let hideableLeftmost = leftmostItems.filter(\.canBeHidden)
+        // Continuity is judged over several cycles, not just the previous one.
+        // A single degraded enumeration — a Space switch, a partially
+        // published window list — drops an item's windowID from the previous
+        // cycle, and the item then reads as brand new on the cycle after
+        // (#849). `recentWindowIDs` carries the windowIDs seen across the last
+        // several cycles so those gaps can't manufacture a new item.
         let previousIDs = Set(observation.previousWindowIDs)
+            .union(observation.recentWindowIDs)
 
         // Unresolved sourcePID short-circuit. Without sourcePID
         // resolution, third-party items hosted by Control Center fall
@@ -296,16 +334,63 @@ enum LayoutSolver {
             guard let section = sectionName(forPersistedKey: sectionKeyString) else { continue }
             for identifier in identifiers {
                 savedSectionForIdentifier[identifier] = section
+                // Also file the saved entry under its canonical form. Owners
+                // that title their items after a live metric were persisted
+                // under whatever value was on screen at save time, which no
+                // longer matches the item today; without this the item looks
+                // like it has no saved section and gets relocated as new.
+                // Additive, so identifiers persisted before canonicalization
+                // existed keep matching under their raw key too.
+                let canonical = MenuBarItemTag.canonicalPersistentIdentifier(identifier)
+                if canonical != identifier {
+                    savedSectionForIdentifier[canonical] = section
+                }
             }
         }
+
+        // Namespace-level fallback for owners whose item title is not stable.
+        // The same physical status item is tagged `<bundleID>:Item-0` while
+        // macOS still hosts it as a generic Control Center slot, and
+        // `<bundleID>:<the owner's own window title>` once sourcePID
+        // resolution renames it. A saved entry filed under one form misses
+        // the other, so the item looks like it has no saved section and gets
+        // relocated as new — which is how an item the user put in Always
+        // Hidden gets dragged back out (#849).
+        //
+        // Only consulted where it cannot be ambiguous: the owner must have
+        // exactly one saved entry and exactly one live item, so there is only
+        // one item the saved entry could refer to. Like the canonical-form
+        // lookup above, this can only ever conclude that an item *does* have
+        // a saved section, so it suppresses relocations and never causes one.
+        let savedCountByNamespace = Dictionary(
+            savedSectionOrder.lazy
+                .filter { sectionName(forPersistedKey: $0.key) != nil }
+                .flatMap(\.value)
+                .map { (namespace(forIdentifier: $0), 1) },
+            uniquingKeysWith: +
+        )
+        let liveCountByNamespace = Dictionary(
+            items.lazy.map { ($0.tag.namespace.description, 1) },
+            uniquingKeysWith: +
+        )
 
         let candidate = hideableLeftmost.first { item in
             let identifier = "\(item.tag.namespace):\(item.tag.title)"
 
             // Items with a saved section belong to restoreItemsToSaved-
             // Sections, not to the new-item relocation path.
-            let hasSavedSection = savedSectionForIdentifier[identifier] != nil ||
-                savedSectionForIdentifier[item.uniqueIdentifier] != nil
+            var hasSavedSection = savedSectionForIdentifier[identifier] != nil ||
+                savedSectionForIdentifier[item.uniqueIdentifier] != nil ||
+                savedSectionForIdentifier[
+                    MenuBarItemTag.canonicalPersistentIdentifier(item.uniqueIdentifier)
+                ] != nil
+            if !hasSavedSection {
+                let itemNamespace = item.tag.namespace.description
+                hasSavedSection = item.tag.namespace.isString &&
+                    item.tag.namespace != .controlCenter &&
+                    savedCountByNamespace[itemNamespace] == 1 &&
+                    liveCountByNamespace[itemNamespace] == 1
+            }
             guard !hasSavedSection else { return false }
 
             let isNewIdentity = !knownItemIdentifiers.contains(identifier)
@@ -352,6 +437,35 @@ enum LayoutSolver {
         notchMaxX: CGFloat
     ) -> Bool {
         rightBoundary.isFinite && rightBoundary > notchMaxX
+    }
+
+    /// Whether the notch-overflow rebalance should run for the current active
+    /// menu bar display.
+    ///
+    /// Overflow ejection is only meaningful on the display the user's persistent
+    /// layout is anchored to — the *main* menu bar display. When a notched
+    /// display is merely a secondary (e.g. a MacBook whose built-in screen sits
+    /// next to a non-notched external that is the main display), macOS relocates
+    /// the status items onto the built-in's menu bar only while it transiently
+    /// holds focus. Computing the narrow beside-notch budget there ejects
+    /// profile items that fit fine on the main display, and they stay stranded
+    /// in hidden once focus returns to the main screen. So overflow runs only
+    /// when the active notched display is also the main display; on a notched
+    /// secondary the saved layout is honoured verbatim.
+    ///
+    /// `activeScreenKnown` is whether `NSScreen.screenWithActiveMenuBar`
+    /// actually resolved a screen. When it is `false` (e.g. mid
+    /// display-reconfiguration) the gate fails closed: guessing a screen —
+    /// such as falling back to `NSScreen.main` — risks computing the budget
+    /// against a display the layout is not anchored to, which is the same
+    /// mis-budget failure this gate exists to prevent.
+    static nonisolated func shouldManageNotchOverflow(
+        overflowEnabled: Bool,
+        activeScreenKnown: Bool,
+        activeHasNotch: Bool,
+        activeIsMainDisplay: Bool
+    ) -> Bool {
+        overflowEnabled && activeScreenKnown && activeHasNotch && activeIsMainDisplay
     }
 
     /// Whether the given menu bar items currently occupy more than one display.
@@ -502,17 +616,35 @@ enum LayoutSolver {
         // order so leftmost-from-visible lands at the deepest end of
         // hidden.
         var controlSet: Set<String> = [controlUIDs.hidden]
-        if let ahUID = controlUIDs.alwaysHidden { controlSet.insert(ahUID) }
+        if let ahUID = controlUIDs.alwaysHidden {
+            controlSet.insert(ahUID)
+        }
 
-        let hiddenStart = desiredFiltered.firstIndex(of: controlUIDs.hidden)
-            .map { $0 + 1 } ?? desiredFiltered.endIndex
-        let hiddenEnd = controlUIDs.alwaysHidden.flatMap { desiredFiltered.firstIndex(of: $0) }
-            ?? desiredFiltered.endIndex
+        let hiddenIndex = desiredFiltered.firstIndex(of: controlUIDs.hidden)
+        let alwaysHiddenIndex = controlUIDs.alwaysHidden
+            .flatMap { desiredFiltered.firstIndex(of: $0) }
+
+        let hiddenStart = hiddenIndex.map { $0 + 1 } ?? desiredFiltered.endIndex
+        let hiddenEnd = alwaysHiddenIndex ?? desiredFiltered.endIndex
+
+        // The control items can transiently appear out of order (see
+        // MenuBarItemManager.enforceControlItemOrder), and the hidden control
+        // can be missing entirely during a display reconnect. Either case makes
+        // the hidden-section slice below an invalid range, which would trap.
+        // A layout we cannot describe is one we must not rewrite: leave the
+        // inputs untouched until the ordering settles.
+        guard hiddenStart <= hiddenEnd else {
+            return NotchOverflowResult(
+                overflowUIDs: [],
+                updatedDesiredFiltered: desiredFiltered,
+                updatedSectionMap: sectionMap
+            )
+        }
+
         let existingHidden = desiredFiltered[hiddenStart ..< hiddenEnd]
             .filter { !controlSet.contains($0) }
 
-        let ahStart = controlUIDs.alwaysHidden.flatMap { desiredFiltered.firstIndex(of: $0) }
-            .map { $0 + 1 } ?? desiredFiltered.endIndex
+        let ahStart = alwaysHiddenIndex.map { $0 + 1 } ?? desiredFiltered.endIndex
         let existingAH = desiredFiltered[ahStart...]
             .filter { !controlSet.contains($0) }
 
@@ -545,6 +677,84 @@ enum LayoutSolver {
             updatedDesiredFiltered: rebuilt,
             updatedSectionMap: updatedSectionMap
         )
+    }
+
+    // MARK: - Hidden divider boundary
+
+    /// Where the hidden divider belongs, expressed relative to a live
+    /// anchor item so the orchestrator can resolve it against fresh
+    /// items at move time.
+    enum HiddenDividerAnchor: Equatable {
+        /// Place the hidden divider directly right of this item.
+        case rightOf(String)
+        /// Place the hidden divider directly left of this item.
+        case leftOf(String)
+    }
+
+    /// Counts the items sitting on the wrong side of the hidden divider.
+    ///
+    /// Phase 1's hidden↔always-hidden arithmetic cannot see these: both of
+    /// its tallies intersect against the currently-occupied hidden and
+    /// always-hidden sets, so a bar whose divider has drifted past every
+    /// managed item (leaving both sets empty) reports zero mismatch. The
+    /// LCS pass cannot see them either — it receives sequences with the
+    /// dividers stripped, so a divergence that is purely a divider
+    /// position leaves current equal to desired and plans no moves (#879).
+    ///
+    /// A non-zero count means one divider move fixes every listed item at
+    /// once, which is why this is measured separately from the per-item
+    /// reorder the LCS plans.
+    static nonisolated func hiddenBoundaryMismatch(
+        currentVisible: Set<String>,
+        currentHidden: Set<String>,
+        currentAlwaysHidden: Set<String>,
+        desiredVisible: Set<String>,
+        desiredHidden: Set<String>,
+        desiredAlwaysHidden: Set<String>
+    ) -> Int {
+        // Everything the profile places left of the hidden divider, in
+        // either of the two concealed sections. Which of the two an item
+        // lands in is the always-hidden divider's problem, handled by the
+        // AH_ctrl planning that follows this check.
+        let desiredConcealed = desiredHidden.union(desiredAlwaysHidden)
+        let currentConcealed = currentHidden.union(currentAlwaysHidden)
+
+        let wronglyVisible = currentVisible.intersection(desiredConcealed)
+        let wronglyConcealed = currentConcealed.intersection(desiredVisible)
+
+        return wronglyVisible.count + wronglyConcealed.count
+    }
+
+    /// Plans where to drag the hidden divider so the visible/hidden split
+    /// matches the profile.
+    ///
+    /// Section order runs right-to-left: index 0 of each ordered section
+    /// is its rightmost item, and items live to one side of their own
+    /// divider (visible right of the hidden divider, hidden left of it).
+    /// The divider therefore belongs immediately right of the rightmost
+    /// item the profile assigns to hidden, which is the same gap as
+    /// immediately left of the leftmost item it assigns to visible.
+    ///
+    /// Anchors to the hidden side first because that side is what the
+    /// profile is trying to repopulate; falls back to the visible side
+    /// when the profile's hidden section has no live members, so a
+    /// profile that empties the hidden section still parks the divider
+    /// past every visible item instead of leaving it mid-bar.
+    ///
+    /// Pure over its inputs. Returns nil when neither section has a live
+    /// movable member to anchor against.
+    static nonisolated func planHiddenDividerAnchor(
+        desiredHidden: [String],
+        desiredVisible: [String],
+        liveMovableUIDs: Set<String>
+    ) -> HiddenDividerAnchor? {
+        if let rightmostHidden = desiredHidden.first(where: liveMovableUIDs.contains) {
+            return .rightOf(rightmostHidden)
+        }
+        if let leftmostVisible = desiredVisible.last(where: liveMovableUIDs.contains) {
+            return .leftOf(leftmostVisible)
+        }
+        return nil
     }
 
     // MARK: - LCS reorder
@@ -644,6 +854,12 @@ enum LayoutSolver {
     /// Returns an empty array when the current order already matches the
     /// desired order (no moves needed) or when desired is empty.
     ///
+    /// Items already in the correct relative order at the left of the bar
+    /// are trimmed from the replay. Every replayed item lands at the right in
+    /// sequence order, so the final order is the untouched physical prefix
+    /// followed by the replayed suffix. This avoids re-dragging an entire
+    /// notched layout when a transient item is the only divergence.
+    ///
     /// Pure over its inputs. The orchestrator handles per-item live
     /// fetching, the move() loop, and control-item state restoration.
     static nonisolated func planFullSortSequence(
@@ -661,7 +877,9 @@ enum LayoutSolver {
         }
 
         var controlSet: Set<String> = [hiddenCtrlUID]
-        if let ahUID = ahCtrlUID { controlSet.insert(ahUID) }
+        if let ahUID = ahCtrlUID {
+            controlSet.insert(ahUID)
+        }
 
         let ahUIDs = desiredFiltered.filter {
             !controlSet.contains($0) && (sectionMap[$0] ?? "visible") == "alwaysHidden"
@@ -675,11 +893,64 @@ enum LayoutSolver {
 
         var fullSequence = [String]()
         fullSequence.append(contentsOf: ahUIDs)
-        if let ahCtrlUID { fullSequence.append(ahCtrlUID) }
+        if let ahCtrlUID {
+            fullSequence.append(ahCtrlUID)
+        }
         fullSequence.append(contentsOf: hiddenUIDs)
         fullSequence.append(hiddenCtrlUID)
         fullSequence.append(contentsOf: visibleUIDs)
-        return fullSequence
+
+        // currentFlat is flattened visible-first, with the hidden and
+        // always-hidden control IDs between their respective sections.
+        // Reconstruct the physical left-to-right order before finding the
+        // longest already-ordered prefix of the target sequence.
+        var visible = [String]()
+        var hidden = [String]()
+        var alwaysHidden = [String]()
+        var section = 0
+        var sawHiddenControl = false
+        var sawAlwaysHiddenControl = false
+        for uid in currentFlat {
+            if uid == hiddenCtrlUID {
+                section = 1
+                sawHiddenControl = true
+                continue
+            }
+            if let ahCtrlUID, uid == ahCtrlUID {
+                section = 2
+                sawAlwaysHiddenControl = true
+                continue
+            }
+            switch section {
+            case 0: visible.append(uid)
+            case 1: hidden.append(uid)
+            default: alwaysHidden.append(uid)
+            }
+        }
+
+        var physicalOrder = alwaysHidden
+        if sawAlwaysHiddenControl, let ahCtrlUID {
+            physicalOrder.append(ahCtrlUID)
+        }
+        physicalOrder.append(contentsOf: hidden)
+        if sawHiddenControl {
+            physicalOrder.append(hiddenCtrlUID)
+        }
+        physicalOrder.append(contentsOf: visible)
+
+        var positions = [String: Int]()
+        for (index, uid) in physicalOrder.enumerated() where positions[uid] == nil {
+            positions[uid] = index
+        }
+
+        var previousPosition = -1
+        var prefixCount = 0
+        for uid in fullSequence {
+            guard let position = positions[uid], position > previousPosition else { break }
+            previousPosition = position
+            prefixCount += 1
+        }
+        return Array(fullSequence.dropFirst(prefixCount))
     }
 
     // MARK: - Saved-position lookup
@@ -832,6 +1103,35 @@ enum LayoutSolver {
         return .sectionBoundary(section)
     }
 
+    /// Finds the nearest eligible neighbors on either side of the item at
+    /// `index`.
+    ///
+    /// Used to anchor a temporarily shown item when it is returned to its
+    /// section. Callers decide eligibility; only neighbors that share the
+    /// item's section qualify, because anchoring against an item from
+    /// another section returns the item into *that* section instead.
+    ///
+    /// Forward-first for the same reason as
+    /// ``anchorDestination(forSavedIndex:inSection:savedSequence:currentUIDsInSection:)``:
+    /// the successor's position is the more reliable signal of where the
+    /// item belongs.
+    ///
+    /// Pure over its inputs.
+    static nonisolated func returnAnchors(
+        forIndex index: Int,
+        itemCount: Int,
+        eligibleIndices: Set<Int>
+    ) -> ReturnAnchors {
+        guard index >= 0, index < itemCount else {
+            return ReturnAnchors(successor: nil, predecessor: nil)
+        }
+        let successor = ((index + 1) ..< itemCount).first { eligibleIndices.contains($0) }
+        let predecessor = index > 0
+            ? stride(from: index - 1, through: 0, by: -1).first { eligibleIndices.contains($0) }
+            : nil
+        return ReturnAnchors(successor: successor, predecessor: predecessor)
+    }
+
     // MARK: - Saved-section rebuild
 
     /// Computes the new saved-section identifiers array for one section,
@@ -958,6 +1258,15 @@ enum LayoutSolver {
         id.split(separator: ":", maxSplits: 2).prefix(2).joined(separator: ":")
     }
 
+    /// Extracts the namespace prefix from a uniqueIdentifier.
+    ///
+    /// Every namespace form renders without a colon — a bundle ID, a UUID
+    /// string, or the literal `null` — so the first component is the whole
+    /// namespace.
+    private static nonisolated func namespace(forIdentifier id: String) -> String {
+        String(id.prefix { $0 != ":" })
+    }
+
     /// Maps a persisted section key string to its enum value.
     private static nonisolated func sectionName(forPersistedKey key: String) -> MenuBarSection.Name? {
         switch key {
@@ -984,22 +1293,116 @@ enum LayoutSolver {
     /// to a class-level flag whose individual semantics are documented
     /// in MenuBarItemManager's coordination block.
     ///
+    /// `hasPendingDivergence` blocks the save when `applySavedLayout`
+    /// has observed a layout divergence on the current cycle but is
+    /// still awaiting confirmation on a second consecutive cycle before
+    /// correcting it (#736). During that one-cycle window the live cache
+    /// reflects a transient macOS rebuild (e.g. a space switch that
+    /// re-exposed hidden items as visible) that has not yet been
+    /// restored; persisting it bakes the transient state into the saved
+    /// layout. Once `applySavedLayout` confirms and runs its correction
+    /// the pending-divergence arm is cleared and the next cache cycle
+    /// sees a settled layout safe to persist.
+    ///
     /// Pure over its inputs so the gate can be characterized without
     /// instantiating MenuBarItemManager. Any future addition to the
     /// gate (new in-flight signal) should extend both this function
     /// and its tests.
-    static nonisolated func shouldPersistSavedOrder(
-        isRestoringItemOrder: Bool,
-        isResettingLayout: Bool,
-        isInStartupSettling: Bool,
-        isApplyingProfileLayout: Bool,
-        temporarilyShownItemContextsIsEmpty: Bool
+    static nonisolated func shouldPersistSavedOrder(_ gate: SavedOrderGate) -> Bool {
+        !gate.isRestoringItemOrder &&
+            !gate.isResettingLayout &&
+            !gate.isInStartupSettling &&
+            !gate.isApplyingProfileLayout &&
+            gate.temporarilyShownItemContextsIsEmpty &&
+            gate.alwaysHiddenSectionResolved &&
+            gate.hiddenSectionHasRoom &&
+            !gate.hasPendingDivergence
+    }
+
+    /// The signals ``shouldPersistSavedOrder(_:)`` reads.
+    ///
+    /// Bundled rather than passed as eight positional flags. A new
+    /// in-flight signal then extends this type instead of every call site,
+    /// which is what the note above asks for, and the defaults spell out
+    /// the permissive state — the one where persisting is safe — so a call
+    /// site only names the signals that deviate from it.
+    struct SavedOrderGate {
+        var isRestoringItemOrder = false
+        var isResettingLayout = false
+        var isInStartupSettling = false
+        var isApplyingProfileLayout = false
+        var temporarilyShownItemContextsIsEmpty = true
+        var alwaysHiddenSectionResolved = true
+        var hiddenSectionHasRoom = true
+        var hasPendingDivergence = false
+    }
+
+    /// Whether the always-hidden section is resolved well enough for the
+    /// current cache snapshot to be an order of record.
+    ///
+    /// The always-hidden divider is the only boundary separating always-
+    /// hidden items from hidden ones. When it is missing,
+    /// `CacheContext.findSection` has no boundary to test against and
+    /// degrades every always-hidden item to `.hidden` — a lossy but
+    /// recoverable misreading, until `saveSectionOrder` writes it down and
+    /// makes it the user's layout. That is #849: the divider went
+    /// unresolved for a single cache cycle and the whole always-hidden
+    /// section was persisted as visible.
+    ///
+    /// A nil divider is only a problem when the section is enabled. Users
+    /// who never turned the always-hidden section on have no divider by
+    /// design, and must still be able to persist their layout.
+    static nonisolated func isAlwaysHiddenSectionResolved(
+        hasAlwaysHiddenControlItem: Bool,
+        isAlwaysHiddenSectionEnabled: Bool
     ) -> Bool {
-        !isRestoringItemOrder &&
-            !isResettingLayout &&
-            !isInStartupSettling &&
-            !isApplyingProfileLayout &&
-            temporarilyShownItemContextsIsEmpty
+        hasAlwaysHiddenControlItem || !isAlwaysHiddenSectionEnabled
+    }
+
+    /// Whether the hidden section has physical room between the two
+    /// dividers for the items the saved layout puts there.
+    ///
+    /// The hidden section is the span between the always-hidden divider's
+    /// trailing edge and the hidden divider's leading edge. When that span
+    /// closes to zero, `CacheContext.findSection` can no longer satisfy the
+    /// strict test for `.hidden` (it would need `minX >= ah.maxX` and
+    /// `maxX <= hidden.minX` at the same coordinate), so every item falls
+    /// through to the midpoint tie-break and the on-screen ones resolve
+    /// `.visible`. Persisting that reading moves the user's hidden items
+    /// into the visible section for good.
+    ///
+    /// Observed on a docked topology — external non-notched main display,
+    /// notched built-in secondary at negative X — where the gap between the
+    /// dividers went from 677pt to 0 across a single launch (#795).
+    ///
+    /// Two conditions keep this from firing on healthy layouts:
+    ///
+    /// - Without an always-hidden divider there is no second boundary and
+    ///   so no span to close; everything left of the hidden divider is
+    ///   `.hidden` by definition.
+    /// - A user whose saved layout puts nothing in the hidden section has
+    ///   no reason for the dividers to be apart, and must still be able to
+    ///   persist. Only a saved layout that *expects* hidden items makes a
+    ///   closed span evidence of a misread.
+    ///
+    /// - Parameters:
+    ///   - hiddenControlItemMinX: Leading edge of the hidden divider.
+    ///   - alwaysHiddenControlItemMaxX: Trailing edge of the always-hidden
+    ///     divider, or `nil` when the section has no divider.
+    ///   - savedHiddenItemCount: How many items the saved layout assigns to
+    ///     the hidden section.
+    static nonisolated func hiddenSectionHasRoom(
+        hiddenControlItemMinX: CGFloat,
+        alwaysHiddenControlItemMaxX: CGFloat?,
+        savedHiddenItemCount: Int
+    ) -> Bool {
+        guard let alwaysHiddenControlItemMaxX else {
+            return true
+        }
+        guard savedHiddenItemCount > 0 else {
+            return true
+        }
+        return hiddenControlItemMinX - alwaysHiddenControlItemMaxX > 0
     }
 
     // MARK: - Pending rehide identifiers

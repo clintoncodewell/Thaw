@@ -22,7 +22,7 @@ import CoreGraphics
 ///
 /// Pinned bundle IDs are only consumed by the profile-apply path; the
 /// restore path leaves them empty.
-struct DesiredLayout: Equatable {
+nonisolated struct DesiredLayout: Equatable {
     /// For each section, an ordered list of uniqueIdentifiers. Index 0
     /// is the leftmost-after-chevron position within the section.
     var sectionOrder: [MenuBarSection.Name: [String]]
@@ -92,7 +92,7 @@ struct DesiredLayout: Equatable {
 /// computes (sometimes from Bridging / CacheContext, sometimes from
 /// instance state) into a single typed value, so the reconciler entry
 /// points have a clean signature.
-struct ObservedLayout {
+nonisolated struct ObservedLayout {
     let items: [MenuBarItem]
     let controlItems: MenuBarItemManager.ControlItemPair
     let sectionByWindowID: [CGWindowID: MenuBarSection.Name]
@@ -110,7 +110,7 @@ struct ObservedLayout {
 /// alwaysHidden is absent when the user has disabled the always-hidden
 /// section. hidden is required because a working layout always has the
 /// hidden divider.
-struct ControlUIDs: Equatable {
+nonisolated struct ControlUIDs: Equatable {
     let visible: String?
     let hidden: String
     let alwaysHidden: String?
@@ -131,7 +131,7 @@ struct ControlUIDs: Equatable {
 /// PendingLedger remains separate because pending-relocation decisions
 /// are not driven by DesiredLayout but by per-entry retry state. The
 /// temporality split from the previous refactor still holds.
-enum LayoutReconciler {
+nonisolated enum LayoutReconciler {
     /// Resolves an abstract LCSPlannedDestination against live items
     /// to produce a concrete MoveDestination.
     ///
@@ -231,6 +231,21 @@ enum LayoutReconciler {
     /// The controlUIDs.visible field is the chevron UID, which marks
     /// the start of the .visible section so unmanaged items never land
     /// left of it.
+    ///
+    /// Caller invariant: every uid in unmanagedUIDs must be absent from
+    /// desiredFiltered. That is what "unmanaged" means, and it is what
+    /// LayoutSolver.partitionUnmanagedUIDs guarantees by filtering
+    /// currentFlat against the desired set. Nothing enforces it at the
+    /// type level, so a uid that is already in the sequence is skipped
+    /// rather than inserted again: a broken invariant degrades to "this
+    /// placement was ignored" instead of a duplicated item, which would
+    /// be corrupt layout state the planners downstream cannot recover
+    /// from. The uid keeps the position and section label the desired
+    /// layout already chose for it.
+    ///
+    /// An anchored placement is confined to the section it names, even
+    /// when its anchor uid lives elsewhere in the sequence, so that a
+    /// uid's position and its sectionMap entry can never disagree.
     static func applyUnmanagedPlacementsToDesired(
         placements: [String: LayoutSolver.UnmanagedPlacement],
         unmanagedUIDs: [String],
@@ -313,6 +328,11 @@ enum LayoutReconciler {
             return lhs.2 < rhs.2
         }
         for (uid, section, savedIndex) in savedTuples {
+            // Guards the caller invariant: inserting a uid the sequence
+            // already holds would duplicate it.
+            if desiredFiltered.contains(uid) {
+                continue
+            }
             let savedSeq = savedSectionOrder[sectionKeyString(for: section)] ?? []
             let currentInSection: Set<String> = {
                 var set = Set<String>()
@@ -354,12 +374,31 @@ enum LayoutReconciler {
         // the anchor in desiredFiltered (left or right per relation).
         for uid in unmanagedUIDs {
             if case let .newItemAnchored(section, anchorUID, relation) = placements[uid] {
-                if let anchorIdx = desiredFiltered.firstIndex(of: anchorUID) {
-                    let insertIdx = relation == .leftOfAnchor ? anchorIdx : anchorIdx + 1
-                    desiredFiltered.insert(uid, at: insertIdx)
-                } else {
-                    desiredFiltered.insert(uid, at: sectionEndIndex(for: section))
+                // Guards the caller invariant: see pass 1.
+                if desiredFiltered.contains(uid) {
+                    continue
                 }
+                let sectionEnd = sectionEndIndex(for: section)
+                let insertIdx: Int
+                switch relation {
+                case .leftOfAnchor, .rightOfAnchor:
+                    if let anchorIdx = desiredFiltered.firstIndex(of: anchorUID) {
+                        let anchored = relation == .leftOfAnchor ? anchorIdx : anchorIdx + 1
+                        // The anchor uid is not guaranteed to live in the
+                        // section this placement names, and the sectionMap
+                        // entry below commits to that section regardless.
+                        // Clamp so position and label cannot disagree.
+                        insertIdx = min(max(anchored, sectionStartIndex(for: section)), sectionEnd)
+                    } else {
+                        insertIdx = sectionEnd
+                    }
+                case .sectionDefault:
+                    // "No anchor preference": the anchor uid carried by the
+                    // placement is not a positioning request, so fall to the
+                    // same section-default position a missing anchor uses.
+                    insertIdx = sectionEnd
+                }
+                desiredFiltered.insert(uid, at: insertIdx)
                 sectionMap[uid] = sectionKeyString(for: section)
             }
         }
@@ -369,6 +408,10 @@ enum LayoutReconciler {
         // matches the current menu bar.
         for uid in unmanagedUIDs {
             if case let .newItemDefault(section) = placements[uid] {
+                // Guards the caller invariant: see pass 1.
+                if desiredFiltered.contains(uid) {
+                    continue
+                }
                 desiredFiltered.insert(uid, at: sectionEndIndex(for: section))
                 sectionMap[uid] = sectionKeyString(for: section)
             }

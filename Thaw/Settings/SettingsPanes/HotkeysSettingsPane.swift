@@ -9,8 +9,8 @@
 import SwiftUI
 
 struct HotkeysSettingsPane: View {
-    @EnvironmentObject var appState: AppState
-    @ObservedObject var settings: HotkeysSettings
+    @Environment(AppState.self) var appState: AppState
+    let settings: HotkeysSettings
 
     var body: some View {
         IceForm {
@@ -92,15 +92,15 @@ struct HotkeysSettingsPane: View {
 /// hotkey fires. Items with a saved binding whose owning app is not currently
 /// running are still listed, marked unavailable, so the binding can be cleared.
 private struct MenuBarItemHotkeyList: View {
-    @ObservedObject var menuBarManager: MenuBarManager
-    @ObservedObject var itemManager: MenuBarItemManager
-    @ObservedObject var imageCache: MenuBarItemImageCache
+    let menuBarManager: MenuBarManager
+    let itemManager: MenuBarItemManager
+    let imageCache: MenuBarItemImageCache
 
     @State private var isExpanded = false
+    @State private var rows: [Row] = []
 
     var body: some View {
         DisclosureGroup(isExpanded: $isExpanded) {
-            let rows = makeRows()
             if rows.isEmpty {
                 Text("No menu bar items available")
                     .foregroundStyle(.secondary)
@@ -145,7 +145,10 @@ private struct MenuBarItemHotkeyList: View {
         // live capture loop while the disclosure is expanded.
         .onChange(of: isExpanded, initial: true) { _, expanded in
             imageCache.setItemHotkeyListExpanded(expanded)
+            rebuildRows()
         }
+        .onChange(of: itemManager.itemCache) { rebuildRows() }
+        .onChange(of: menuBarManager.itemHotkeys) { rebuildRows() }
         .onDisappear {
             imageCache.setItemHotkeyListExpanded(false)
         }
@@ -212,9 +215,10 @@ private struct MenuBarItemHotkeyList: View {
         // Configured-but-absent items (owning app not currently running).
         // itemHotkeys is an unordered dictionary, so sort by name (then id) for
         // a stable row order across renders.
+        let customNames = Defaults.dictionary(forKey: .menuBarItemCustomNames) as? [String: String] ?? [:]
         let absent = menuBarManager.itemHotkeys
             .filter { id, hotkey in hotkey.keyCombination != nil && !seen.contains(id) }
-            .map { (id: $0.key, hotkey: $0.value, name: lastKnownName(for: $0.key)) }
+            .map { (id: $0.key, hotkey: $0.value, name: lastKnownName(for: $0.key, customNames: customNames)) }
             .sorted { lhs, rhs in
                 if lhs.name != rhs.name {
                     return lhs.name.localizedCaseInsensitiveCompare(rhs.name) == .orderedAscending
@@ -234,10 +238,13 @@ private struct MenuBarItemHotkeyList: View {
         return rows
     }
 
+    private func rebuildRows() {
+        rows = makeRows()
+    }
+
     /// Best-effort display name for an absent item: the saved custom name if
     /// present, otherwise the title component of its identifier.
-    private func lastKnownName(for identifier: String) -> String {
-        let customNames = Defaults.dictionary(forKey: .menuBarItemCustomNames) as? [String: String] ?? [:]
+    private func lastKnownName(for identifier: String, customNames: [String: String]) -> String {
         if let custom = customNames[identifier], !custom.isEmpty {
             return custom
         }

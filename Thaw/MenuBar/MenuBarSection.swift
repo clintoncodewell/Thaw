@@ -12,40 +12,6 @@ import SwiftUI
 /// A representation of a section in a menu bar.
 @MainActor
 final class MenuBarSection {
-    /// The name of a menu bar section.
-    enum Name: String, CaseIterable, Codable {
-        case visible
-        case hidden
-        case alwaysHidden
-
-        /// A string to show in the interface.
-        var displayString: String {
-            switch self {
-            case .visible: "Visible"
-            case .hidden: "Hidden"
-            case .alwaysHidden: "Always-Hidden"
-            }
-        }
-
-        /// A string to use for logging purposes.
-        var logString: String {
-            switch self {
-            case .visible: "visible section"
-            case .hidden: "hidden section"
-            case .alwaysHidden: "always-hidden section"
-            }
-        }
-
-        /// Localized string key representation.
-        var localized: LocalizedStringKey {
-            switch self {
-            case .visible: LocalizedStringKey("Visible")
-            case .hidden: LocalizedStringKey("Hidden")
-            case .alwaysHidden: LocalizedStringKey("Always-Hidden")
-            }
-        }
-    }
-
     /// The name of the section.
     let name: Name
 
@@ -62,6 +28,15 @@ final class MenuBarSection {
     /// is outside of the menu bar.
     private var rehideMonitor: EventMonitor?
 
+    /// The timestamp of the last processed mouse-moved event in the timed
+    /// rehide monitor, used to throttle event handling to ~20 fps.
+    ///
+    /// Stored per-instance rather than as a `static let`: a process-global
+    /// slot would let two concurrently shown sections steal each other's
+    /// throttle window, so each would only see roughly half the events it
+    /// should have.
+    private let timedRehideThrottleClock = OSAllocatedUnfairLock(initialState: TimeInterval(0))
+
     /// The section's diagnostic logger.
     private nonisolated let diagLog = DiagLog(category: "MenuBarSection")
 
@@ -71,77 +46,25 @@ final class MenuBarSection {
         guard let appState else { return false }
         let screen = screenForIceBar
         let displayID = screen?.displayID ?? CGMainDisplayID()
-        return appState.settings.displaySettings.useIceBar(for: displayID)
-    }
-
-    /// The gap that macOS leaves to the left and right of the notch (in points).
-    static nonisolated let notchGap: CGFloat = 24
-
-    /// The preferred way to present the section on the menu bar.
-    enum PresentationMode: Equatable {
-        /// Show the items inline without modifying the application menus.
-        case inline
-        /// Show the items inline, but only after hiding the application menus.
-        case inlineHidingApplicationMenus
-        /// Fall back to the Thaw Bar.
-        case iceBar
-    }
-
-    /// Calculates the usable inline width for menu bar items on a screen.
-    static nonisolated func usableInlineWidth(
-        from appMenuRightEdge: CGFloat?,
-        screenFrameMinX: CGFloat,
-        screenVisibleMaxX: CGFloat,
-        notchFrame: CGRect?
-    ) -> CGFloat {
-        let clampedAppMenuRightEdge = max(screenFrameMinX, appMenuRightEdge ?? screenFrameMinX)
-
-        if let notchFrame {
-            let usableLeftOfNotch = notchFrame.minX - notchGap
-            let usableRightOfNotchStart = notchFrame.maxX + notchGap
-            let leftWidth = max(0, usableLeftOfNotch - clampedAppMenuRightEdge)
-            let rightWidth = max(0, screenVisibleMaxX - usableRightOfNotchStart)
-            return leftWidth + rightWidth
+        if appState.settings.displaySettings.useIceBar(for: displayID) {
+            return true
         }
-
-        return max(0, screenVisibleMaxX - clampedAppMenuRightEdge)
-    }
-
-    /// Decides whether inline presentation fits, optionally allowing the app
-    /// menus to be hidden to recover more space.
-    static nonisolated func presentationMode(
-        totalItemsWidth: CGFloat,
-        appMenuRightEdge: CGFloat?,
-        screenFrameMinX: CGFloat,
-        screenVisibleMaxX: CGFloat,
-        notchFrame: CGRect?,
-        allowHidingApplicationMenus: Bool
-    ) -> PresentationMode {
-        let inlineWidth = usableInlineWidth(
-            from: appMenuRightEdge,
-            screenFrameMinX: screenFrameMinX,
-            screenVisibleMaxX: screenVisibleMaxX,
-            notchFrame: notchFrame
+        return Self.forcesIceBarForNotchOverflow(
+            settings: appState.settings.advanced,
+            hasEjectedItems: appState.itemManager.hasNotchOverflowEjectedItems
         )
-        if totalItemsWidth <= inlineWidth {
-            return .inline
-        }
+    }
 
-        guard allowHidingApplicationMenus else {
-            return .iceBar
-        }
-
-        let inlineWidthWithoutAppMenus = usableInlineWidth(
-            from: screenFrameMinX,
-            screenFrameMinX: screenFrameMinX,
-            screenVisibleMaxX: screenVisibleMaxX,
-            notchFrame: notchFrame
+    @MainActor
+    private static func forcesIceBarForNotchOverflow(
+        settings: AdvancedSettings,
+        hasEjectedItems: Bool
+    ) -> Bool {
+        forcesIceBarForNotchOverflow(
+            overflowEnabled: settings.enableMenuBarItemOverflow,
+            useThawBarOnOverflow: settings.useThawBarOnNotchOverflow,
+            hasEjectedItems: hasEjectedItems
         )
-        if totalItemsWidth <= inlineWidthWithoutAppMenus {
-            return .inlineHidingApplicationMenus
-        }
-
-        return .iceBar
     }
 
     /// Calculates the total width of the items that must be shown when the
@@ -292,6 +215,10 @@ final class MenuBarSection {
 
         let displaySettings = appState.settings.displaySettings
         let useIceBar = displaySettings.useIceBar(for: activeScreen.displayID)
+            || Self.forcesIceBarForNotchOverflow(
+                settings: appState.settings.advanced,
+                hasEjectedItems: appState.itemManager.hasNotchOverflowEjectedItems
+            )
 
         // only apply alwaysShowHiddenItems when mouse + active menu bar on same screen
         let alwaysShow: Bool = if let menuBarScreen = NSScreen.screenWithActiveMenuBar,
@@ -460,6 +387,7 @@ final class MenuBarSection {
     /// Starts running checks to determine when to rehide the section.
     private func startRehideChecks() {
         rehideTask?.cancel()
+        rehideTask = nil
         rehideMonitor?.stop()
 
         guard
@@ -492,14 +420,11 @@ final class MenuBarSection {
                 self.hide()
             }
         case .timed:
-            rehideMonitor = EventMonitor.universal(for: .mouseMoved) { [weak self, weak appState] event in
+            rehideMonitor = EventMonitor.universal(for: .mouseMoved) { [weak self, weak appState, timedRehideThrottleClock] event in
                 // Throttle: process at most ~20fps regardless of mouse polling rate.
-                enum Context {
-                    static let lastTime = OSAllocatedUnfairLock(initialState: TimeInterval(0))
-                }
                 let now = CACurrentMediaTime()
-                guard now - Context.lastTime.withLock({ $0 }) > 0.05 else { return event }
-                Context.lastTime.withLock { $0 = now }
+                guard now - timedRehideThrottleClock.withLock({ $0 }) > 0.05 else { return event }
+                timedRehideThrottleClock.withLock { $0 = now }
 
                 guard
                     let self,
@@ -520,7 +445,7 @@ final class MenuBarSection {
                             guard !Task.isCancelled, let self, let appState else { return }
                             // Don't rehide while the mouse is inside the menu bar or IceBar.
                             if self.isMouseInsideActiveArea() {
-                                self.startRehideChecks()
+                                await self.restartTimedRehideTimer()
                                 return
                             }
                             // Check if any menu bar item has a menu open before hiding.

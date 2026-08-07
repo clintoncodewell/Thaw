@@ -14,8 +14,8 @@ struct MenuBarAppearanceEditor: View {
         case panel
     }
 
-    @EnvironmentObject var appState: AppState
-    @ObservedObject var appearanceManager: MenuBarAppearanceManager
+    @Environment(AppState.self) var appState: AppState
+    @Bindable var appearanceManager: MenuBarAppearanceManager
     @Environment(\.dismissWindow) private var dismissWindow
     @State private var isResetPromptPresented = false
 
@@ -67,9 +67,9 @@ struct MenuBarAppearanceEditor: View {
                 case .settings = location,
                 appState.settings.advanced.enableSecondaryContextMenu
             {
-                CalloutBox(
-                    "Tip: You can also edit these settings by right-clicking in an empty area of the menu bar.",
-                    systemImage: "lightbulb"
+                SettingsWarningPill(
+                    message: "Tip: You can also edit these settings by right-clicking in an empty area of the menu bar.",
+                    systemImage: "lightbulb.circle.fill"
                 )
             }
 
@@ -102,12 +102,40 @@ struct MenuBarAppearanceEditor: View {
                 || appearanceManager.configuration.shapeKind != .noShape
                 || appearanceManager.configuration.current.backgroundKind != .none
             {
-                CalloutBox(
-                    "If effects are not visible, disable \"Show menu bar background\" in System Settings \(Constants.menuArrow) Menu Bar",
-                    systemImage: "info.circle"
+                if appearanceManager.isReduceTransparencyEnabled {
+                    reduceTransparencyWarning
+                }
+
+                SettingsWarningPill(
+                    message: "If effects are not visible, disable \"Show menu bar background\" in System Settings \(Constants.menuArrow) Menu Bar",
+                    systemImage: "info.circle.fill"
                 )
             }
         }
+    }
+
+    /// Shown while Reduce Transparency is on, because the system then draws an
+    /// opaque menu bar that hides everything the overlay paints behind it.
+    /// Painting on top instead is not an option: it would cover the menu bar
+    /// items too. See ``MenuBarOverlayPanel/updateWindowLevel()``.
+    private var reduceTransparencyWarning: some View {
+        SettingsWarningPill(
+            title: "Menu bar effects are hidden by Reduce Transparency",
+            message: "macOS draws a solid menu bar while Reduce Transparency is on, so \(Constants.displayName) cannot tint or reshape it. Turn the setting off to see these effects.",
+            systemImage: "exclamationmark.triangle.fill",
+            tint: .orange,
+            actionTitle: "Open Settings",
+            action: openReduceTransparencySettings
+        )
+    }
+
+    private func openReduceTransparencySettings() {
+        guard let url = URL(
+            string: "x-apple.systempreferences:com.apple.Accessibility-Settings.extension?Seeing_Display"
+        ) else {
+            return
+        }
+        NSWorkspace.shared.open(url)
     }
 
     private var isDynamicToggle: some View {
@@ -199,22 +227,23 @@ private struct UnlabeledBackgroundEditor: View {
     }
 
     var body: some View {
-        VStack(spacing: .iceFormDefaultSpacing) {
-            if showTitle {
-                IceSection("Background") {
-                    styleSection
-                }
-            } else {
-                IceSection {
-                    styleSection
-                }
+        // No wrapping VStack: `IceSection` is a native grouped `Section` and
+        // must remain a direct child of the enclosing `IceForm` list, which
+        // provides the inter-section spacing.
+        if showTitle {
+            IceSection("Background") {
+                styleSection
             }
+        } else {
             IceSection {
-                backgroundBorderToggle
-                if configuration.backgroundHasBorder {
-                    backgroundBorderColor
-                    backgroundBorderWidth
-                }
+                styleSection
+            }
+        }
+        IceSection {
+            backgroundBorderToggle
+            if configuration.backgroundHasBorder {
+                backgroundBorderColor
+                backgroundBorderWidth
             }
         }
     }
@@ -311,7 +340,7 @@ private struct LabeledBackgroundEditor: View {
     let appearance: SystemAppearance
 
     var body: some View {
-        IceSection(options: .plain) {
+        IceSection(isBordered: false) {
             labelStack
         } content: {
             UnlabeledBackgroundEditor(configuration: binding, showTitle: false)
@@ -348,17 +377,18 @@ private struct UnlabeledShapeEditor: View {
     @Binding var configuration: MenuBarAppearancePartialConfiguration
 
     var body: some View {
-        VStack(spacing: .iceFormDefaultSpacing) {
-            IceSection {
-                tintPicker
-                tintOpacity
-                shadowToggle
-            }
-            IceSection {
-                borderToggle
-                borderColor
-                borderWidth
-            }
+        // No wrapping VStack: `IceSection` is a native grouped `Section` and
+        // must remain a direct child of the enclosing `IceForm` list, which
+        // provides the inter-section spacing.
+        IceSection {
+            tintPicker
+            tintOpacity
+            shadowToggle
+        }
+        IceSection {
+            borderToggle
+            borderColor
+            borderWidth
         }
     }
 
@@ -466,7 +496,7 @@ private struct LabeledShapeEditor: View {
     let appearance: SystemAppearance
 
     var body: some View {
-        IceSection(options: .plain) {
+        IceSection(isBordered: false) {
             labelStack
         } content: {
             partialEditor
@@ -511,7 +541,7 @@ private struct StaticShapeEditor: View {
 // MARK: - Preview Button
 
 private struct PreviewButton: View {
-    @EnvironmentObject private var appState: AppState
+    @Environment(AppState.self) private var appState: AppState
     @State private var isPressed = false
 
     let appearance: SystemAppearance

@@ -8,6 +8,7 @@
 
 import Cocoa
 import Combine
+import Observation
 
 /// A container for the items in the menu bar layout interface.
 final class LayoutBarContainer: NSView {
@@ -74,6 +75,27 @@ final class LayoutBarContainer: NSView {
 
     private var cancellables = Set<AnyCancellable>()
 
+    /// Task observing `AdvancedSettings.enableAlwaysHiddenSection`, which is
+    /// `@Observable` rather than a Combine `ObservableObject`, so it can no
+    /// longer take part in the `Publishers.CombineLatest3` below.
+    private var enableAlwaysHiddenSectionObservationTask: Task<Void, Never>?
+
+    /// Task observing `menuBarManager.averageColorInfo` (wave 3), replacing
+    /// the old `$averageColorInfo` sink.
+    private var averageColorInfoObservationTask: Task<Void, Never>?
+
+    /// Task observing `itemManager.itemCache` and `itemManager.newItemsPlacement`
+    /// (wave 4), which are `@Observable` rather than Combine `@Published`
+    /// properties, so they can no longer take part in `Publishers.CombineLatest`.
+    /// Replaces the old `CombineLatest($itemCache, $newItemsPlacement).sink`.
+    private var itemCacheObservationTask: Task<Void, Never>?
+
+    deinit {
+        enableAlwaysHiddenSectionObservationTask?.cancel()
+        averageColorInfoObservationTask?.cancel()
+        itemCacheObservationTask?.cancel()
+    }
+
     /// Creates a container view with the given app state, section, and spacing.
     ///
     /// - Parameters:
@@ -100,32 +122,48 @@ final class LayoutBarContainer: NSView {
         var c = Set<AnyCancellable>()
 
         if let appState {
-            Publishers.CombineLatest3(
-                appState.itemManager.$itemCache,
-                appState.itemManager.$newItemsPlacement,
-                appState.settings.advanced.$enableAlwaysHiddenSection
-            )
-            .sink { [weak self] cache, _, _ in
-                guard let self else {
-                    return
+            let itemManager = appState.itemManager
+            itemCacheObservationTask = Task { [weak self] in
+                let changes = Observations {
+                    (itemManager.itemCache, itemManager.newItemsPlacement)
                 }
-                setArrangedViews(items: cache.managedItems(for: section))
-            }
-            .store(in: &c)
-
-            // Observe average color changes to update badge appearance
-            appState.menuBarManager.$averageColorInfo
-                .removeDuplicates()
-                .sink { [weak self] colorInfo in
+                for await (cache, _) in changes {
                     guard let self else {
                         return
                     }
+                    setArrangedViews(items: cache.managedItems(for: section))
+                }
+            }
+
+            // `AdvancedSettings.enableAlwaysHiddenSection` is `@Observable`
+            // rather than a Combine `ObservableObject`, so it can no longer
+            // take part in the `CombineLatest` above — observed separately,
+            // re-running the same re-arrangement using the current item cache.
+            let advancedSettings = appState.settings.advanced
+            enableAlwaysHiddenSectionObservationTask = Task { [weak self] in
+                let changes = Observations { advancedSettings.enableAlwaysHiddenSection }
+                for await _ in changes {
+                    guard let self else { return }
+                    setArrangedViews(items: itemManager.itemCache.managedItems(for: section))
+                }
+            }
+
+            // Observe average color changes to update badge appearance.
+            // `menuBarManager` is now `@Observable` (wave 3), so it no
+            // longer has an `$averageColorInfo` publisher.
+            averageColorInfoObservationTask = Task { [weak self, weak appState] in
+                var previous: MenuBarAverageColorInfo?
+                let changes = Observations { appState?.menuBarManager.averageColorInfo }
+                for await colorInfo in changes {
+                    guard let self else { return }
+                    guard colorInfo != previous else { continue }
+                    previous = colorInfo
                     // Update the color info on the badge view
-                    if let badgeView = arrangedViews.first(where: { $0.isNewItemsBadge }) {
+                    if let badgeView = self.arrangedViews.first(where: { $0.isNewItemsBadge }) {
                         badgeView.averageColorInfo = colorInfo
                     }
                 }
-                .store(in: &c)
+            }
 
             // Observe screen parameter changes (moving between displays) to update badge
             NotificationCenter.default
@@ -319,18 +357,25 @@ final class LayoutBarContainer: NSView {
             {
                 sourceView.oldContainerInfo = (self, sourceIndex)
             }
-            // updating normally relies on the presence of other arranged views,
-            // but if the container is empty, it needs to be handled separately
-            guard !arrangedViews.filter(\.isEnabled).isEmpty else {
-                arrangedViews.insert(sourceView, at: 0)
-                return .move
-            }
             // convert dragging location from window coordinates
             let draggingLocation = convert(draggingInfo.draggingLocation, from: nil)
             // When dragging a regular item (not the badge), exclude the badge
             // from being a swap destination. The badge position should only
             // change when the user explicitly drags the badge itself.
             let excludeBadge = !sourceView.isNewItemsBadge
+            // updating normally relies on the presence of other arranged views,
+            // but if the container has no valid swap destination it needs to be
+            // handled separately. The badge must be excluded here with the same
+            // rule as the destination search below: a section whose only
+            // occupant is the new-items badge would otherwise pass this guard,
+            // fail the destination search, and never insert the dragged view —
+            // making it impossible to drop anything into an empty section that
+            // hosts the badge.
+            guard arrangedViews.contains(where: { $0.isEnabled && !(excludeBadge && $0.isNewItemsBadge) }) else {
+                let insertionIndex = arrangedViews.firstIndex { draggingLocation.x < $0.frame.midX } ?? arrangedViews.count
+                arrangedViews.insert(sourceView, at: insertionIndex)
+                return .move
+            }
             guard
                 let destinationView = arrangedView(nearestTo: draggingLocation.x, excludingBadge: excludeBadge),
                 destinationView !== sourceView,

@@ -7,20 +7,24 @@ concurrency:
   group: build-dmg-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
   build-dmg:
-    runs-on: macos-26
+    if: github.repository == 'thaw-app/Thaw'
+    runs-on: blacksmith-6vcpu-macos-26
     env:
       APP_NAME: "Thaw.app"
       DMG_NAME: "Thaw-dev.dmg"
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       # Issues with other Xcode versions, so we need to specify the version explicitly
       - run: sudo xcode-select -s /Applications/Xcode_26.6.app/Contents/Developer
 
       - name: Configure signing
-        uses: thaw-app/org-ci/actions/configure-signing@d8439b09dfc7dda7323906cd0daeef1752c4bb2a
+        uses: thaw-app/org-ci/actions/configure-signing@30ef248bedd07c2823c695ffa65f49e61b4a1159
         with:
           apple-application-cert: ${{ secrets.APPLE_APPLICATION_CERT }}
           apple-application-cert-password: ${{ secrets.APPLE_APPLICATION_CERT_PASSWORD }}
@@ -29,7 +33,7 @@ jobs:
           apple-team-id: ${{ secrets.APPLE_TEAM_ID }}
 
       - name: Build
-        uses: thaw-app/org-ci/actions/build@d8439b09dfc7dda7323906cd0daeef1752c4bb2a
+        uses: thaw-app/org-ci/actions/build@30ef248bedd07c2823c695ffa65f49e61b4a1159
         with:
           apple-team-id: ${{ secrets.APPLE_TEAM_ID }}
           project-name: Thaw.xcodeproj
@@ -37,20 +41,20 @@ jobs:
           deployment-target: "26.0"
 
       - name: Export Archive
-        uses: thaw-app/org-ci/actions/export-and-package@d8439b09dfc7dda7323906cd0daeef1752c4bb2a
+        uses: thaw-app/org-ci/actions/export-and-package@30ef248bedd07c2823c695ffa65f49e61b4a1159
         with:
           apple-team-id: ${{ secrets.APPLE_TEAM_ID }}
           app-name: ${{ env.APP_NAME }}
           dmg-name: ${{ env.DMG_NAME }}
 
       - name: Notarize
-        uses: thaw-app/org-ci/actions/notarize-and-validate@d8439b09dfc7dda7323906cd0daeef1752c4bb2a
+        uses: thaw-app/org-ci/actions/notarize-and-validate@30ef248bedd07c2823c695ffa65f49e61b4a1159
         with:
           dmg-name: ${{ env.DMG_NAME }}
           app-name: ${{ env.APP_NAME }}
 
       - name: Upload DMG
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: Thaw-dmg
           path: build/${{ env.DMG_NAME }}
