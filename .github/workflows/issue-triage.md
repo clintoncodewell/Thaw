@@ -233,4 +233,9 @@ Do not assign issues automatically. Leave assignment decisions to maintainers.
 - **Respect an existing Issue type and labels** already applied by issue templates or maintainers; update the type only when it is clearly wrong, and do not remove or duplicate labels.
 - **Only use labels from the allowed list**: `chore`, `ci`, `cd`, `docs`, `refactor`, `test`, `duplicate`, `invalid`, `needs-info`, `question`, `regression`, `upstream`, `wontfix`, `unsupported`, `macos-14`, `macos-15`, `macos-26`, `macos-27`, `menubar`, `icebar`, `layout`, `appearance`, `settings`, `onboarding`, `permissions`, `profiles`, `hotkeys`, `updates`, `ops`.
 - **One comment at a time** — combine any clarifying questions and duplicate notice into a single comment if both apply.
-- **Always complete with a safe-output call**: You must always call at least one safe-output tool (`set_issue_type`, `set_issue_field`, `add_labels`, `add_comment`, `close_issue`, `noop`, `missing_tool`, or `missing_data`) to indicate you finished.
+
+## Completing the triage
+
+Collect the full triage decision before emitting outputs. Emit metadata changes (`set_issue_type`, `set_issue_field`, and `add_labels`) first, followed by `add_comment`, then `close_issue` when applicable.
+
+A completed run has either the applicable triage outputs or one `noop` result. Use `noop` only when the issue already has every applicable type, field, and label and no comment or closure is needed. Do not emit `noop` alongside other outputs.
