@@ -11,13 +11,22 @@ manager from scratch — there is no public API for this, it's all screen captur
 
 ## Staying current
 
-Cron on the VM merges upstream daily at 19:50 UTC (05:50 AEST):
+`~/operations/scripts/upstream-sync.sh` on the VM merges upstream daily at 03:05 AEST (17:05
+UTC), with a catch-up pass at 07:35 AEST:
 
-    /home/azureuser/operations/scripts/thaw-upstream-sync.sh
-    log: /home/azureuser/operations/logs/thaw-sync.log
+    config: /home/azureuser/operations/scripts/upstream-sync.conf
+    log:    /home/azureuser/operations/logs/upstream-sync.log
 
 Clean merge pushes straight to `development`. Conflict against our tweaks aborts the merge and
 opens a PR instead, so nothing is ever lost silently. A dirty working tree makes it skip.
+
+Thaw's config line also **deploys**: `mac-build.sh` verifies the merge builds, and on a clean
+push `mac-install.sh Thaw` replaces `/Applications/Thaw.app` and restarts it. An upstream merge
+therefore reaches your Mac the same night, which is why the signing rules below are load-bearing
+rather than a nicety.
+
+The log is capped at 5000 lines, so a run from a few days ago has already scrolled out of it.
+`git reflog` is the reliable record of what merged and when.
 
 ## Building
 
@@ -32,21 +41,29 @@ the daily merge conflict-free — don't "fix" it by editing the pbxproj.
 
 ## Signing
 
-Always build with `--signed`, and run that build **in a GUI session on the Mac** — open
-Terminal there:
+Builds are signed by default, from anywhere, including over ssh from the VM.
 
-    cd ~/dev/thaw && ./build-local.sh Release --install --signed
+That works because of a dedicated keychain, `~/Library/Keychains/thaw-signing.keychain-db`,
+holding a copy of the "Apple Development: clinton.cunningham@gmail.com" identity (team
+`36H9FH5KZM`) with its password at `~/.config/signing/thaw-keychain.pw`. Created once by
+`./setup-signing-keychain.sh`, which must be run in a Terminal **you opened yourself** on the
+Mac. Re-run it after a machine rebuild or a certificate renewal.
 
-It cannot be done over ssh from the VM. A non-GUI session can't reach the login keychain at
-all, so codesign returns `errSecInternalComponent` on any binary, not just this project, and
-`security show-keychain-info` returns "User interaction is not allowed". Setting the private
-key's ACL to "Allow all applications" does **not** fix it — that only applies inside the GUI
-session. Nothing to do with the certificate ("Apple Development: clinton.cunningham@gmail.com",
-team `36H9FH5KZM`), it's valid. Unattended VM builds would need a dedicated signing keychain
-with a known password plus `security set-key-partition-list -k`.
+The login keychain cannot be used from a non-GUI session at all: codesign returns
+`errSecInternalComponent` on any binary and `security show-keychain-info` returns "User
+interaction is not allowed". Setting the key's ACL to "Allow all applications" in Keychain
+Access does **not** help — it applies only inside the GUI session, and it does not set the
+partition list, which is the part codesign actually needs.
 
-`--signed` matters because TCC keys a permission grant to the **code signature**, not the bundle
-ID, and stores the requirement it saw when the grant was made:
+If signing is unavailable, `build-local.sh` exits 75 instead of quietly producing an ad-hoc
+build, so `upstream-sync.sh` defers to the next run rather than blaming the merge. `--install`
+additionally refuses to replace `/Applications/Thaw.app` unless the new bundle is signed with
+team `36H9FH5KZM` *and* still satisfies the requirement TCC has stored, and it stages the copy
+before swapping so a failure never leaves you with no app. `--adhoc` forces an unsigned build if
+you ever need one.
+
+Signing is load-bearing because TCC keys a permission grant to the **code signature**, not the
+bundle ID, and stores the requirement it saw when the grant was made:
 
     identifier "com.stonerl.Thaw" and anchor apple generic and
     certificate leaf[subject.CN] = "Apple Development: ... (HJH7DK6VNJ)"
