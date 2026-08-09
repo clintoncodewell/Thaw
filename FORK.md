@@ -32,21 +32,44 @@ the daily merge conflict-free — don't "fix" it by editing the pbxproj.
 
 ## Signing
 
-`build-local.sh` signs ad-hoc by default. Signing with the real "Apple Development:
-clinton.cunningham@gmail.com" identity (team `36H9FH5KZM`) fails over ssh with
-`errSecInternalComponent`, because the login keychain refuses a non-GUI session
-("User interaction is not allowed"). Nothing to do with the certificate — it's valid.
+Always build with `--signed`, and run that build **in a GUI session on the Mac** — open
+Terminal there:
 
-To enable `--signed` builds, one-time at the Mac: Keychain Access → login → Keys → the private
-key under "Apple Development: clinton.cunningham@gmail.com" → Get Info → Access Control → "Allow
-all applications to access this item". After that `./build-local.sh Release --install --signed`
-works from the VM.
+    cd ~/dev/thaw && ./build-local.sh Release --install --signed
 
-Worth doing because TCC is keyed to the code signature: an ad-hoc signature changes on every
-build, so macOS re-prompts for Accessibility each time you install a fresh ad-hoc build. A stable
-Developer ID signature is remembered.
+It cannot be done over ssh from the VM. A non-GUI session can't reach the login keychain at
+all, so codesign returns `errSecInternalComponent` on any binary, not just this project, and
+`security show-keychain-info` returns "User interaction is not allowed". Setting the private
+key's ACL to "Allow all applications" does **not** fix it — that only applies inside the GUI
+session. Nothing to do with the certificate ("Apple Development: clinton.cunningham@gmail.com",
+team `36H9FH5KZM`), it's valid. Unattended VM builds would need a dedicated signing keychain
+with a known password plus `security set-key-partition-list -k`.
+
+`--signed` matters because TCC keys a permission grant to the **code signature**, not the bundle
+ID, and stores the requirement it saw when the grant was made:
+
+    identifier "com.stonerl.Thaw" and anchor apple generic and
+    certificate leaf[subject.CN] = "Apple Development: ... (HJH7DK6VNJ)"
+
+Install an ad-hoc build over a signed one and every grant silently stops working while System
+Settings still shows the checkbox ticked. Unticking and reticking does nothing: the checkbox
+only flips `auth_value`, it never rewrites the stored requirement. Test the app against the
+requirement TCC actually holds:
+
+    sqlite3 /Library/Application\ Support/com.apple.TCC/TCC.db \
+      "select hex(csreq) from access where service='kTCCServiceAccessibility' \
+       and client='com.stonerl.Thaw';" | xxd -r -p > /tmp/req.bin
+    codesign --verify -R /tmp/req.bin /Applications/Thaw.app
+
+To rescue an ad-hoc build without rebuilding signed — good until the next build, since ad-hoc
+pins a cdhash that changes every time:
+
+    tccutil reset Accessibility com.stonerl.Thaw
+    tccutil reset ScreenCapture com.stonerl.Thaw
 
 ## Permissions
 
 Thaw needs Accessibility, and Screen Recording to draw the hidden items. Approving those prompts
 needs a human at the Mac and usually a relaunch to take effect; it cannot be done over ssh.
+Keychain Access, if you need it, is at
+`/System/Library/CoreServices/Applications/Keychain Access.app` on macOS 26 — no longer Utilities.
