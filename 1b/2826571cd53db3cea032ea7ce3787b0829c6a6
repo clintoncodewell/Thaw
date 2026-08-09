@@ -1,0 +1,38 @@
+setup-signing-keychain.sh
+  s_4a28388fd72043::t_b47a643955808d 1,3-8,11-16,18-21,28-40,55-61,64-67,74-76,80,82-87,99-100,103,105-109,111,136,138-142
+  s_4a28388fd72043::t_343a770f0d4f16 112-117
+  s_4a28388fd72043::t_801fe2d9b56848 69-73
+  s_4a28388fd72043::t_72a564a2f23731 129-135
+  s_4a28388fd72043::t_0cf3d87da324e7 22-27
+  s_4a28388fd72043::t_9bfd8f103c4c16 2,9-10,17,41-54,62-63,68,77-79,81,88-98,101-102,104,110,118-128,137
+build-local.sh
+  s_4a28388fd72043::t_fe2d96328f71ec 54-61
+  s_4a28388fd72043::t_923a7c630aaa7f 85
+  s_4a28388fd72043::t_924b078e4dddc0 119-125
+  s_4a28388fd72043::t_75b20224c2a52c 31-43,47,64-67,69-70
+  s_4a28388fd72043::t_c2c4ea88654fdb 44-46,48,50-53,71
+  s_4a28388fd72043::t_5348e09b99eb3a 8-16,22
+  s_4a28388fd72043::t_c6ddf898db93b0 62-63,68
+  s_4a28388fd72043::t_7cff16e4dc89e0 114-118,126-142,145-147,149
+FORK.md
+  s_4a28388fd72043::t_484b826aefafa5 58-63
+  s_4a28388fd72043::t_bc083b8cc6f040 44-57,64-66
+  s_4a28388fd72043::t_3ab5f51489f52d 14-15,17-18,23-29
+  s_4a28388fd72043::t_96a5e96caaabbe 30
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "1b2826571cd53db3cea032ea7ce3787b0829c6a6",
+  "prompts": {},
+  "sessions": {
+    "s_4a28388fd72043": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "637d1bc2-ca7d-4312-9aeb-a323df0339e8",
+        "model": "claude-opus-5"
+      },
+      "human_author": "clintoncodewell <clinton@advisewell.co>"
+    }
+  }
+}
