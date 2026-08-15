@@ -65,7 +65,9 @@ struct SectionGeometryGateTests {
         #expect(LayoutSolver.hiddenSectionHasRoom(
             hiddenControlItemMinX: -3935,
             alwaysHiddenControlItemMaxX: -4612,
-            savedHiddenItemCount: 41
+            savedHiddenItemCount: 41,
+            liveHiddenItemCount: 41,
+            hasVisibleItemParkedOffBar: false
         ))
     }
 
@@ -79,7 +81,9 @@ struct SectionGeometryGateTests {
         #expect(!LayoutSolver.hiddenSectionHasRoom(
             hiddenControlItemMinX: -4271,
             alwaysHiddenControlItemMaxX: -4271,
-            savedHiddenItemCount: 41
+            savedHiddenItemCount: 41,
+            liveHiddenItemCount: 0,
+            hasVisibleItemParkedOffBar: true
         ))
     }
 
@@ -89,7 +93,9 @@ struct SectionGeometryGateTests {
         #expect(!LayoutSolver.hiddenSectionHasRoom(
             hiddenControlItemMinX: -4500,
             alwaysHiddenControlItemMaxX: -4271,
-            savedHiddenItemCount: 41
+            savedHiddenItemCount: 41,
+            liveHiddenItemCount: 0,
+            hasVisibleItemParkedOffBar: true
         ))
     }
 
@@ -102,7 +108,9 @@ struct SectionGeometryGateTests {
         #expect(LayoutSolver.hiddenSectionHasRoom(
             hiddenControlItemMinX: -4271,
             alwaysHiddenControlItemMaxX: -4271,
-            savedHiddenItemCount: 0
+            savedHiddenItemCount: 0,
+            liveHiddenItemCount: 0,
+            hasVisibleItemParkedOffBar: false
         ))
     }
 
@@ -113,7 +121,9 @@ struct SectionGeometryGateTests {
         #expect(LayoutSolver.hiddenSectionHasRoom(
             hiddenControlItemMinX: -4271,
             alwaysHiddenControlItemMaxX: nil,
-            savedHiddenItemCount: 41
+            savedHiddenItemCount: 41,
+            liveHiddenItemCount: 41,
+            hasVisibleItemParkedOffBar: false
         ))
     }
 
@@ -125,7 +135,9 @@ struct SectionGeometryGateTests {
         #expect(LayoutSolver.hiddenSectionHasRoom(
             hiddenControlItemMinX: -4270.5,
             alwaysHiddenControlItemMaxX: -4271,
-            savedHiddenItemCount: 41
+            savedHiddenItemCount: 41,
+            liveHiddenItemCount: 41,
+            hasVisibleItemParkedOffBar: false
         ))
     }
 
@@ -141,7 +153,106 @@ struct SectionGeometryGateTests {
         #expect(!LayoutSolver.hiddenSectionHasRoom(
             hiddenControlItemMinX: -5743,
             alwaysHiddenControlItemMaxX: -5743,
-            savedHiddenItemCount: 46
+            savedHiddenItemCount: 46,
+            liveHiddenItemCount: 0,
+            hasVisibleItemParkedOffBar: true
+        ))
+    }
+
+    // MARK: - hiddenSectionHasRoom deadlock (#924)
+
+    /// The state #924's reporter reached by dragging every hidden item into
+    /// visible. The dividers are correctly adjacent because nothing is between
+    /// them, but the saved order still lists the old entries — and it cannot
+    /// stop listing them while this gate blocks the write that would clear
+    /// them. Their log shows the warning firing from the tick hidden hit zero
+    /// through every pass after it, on both a populated and an emptied
+    /// always-hidden section.
+    @Test("An emptied hidden section is not treated as a collapse")
+    func emptiedHiddenSectionIsNotACollapse() {
+        #expect(LayoutSolver.hiddenSectionHasRoom(
+            hiddenControlItemMinX: -4436,
+            alwaysHiddenControlItemMaxX: -4436,
+            savedHiddenItemCount: 6,
+            liveHiddenItemCount: 0,
+            hasVisibleItemParkedOffBar: false
+        ))
+    }
+
+    /// The reason the live count cannot decide this on its own. A collapse
+    /// reads as zero live hidden items too — the misclassification is the
+    /// fault — so releasing on an empty live section alone would hand #868
+    /// straight back.
+    @Test("A collapse that reads as empty is still blocked")
+    func collapseReadingAsEmptyIsStillBlocked() {
+        #expect(!LayoutSolver.hiddenSectionHasRoom(
+            hiddenControlItemMinX: -4436,
+            alwaysHiddenControlItemMaxX: -4436,
+            savedHiddenItemCount: 6,
+            liveHiddenItemCount: 0,
+            hasVisibleItemParkedOffBar: true
+        ))
+    }
+
+    /// Live hidden items with a closed span is the original fault however the
+    /// parked check answers: there is nowhere for those items to be.
+    @Test("Live hidden items with a closed span are still blocked")
+    func liveHiddenItemsWithClosedSpanAreBlocked() {
+        #expect(!LayoutSolver.hiddenSectionHasRoom(
+            hiddenControlItemMinX: -4436,
+            alwaysHiddenControlItemMaxX: -4436,
+            savedHiddenItemCount: 6,
+            liveHiddenItemCount: 3,
+            hasVisibleItemParkedOffBar: false
+        ))
+    }
+
+    // MARK: - hasVisibleItemParkedOffBar (#924)
+
+    @Test("Visible items on the bar are not parked")
+    func onBarVisibleItemsAreNotParked() {
+        let screen = CGRect(x: 0, y: 0, width: 1470, height: 956)
+        #expect(!LayoutSolver.hasVisibleItemParkedOffBar(
+            itemBounds: [
+                CGRect(x: 1200, y: 0, width: 24, height: 22),
+                CGRect(x: 1240, y: 0, width: 24, height: 22),
+            ],
+            hiddenControlItemMinX: 1100,
+            screenFrames: [screen]
+        ))
+    }
+
+    /// #868's geometry: the items sit just *right* of the collapsed divider,
+    /// so a left-of-divider test would miss them. What gives them away is that
+    /// they are thousands of points off any display.
+    @Test("A visible item off every display is parked")
+    func offDisplayVisibleItemIsParked() {
+        let screen = CGRect(x: 0, y: 0, width: 1470, height: 956)
+        #expect(LayoutSolver.hasVisibleItemParkedOffBar(
+            itemBounds: [
+                CGRect(x: 1200, y: 0, width: 24, height: 22),
+                CGRect(x: -5743, y: 0, width: 24, height: 22),
+            ],
+            hiddenControlItemMinX: -5743,
+            screenFrames: [screen]
+        ))
+    }
+
+    @Test("With no screens the answer is the conservative one")
+    func noScreensReportsParked() {
+        #expect(LayoutSolver.hasVisibleItemParkedOffBar(
+            itemBounds: [CGRect(x: 1200, y: 0, width: 24, height: 22)],
+            hiddenControlItemMinX: 1100,
+            screenFrames: []
+        ))
+    }
+
+    @Test("A bar with no visible items has nothing parked")
+    func noVisibleItemsHasNothingParked() {
+        #expect(!LayoutSolver.hasVisibleItemParkedOffBar(
+            itemBounds: [],
+            hiddenControlItemMinX: 1100,
+            screenFrames: [CGRect(x: 0, y: 0, width: 1470, height: 956)]
         ))
     }
 
@@ -277,4 +388,56 @@ struct SectionGeometryApplyGateTests {
             )
         }
     }
+
+    /// A divider rebuild is initiated by an unfinished apply, which may have
+    /// just stamped the move cooldown. The recovery-owned recache that follows
+    /// `recreateStatusItem` passes `bypassSavedLayoutCooldown: true` through
+    /// `cacheItemsRegardless`, which carries into `applySavedLayout` as
+    /// `bypassMoveCooldown: true`. This test exercises that contract: a fresh
+    /// move cooldown blocks an ordinary apply, but the bypass flag — the same
+    /// one the recovery recache uses — lets the verification dispatch through.
+    ///
+    /// `recoverParkedHiddenDividerIfNeeded` itself is private and requires a
+    /// live `AppState` with real `NSStatusItem`s, so it cannot be exercised
+    /// at this seam. The pure gate (`shouldRecoverParkedHiddenDivider`) and
+    /// the episode latch are covered in `ControlItemRecoveryTests`.
+    @Test("A recovery retry can bypass a fresh move cooldown", .timeLimit(.minutes(1)))
+    func recoveryRetryBypassesMoveCooldown() async throws {
+        try await withScratchDefaults { _ in
+            let items = Self.makeItems()
+            let manager = makeManager(savingAllOf: items)
+            let healthy = MenuBarItemManager.ControlItemPair.fixture(
+                hiddenAt: CGRect(x: -5743, y: 0, width: 10, height: 22),
+                alwaysHiddenAt: CGRect(x: -6000, y: 0, width: 10, height: 22)
+            )
+            manager.recordExternalMoveOperation()
+
+            let blocked = await manager.applySavedLayout(
+                items: items,
+                previousWindowIDs: [Self.departedWindowID],
+                controlItems: healthy
+            )
+            let retried = await manager.applySavedLayout(
+                items: items,
+                previousWindowIDs: [Self.departedWindowID],
+                controlItems: healthy,
+                bypassMoveCooldown: true
+            )
+
+            #expect(!blocked)
+            #expect(retried)
+        }
+    }
+
+    // The hard-cap gate (`automaticBulkApplyPermitted`) blocks dispatch
+    // before `applyProfileLayout` — and therefore before
+    // `recoverParkedHiddenDividerIfNeeded` — can run. The recovery recache
+    // uses `scheduleDeferredCacheRefresh` with `skipSavedLayoutApply: true`,
+    // which skips `applySavedLayout` entirely, so it is unaffected by the
+    // cap. This invariant is structural: the `automaticBulkApplyPermitted`
+    // check at the top of `applySavedLayout` returns `false` before the
+    // dispatch to `applyProfileLayout` where the recovery lives, so the
+    // recovery cannot fire when the cap has tripped. No test is needed
+    // because the call ordering cannot be inverted without moving the
+    // recovery outside the apply dispatch.
 }

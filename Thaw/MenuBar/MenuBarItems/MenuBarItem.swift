@@ -32,13 +32,88 @@ nonisolated struct MenuBarItem: CustomStringConvertible {
     /// A Boolean value that indicates whether the item is on screen.
     let isOnScreen: Bool
 
+    /// The gate that refuses to move an item.
+    ///
+    /// A refusal used to be undiagnosable: the layout editor showed a
+    /// generic alert, nothing was logged, and a report could not tell a
+    /// static macOS prohibition from an identity-resolution failure (#905).
+    /// Naming the gate is what lets the refusal sites log the condition the
+    /// decision was made on.
+    enum ImmovabilityReason {
+        /// The tag is on the static list of system items macOS does not
+        /// allow to be moved (Clock, Control Center, Screen Sharing).
+        case prohibitedSystemItem
+        /// A generic Control Center slot (`Item-N`) whose source process
+        /// never resolved. The owning app is unknown this cycle, and
+        /// posting drag events to Control Center for a placeholder times
+        /// out, so the item is parked rather than offered and failed.
+        case unresolvedControlCenterPlaceholder
+
+        var logDescription: String {
+            switch self {
+            case .prohibitedSystemItem:
+                "static immovable system item"
+            case .unresolvedControlCenterPlaceholder:
+                "Control Center generic slot with unresolved source PID; owning app unknown this cycle"
+            }
+        }
+    }
+
+    /// Whether synthetic move events are posted to the window's owner.
+    ///
+    /// Read here as well as in the manager because it decides whether an
+    /// item with an unresolved owner is movable at all, not merely where
+    /// its events go. See ``Defaults/Key/postMoveEventsToWindowOwner``.
+    static var postsMoveEventsToWindowOwner: Bool {
+        (Defaults.object(forKey: .postMoveEventsToWindowOwner) as? Bool)
+            ?? Defaults.DefaultValue.postMoveEventsToWindowOwner
+    }
+
+    /// The reason this item cannot be moved, or `nil` when it can.
+    ///
+    /// Pure: derived from the item alone, never from user defaults, so it
+    /// answers the same way in a test as on a bar. Callers that can lift a
+    /// reason by changing *how* they move consult
+    /// ``isMovableAddressingWindowOwner`` instead.
+    var immovabilityReason: ImmovabilityReason? {
+        if !tag.isMovable {
+            return .prohibitedSystemItem
+        }
+        if tag.isControlCenterGenericItem, sourcePID == nil {
+            return .unresolvedControlCenterPlaceholder
+        }
+        return nil
+    }
+
+    /// Whether this item can be moved given where its events will be sent.
+    ///
+    /// ``ImmovabilityReason/unresolvedControlCenterPlaceholder`` exists
+    /// because posting drag events to Control Center for a slot with no
+    /// known owner was observed to time out — a statement about events aimed
+    /// at an owning app that did not exist. When events address the window's
+    /// owner instead, the move no longer needs to know who owns the item, so
+    /// that reason stops applying. Every other reason still does: a
+    /// prohibited system item is prohibited wherever the events go.
+    ///
+    /// Separate from ``isMovable`` so the pure answer stays pure and only
+    /// the two gates that actually dispatch a move read the flag.
+    var isMovableAddressingWindowOwner: Bool {
+        switch immovabilityReason {
+        case nil:
+            true
+        case .unresolvedControlCenterPlaceholder:
+            Self.postsMoveEventsToWindowOwner
+        case .prohibitedSystemItem:
+            false
+        }
+    }
+
     /// A Boolean value that indicates whether this item can be moved.
+    ///
+    /// Defined through ``immovabilityReason`` so the answer and the gate a
+    /// diagnostic names can never disagree.
     var isMovable: Bool {
-        // Generic Control Center slots (``Item-N``) without a resolved
-        // source process are system-owned placeholders. Posting drag events
-        // to Control Center for them always times out, so presenting them as
-        // movable in the layout editor leads to a misleading generic error.
-        tag.isMovable && !(tag.isControlCenterGenericItem && sourcePID == nil)
+        immovabilityReason == nil
     }
 
     /// A Boolean value that indicates whether this item can be hidden.
@@ -210,6 +285,82 @@ nonisolated struct MenuBarItem: CustomStringConvertible {
     /// A string to use for logging purposes.
     var logString: String {
         "<\(tag) (windowID: \(windowID))>"
+    }
+}
+
+// MARK: - UnresolvedPlaceholderAlias
+
+/// Re-tagging an `unresolvedControlCenterPlaceholder` with an app-owned
+/// identity, so a Layout editor drag can proceed against a slot the source-PID
+/// cache has not resolved this cycle.
+///
+/// The catalog (#905) holds both the app-owned form
+/// `at.obdev.littlesnitch.agent:Item-0` and the live Control-Center-hosted
+/// slot form `com.apple.controlcenter:Item-0` for the same physical item.
+/// While the cache has not caught up, the slot is parked by the
+/// `unresolvedControlCenterPlaceholder` gate, the Layout editor's drag is
+/// refused, and the user sees a generic alert even when the AX tree already
+/// names the owning app. This alias promotes the slot to its app-owned
+/// identity for the duration of one drag: `isMovable` becomes true, the
+/// `move(...)` inner guard lets synthetic events through, and the post-move
+/// `cacheItemsRegardless` writes the app-owned identifier into
+/// `savedSectionOrder` once the cache resolves (or the drag lands AppKit-side
+/// via the slot's own autosave position while the cache catches up).
+///
+/// The pure halves below are unit-testable; the AppKit coupling lives in
+/// `LayoutBarItemView.aliasForUnresolvedControlCenterPlaceholder()`.
+nonisolated enum UnresolvedPlaceholderAlias {
+    /// The bundle identifier carried by an AX identity, when one of its
+    /// attributes names a non-host third-party app.
+    ///
+    /// Order: `AXIdentifier` (e.g. `com.apple.menuextra.wifi` for a hosted
+    /// module, `at.obdev.littlesnitch.agent` for a third-party agent), then
+    /// `AXTitle`, then `AXHelp` — the latter two carry the bundle ID when a
+    /// widget only publishes its title/help string. A candidate is rejected
+    /// when it lacks the bundle-identifier shape (no dot, following the
+    /// marker-pair convention in `MarkerPairResolver`), or names one of the
+    /// host processes or Thaw itself.
+    static nonisolated func appBundleID(
+        from identity: AXIdentityCatalog.AXItemIdentity?,
+        excluding hostBundleIDs: Set<String>,
+        thawBundleID: String
+    ) -> String? {
+        guard let identity else { return nil }
+        for candidate in [identity.identifier, identity.title, identity.help] {
+            guard let candidate, candidate.contains(".") else { continue }
+            if hostBundleIDs.contains(candidate) || candidate == thawBundleID {
+                continue
+            }
+            return candidate
+        }
+        return nil
+    }
+
+    /// An aliased `MenuBarItem` whose tag carries the app-owned namespace and
+    /// whose `sourcePID` is the resolved owner. Returns `nil` unless `item` is
+    /// exactly the gate this alias is for, so callers cannot re-tag any other
+    /// immovability case.
+    static nonisolated func aliasedItem(
+        for item: MenuBarItem,
+        appBundleID: String,
+        hostPID: pid_t
+    ) -> MenuBarItem? {
+        guard item.immovabilityReason == .unresolvedControlCenterPlaceholder else { return nil }
+        let aliasedTag = MenuBarItemTag(
+            namespace: .string(appBundleID),
+            title: item.tag.title,
+            windowID: item.windowID,
+            instanceIndex: item.tag.instanceIndex
+        )
+        return MenuBarItem(
+            tag: aliasedTag,
+            windowID: item.windowID,
+            ownerPID: item.ownerPID,
+            sourcePID: hostPID,
+            bounds: item.bounds,
+            title: item.title,
+            isOnScreen: item.isOnScreen
+        )
     }
 }
 

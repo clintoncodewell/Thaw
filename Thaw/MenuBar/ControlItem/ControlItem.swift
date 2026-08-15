@@ -72,7 +72,7 @@ final class ControlItem {
         /// Creates a new storage instance.
         @MainActor
         init(controlItem: ControlItem) {
-            ControlItemDefaults.preflightSetup(for: controlItem)
+            ControlItemDefaults.preflightSetup(for: controlItem.identifier)
 
             self.statusItem = NSStatusBar.system.statusItem(withLength: 0)
             self.statusItem.autosaveName = controlItem.identifier.rawValue
@@ -132,15 +132,21 @@ final class ControlItem {
         /// Removes the status item from the status bar.
         private func removeStatusItem() {
             // Removing the status item has the unwanted side effect of
-            // deleting the preferred position. Cache and restore it,
-            // but only for non-section-divider items.
+            // deleting the preferred position. Cache and restore it.
+            //
+            // Dividers are restored too, for the reason in
+            // hideIceIconCompletely: the exclusion only made sense while the
+            // subscript refused divider writes outright, and leaving it in
+            // place would let a recreate silently discard the position
+            // preflightSetup had just seeded (#890).
             let autosaveName = statusItem.autosaveName as String
-            let isSectionDivider = ControlItemDefaults.isSectionDivider(autosaveName: autosaveName)
             let cached = ControlItemDefaults[.preferredPosition, autosaveName]
             NSStatusBar.system.removeStatusItem(statusItem)
-            if !isSectionDivider {
-                ControlItemDefaults[.preferredPosition, autosaveName] = cached
-            }
+            ControlItemDefaults.setIgnoringSectionDividerGuard(
+                .preferredPosition,
+                autosaveName,
+                to: cached
+            )
         }
     }
 
@@ -272,6 +278,10 @@ final class ControlItem {
         var c = Set<AnyCancellable>()
 
         $state
+            // Deduplicated: a same-value reassignment must not rewrite the
+            // button and commit a status-item scene update — on macOS 26
+            // every scene commit costs Core Animation fence ports (#933).
+            .removeDuplicates()
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
                 self?.updateStatusItem()
@@ -279,7 +289,8 @@ final class ControlItem {
             .store(in: &c)
 
         $window.removeNil()
-            .flatMap { $0.publisher(for: \.frame) }
+            .map { $0.publisher(for: \.frame) }
+            .switchToLatest()
             .removeDuplicates()
             .debounce(for: 0.05, scheduler: DispatchQueue.main)
             .receive(on: DispatchQueue.main)
@@ -289,7 +300,8 @@ final class ControlItem {
             .store(in: &c)
 
         $window.removeNil()
-            .flatMap { $0.publisher(for: \.screen) }
+            .map { $0.publisher(for: \.screen) }
+            .switchToLatest()
             .debounce(for: 0.05, scheduler: DispatchQueue.main)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] screen in
@@ -298,7 +310,8 @@ final class ControlItem {
             .store(in: &c)
 
         $screen.removeNil()
-            .flatMap { $0.publisher(for: \.frame) }
+            .map { $0.publisher(for: \.frame) }
+            .switchToLatest()
             .combineLatest($frame.removeNil())
             .removeDuplicates()
             .debounce(for: 0.05, scheduler: DispatchQueue.main)
@@ -401,7 +414,8 @@ final class ControlItem {
             .store(in: &c)
 
         statusItem.publisher(for: \.button).removeNil()
-            .flatMap { $0.publisher(for: \.window) }
+            .map { $0.publisher(for: \.window) }
+            .switchToLatest()
             .receive(on: DispatchQueue.main)
             .sink { [weak self] window in
                 self?.window = window
@@ -534,8 +548,9 @@ final class ControlItem {
 
     /// Rebuilds the control item's underlying `NSStatusItem` from scratch.
     ///
-    /// Used as a bounded recovery step (#754) when `ControlItemPair` lookup
-    /// keeps failing across multiple independently triggered cache cycles —
+    /// Used as a bounded recovery step when `ControlItemPair` lookup keeps
+    /// failing across multiple independently triggered cache cycles (#754),
+    /// or when a confirmed collapsed divider must discard its stale position.
     /// a state that means the existing status item's `windowNumber` no
     /// longer matches any enumerated CG window ID, which is otherwise
     /// terminal since `storage` is normally created once and never
@@ -554,8 +569,15 @@ final class ControlItem {
     /// re-subscribed against the new instance since Combine's KVO
     /// publishers don't follow object identity changes on their own.
     @MainActor
-    func recreateStatusItem() {
+    func recreateStatusItem(preferredPosition: CGFloat? = nil) {
         storage.dispose()
+        if let preferredPosition {
+            ControlItemDefaults.setIgnoringSectionDividerGuard(
+                .preferredPosition,
+                identifier.rawValue,
+                to: preferredPosition
+            )
+        }
         storage = StatusItemStorage(controlItem: self)
         configureStatusItemCancellables()
         updateStatusItem()
@@ -744,15 +766,21 @@ final class ControlItem {
             return
         }
         // Setting `statusItem.isVisible` to `false` has the unwanted side
-        // effect of deleting the preferred position. Cache and restore it,
-        // but only for non-section-divider items.
+        // effect of deleting the preferred position. Cache and restore it.
+        //
+        // Dividers used to be excluded here, which was consistent while the
+        // subscript refused to write them anyway. Now that seeding has a path
+        // through that guard, skipping the restore would undo it: hiding the
+        // icon would delete the position seeding had just established and
+        // leave the divider free to be placed on top of the other one (#890).
         let autosaveName = statusItem.autosaveName as String
-        let isSectionDivider = (identifier == .hidden || identifier == .alwaysHidden)
         let cached = ControlItemDefaults[.preferredPosition, autosaveName]
         statusItem.isVisible = false
-        if !isSectionDivider {
-            ControlItemDefaults[.preferredPosition, autosaveName] = cached
-        }
+        ControlItemDefaults.setIgnoringSectionDividerGuard(
+            .preferredPosition,
+            autosaveName,
+            to: cached
+        )
     }
 
     /// Updates the status item's visibility without clearing its preferred position.
@@ -1088,6 +1116,31 @@ nonisolated enum ControlItemDefaults {
         }
     }
 
+    /// Writes a value without the section-divider guard above.
+    ///
+    /// The guard was added to stop a user from breaking their menu bar by
+    /// dragging a chevron (`ff7517f7`, "Prevents users from breaking menu bar
+    /// by moving chevrons"). It cannot do that: AppKit writes
+    /// `NSStatusItem Preferred Position <autosaveName>` itself when it places
+    /// an item, and that write never passes through this type. So the guard
+    /// only ever blocked Thaw's own writes — including the seeding that
+    /// `preflightSetup(for:)` and `resetChevronPositions()` exist to perform,
+    /// which the same commit introduced and silently disabled (#890).
+    ///
+    /// With no stored position, both dividers can be placed at the same X,
+    /// which collapses the span between them to zero width.
+    ///
+    /// Kept separate from the subscript rather than deleting the guard, so
+    /// only these two deliberate seeding paths bypass it and any future
+    /// caller still gets the original, conservative behavior.
+    static func setIgnoringSectionDividerGuard<Value>(
+        _ key: Key<Value>,
+        _ autosaveName: String,
+        to newValue: Value?
+    ) {
+        Defaults.store.set(newValue, forKey: key.stringKey(for: autosaveName))
+    }
+
     /// Returns whether the given autosave name belongs to a section divider.
     static func isSectionDivider(autosaveName: String) -> Bool {
         autosaveName == ControlItem.Identifier.hidden.rawValue ||
@@ -1106,33 +1159,27 @@ nonisolated enum ControlItemDefaults {
 
     /// Performs some initial required setup work before the
     /// creation of a control item.
-    fileprivate static func preflightSetup(for controlItem: ControlItem) {
-        let autosaveName = controlItem.identifier.rawValue
+    static func preflightSetup(for identifier: ControlItem.Identifier) {
+        let autosaveName = identifier.rawValue
 
         // Visible and hidden control items should be added before
         // existing items in the status bar.
+        //
+        // Seed only when nothing is stored. A second block used to follow
+        // this one and re-stamp the hidden divider to 1 on every call,
+        // regardless of where the user had it. That was inert from ff7517f7
+        // until a1e566d4 routed divider seeding around the subscript guard
+        // (#890), which woke it up: `StatusItemStorage.init` runs preflight
+        // on every launch and every `recreateStatusItem()`, so a populated
+        // bar had the hidden divider yanked back beside the visible one and
+        // the following save persisted the collapsed span (#895).
         if ControlItemDefaults[.preferredPosition, autosaveName] == nil {
-            switch controlItem.identifier {
+            switch identifier {
             case .visible:
                 ControlItemDefaults[.preferredPosition, autosaveName] = 0
             case .hidden:
-                ControlItemDefaults[.preferredPosition, autosaveName] = 1
+                ControlItemDefaults.setIgnoringSectionDividerGuard(.preferredPosition, autosaveName, to: 1)
             case .alwaysHidden:
-                break
-            }
-        }
-
-        // Always reset section divider positions to defaults
-        // to prevent issues when users move them around
-        if isSectionDivider(autosaveName: autosaveName) {
-            switch controlItem.identifier {
-            case .hidden:
-                ControlItemDefaults[.preferredPosition, autosaveName] = 1
-            case .alwaysHidden:
-                // Don't set a default position for always-hidden
-                // It will be positioned dynamically by the system
-                break
-            case .visible:
                 break
             }
         }
@@ -1149,7 +1196,11 @@ nonisolated enum ControlItemDefaults {
 
     /// Resets chevron section divider positions to their defaults.
     static func resetChevronPositions() {
-        ControlItemDefaults[.preferredPosition, ControlItem.Identifier.hidden.rawValue] = 1
+        ControlItemDefaults.setIgnoringSectionDividerGuard(
+            .preferredPosition,
+            ControlItem.Identifier.hidden.rawValue,
+            to: 1
+        )
         // Always-hidden position is handled dynamically
     }
 }

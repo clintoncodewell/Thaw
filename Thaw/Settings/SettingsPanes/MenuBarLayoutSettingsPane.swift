@@ -20,6 +20,12 @@ struct MenuBarLayoutSettingsPane: View {
     @State private var maxSliderLabelWidth: CGFloat = 0
     @State private var isAdvancedExpanded = false
 
+    /// Bumped whenever the screen the editor reflects may have changed, so
+    /// the display title above the bars re-evaluates. Screen parameters cover
+    /// displays arriving, leaving or being rearranged; app activation covers
+    /// the menu bar moving to another screen without the layout changing.
+    @State private var displayTitleRefreshToken = 0
+
     private let diagLog = DiagLog(category: "MenuBarLayoutPane")
 
     private var hasItems: Bool {
@@ -55,6 +61,18 @@ struct MenuBarLayoutSettingsPane: View {
                 // path) can run (#759).
                 appState.imageCache.markSettingsPaneClosed()
             }
+            .onReceive(
+                NotificationCenter.default
+                    .publisher(for: NSApplication.didChangeScreenParametersNotification)
+            ) { _ in
+                displayTitleRefreshToken &+= 1
+            }
+            .onReceive(
+                NSWorkspace.shared.notificationCenter
+                    .publisher(for: NSWorkspace.didActivateApplicationNotification)
+            ) { _ in
+                displayTitleRefreshToken &+= 1
+            }
         }
     }
 
@@ -77,11 +95,11 @@ struct MenuBarLayoutSettingsPane: View {
     private var advancedLayoutControlsCard: some View {
         IceSection {
             DisclosureGroup("Advanced layout controls", isExpanded: $isAdvancedExpanded) {
+                automaticArrangementEnabled
                 enableMenuBarItemOverflow
                 if advancedSettings.enableMenuBarItemOverflow {
                     useThawBarOnNotchOverflow
                 }
-                useLCSSortingOnNotchedDisplays
             }
         }
         .onChange(of: appState.navigationState.requestedSettingsDisclosure, initial: true) { _, _ in
@@ -91,6 +109,23 @@ struct MenuBarLayoutSettingsPane: View {
             ) {
                 isAdvancedExpanded = true
             }
+        }
+    }
+
+    /// Both strings are reused verbatim from the existing catalog so this
+    /// control ships fully translated: "Arrange menu bar items." and the
+    /// ⌘ Command + drag line already carry all 19 localizations. The
+    /// trailing period in the toggle label is the catalog's, not a slip —
+    /// matching the existing key exactly is what avoids a new translation
+    /// round.
+    private var automaticArrangementEnabled: some View {
+        Toggle(
+            "Arrange menu bar items.",
+            isOn: $advancedSettings.automaticArrangementEnabled
+        )
+        .annotation {
+            Text("Items can also be arranged by ⌘ Command + dragging them in the menu bar.")
+                .padding(.trailing, 75)
         }
     }
 
@@ -125,24 +160,6 @@ struct MenuBarLayoutSettingsPane: View {
                 ejected. The visible row has no room left beside the notch at that \
                 point, so expanding the hidden section inline cannot show them. \
                 Disable to always follow the per-display Thaw Bar setting.
-                """
-            )
-            .padding(.trailing, 75)
-        }
-    }
-
-    private var useLCSSortingOnNotchedDisplays: some View {
-        Toggle(
-            "Use LCS sorting on notched displays",
-            isOn: $advancedSettings.useLCSSortingOnNotchedDisplays
-        )
-        .annotation {
-            Text(
-                """
-                Use the faster LCS (Longest Common Subsequence) algorithm for \
-                profile sorting on notched displays instead of the full sort. \
-                LCS minimises the number of moves but may be less reliable on \
-                notched displays with smaller resolutions.
                 """
             )
             .padding(.trailing, 75)
@@ -186,8 +203,36 @@ struct MenuBarLayoutSettingsPane: View {
         .annotation("How often animated menu bar icons are refreshed in panels. Higher values are smoother but use more CPU.")
     }
 
+    /// The name of the display whose layout the bars below are showing.
+    ///
+    /// The editor has no display picker: it always reflects the screen that
+    /// currently owns the menu bar, which is what `LayoutBarContainer` and
+    /// `LayoutBarPaddingView` both read. On a single Mac that is invisible,
+    /// but with an external display as the primary the editor silently
+    /// describes a different screen than the user is picturing — and the
+    /// notch placeholder correctly disappearing is the symptom people
+    /// actually notice (#886). Naming the display makes the existing
+    /// behaviour legible instead of changing it.
+    private var editingDisplayName: String? {
+        guard NSScreen.screens.count > 1 else {
+            return nil
+        }
+        let screen = NSScreen.screenWithActiveMenuBar ?? NSScreen.main
+        let name = screen?.localizedName.trimmingCharacters(in: .whitespaces)
+        return (name?.isEmpty ?? true) ? nil : name
+    }
+
     private var layoutBarsSection: some View {
         IceSection {
+            if let editingDisplayName {
+                Text("Active display: \(editingDisplayName)")
+                    // Redrawn on the same signals LayoutBarPaddingView uses to
+                    // re-evaluate the notch indicator, so the title and the
+                    // bars below it can never disagree about which screen
+                    // they are describing.
+                    .id(displayTitleRefreshToken)
+            }
+        } content: {
             layoutBars
         } footer: {
             // Native grouped Section footer beneath the bars. Interpolated so
@@ -257,7 +302,7 @@ struct MenuBarLayoutSettingsPane: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Reset menu bar layout")
                         .font(.headline)
-                    Text("Resets dividers and moves every movable item except the \(Constants.displayName) icon to hidden — just like a fresh install.")
+                    Text("Resets dividers and moves every movable item except the \(Constants.displayName) icon to the selected section.")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
@@ -272,11 +317,15 @@ struct MenuBarLayoutSettingsPane: View {
                         ProgressView()
                             .controlSize(.small)
                     } else {
-                        Text("Reset Layout")
+                        Text("Reset Layout…")
                     }
                 }
                 .buttonStyle(.bordered)
                 .disabled(isResettingLayout || areControlItemsDisabledBySystem)
+            }
+
+            if isConfirmingReset {
+                resetTargetControls
             }
 
             if let resetStatus {
@@ -286,15 +335,25 @@ struct MenuBarLayoutSettingsPane: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
-        .alert("Reset menu bar layout?", isPresented: $isConfirmingReset) {
-            Button("Reset", role: .destructive) {
-                resetMenuBarLayout()
+    }
+
+    private var resetTargetControls: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Choose where to move the menu bar items:")
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+
+            HStack(spacing: 8) {
+                Button("Visible") { resetMenuBarLayout(to: .visible) }
+                Button("Hidden") { resetMenuBarLayout(to: .hidden) }
+                if appState.settings.advanced.enableAlwaysHiddenSection {
+                    Button("Always Hidden") { resetMenuBarLayout(to: .alwaysHidden) }
+                }
+                Button("Cancel", role: .cancel) {
+                    isConfirmingReset = false
+                }
             }
-            Button("Cancel", role: .cancel) {
-                isConfirmingReset = false
-            }
-        } message: {
-            Text("Restores divider defaults and moves every movable item except the \(Constants.displayName) icon to Hidden. Use this if the layout looks broken or items won’t load.")
+            .buttonStyle(.bordered)
         }
     }
 
@@ -334,7 +393,8 @@ struct MenuBarLayoutSettingsPane: View {
         }
     }
 
-    private func resetMenuBarLayout() {
+    private func resetMenuBarLayout(to target: MenuBarItemManager.LayoutResetTarget) {
+        isConfirmingReset = false
         isResettingLayout = true
         resetStatus = nil
 
@@ -342,16 +402,22 @@ struct MenuBarLayoutSettingsPane: View {
 
         Task { @MainActor in
             do {
-                let failedMoves = try await manager.resetLayoutToFreshState()
+                let failedMoves = switch target {
+                case .visible:
+                    try await manager.resetLayoutToVisible()
+                case .hidden:
+                    try await manager.resetLayoutToFreshState()
+                case .alwaysHidden:
+                    try await manager.resetLayoutToAlwaysHidden()
+                }
                 if failedMoves == 0 {
-                    resetStatus = .success
+                    resetStatus = .success(target)
                 } else {
                     resetStatus = .partialFailure(failedMoves)
                 }
                 isResettingLayout = false
 
-                // cacheItemsRegardless + updateCacheWithoutChecks already run
-                // inside resetLayoutToFreshState() — no need to repeat here.
+                // The manager rebuilds both caches before returning.
             } catch {
                 resetStatus = .failure(error.localizedDescription)
                 isResettingLayout = false
@@ -376,14 +442,18 @@ struct MenuBarLayoutSettingsPane: View {
     }
 
     private enum ResetStatus {
-        case success
+        case success(MenuBarItemManager.LayoutResetTarget)
         case partialFailure(Int)
         case failure(String)
 
         var message: String {
             switch self {
-            case .success:
+            case .success(.visible):
+                String(localized: "Items were moved to the Visible section.")
+            case .success(.hidden):
                 String(localized: "Layout reset. Items were moved to the Hidden section.")
+            case .success(.alwaysHidden):
+                String(localized: "Layout reset. Items were moved to the Always Hidden section.")
             case let .partialFailure(count):
                 String(localized: "Reset completed with \(count) item(s) that could not be moved. Check the menu bar and try again if needed.")
             case let .failure(message):

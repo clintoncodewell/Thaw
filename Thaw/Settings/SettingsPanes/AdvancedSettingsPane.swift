@@ -19,6 +19,7 @@ struct AdvancedSettingsPane: View {
         IceForm {
             IceSection("Menu Bar Search") {
                 searchSectionOrdering
+                moveCursorToRevealedItem
             }
             IceSection("Tooltips") {
                 if appState.hasPermission(.screenRecording) {
@@ -38,7 +39,6 @@ struct AdvancedSettingsPane: View {
                 if settings.enableSecondaryContextMenu {
                     enableSecondaryContextMenuQuit
                 }
-                useAXClickDelivery
             }
             IceSection("Permissions") {
                 allPermissions
@@ -190,6 +190,19 @@ struct AdvancedSettingsPane: View {
         }
     }
 
+    private var moveCursorToRevealedItem: some View {
+        Toggle(
+            "Move the pointer to revealed items",
+            isOn: $settings.moveCursorToRevealedItem
+        )
+        .annotation(
+            """
+            When you open a menu bar item from the search panel, move the mouse \
+            pointer next to it, so its menu appears under the pointer.
+            """
+        )
+    }
+
     private func moveSearchSection(_ name: MenuBarSection.Name, by offset: Int) {
         // Swap by the user-visible neighbour so the move is predictable when
         // the always-hidden row is conditionally hidden from this list.
@@ -241,25 +254,6 @@ struct AdvancedSettingsPane: View {
                 Right-click in an empty area of the menu bar to display a minimal \
                 version of \(Constants.displayName)'s menu. Disable this setting if you encounter conflicts \
                 with other apps.
-                """
-            )
-            .padding(.trailing, 75)
-        }
-    }
-
-    private var useAXClickDelivery: some View {
-        Toggle(
-            "Use accessibility actions to activate menu bar items (Experimental)",
-            isOn: $settings.useAXClickDelivery
-        )
-        .annotation {
-            Text(
-                """
-                Activate items using an accessibility action instead of a simulated \
-                click. Falls back automatically to the simulated click if the \
-                accessibility action fails. Affects every left-click \
-                \(Constants.displayName) delivers on your behalf — from the IceBar, \
-                search, and other features; moves and right-clicks are unaffected.
                 """
             )
             .padding(.trailing, 75)

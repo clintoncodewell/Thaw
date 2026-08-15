@@ -26,6 +26,29 @@ extension DisplaySettingsManager {
         self.appState = appState
         configureObservers()
         captureCurrentlyConnectedDisplays()
+        seedSpacingOffsetFromActiveDisplay()
+    }
+
+    /// Copies the active display's offset into the spacing manager at launch.
+    ///
+    /// `MenuBarItemSpacingManager.offset` starts at 0 on every launch, and the
+    /// only thing that writes it is ``applyActiveDisplaySpacing(reason:)``,
+    /// which runs from a genuine display transition or from a `configurations`
+    /// change that passes the equality guard. Neither happens on a plain
+    /// launch, so the offset stays at 0 while the on-disk spacing reflects
+    /// whatever the user last applied. Anything reading the offset then reads
+    /// a value the machine isn't running: `applyProfile` pushes it back to the
+    /// system default in a relaunch wave, and the notch overflow budget in
+    /// `MenuBarItemManager` mis-measures by the difference.
+    ///
+    /// Seeding only. Calling `applyOffset()` here would fire a relaunch wave
+    /// at launch, and there is nothing to apply anyway: the seeded value is
+    /// the one already in effect.
+    private func seedSpacingOffsetFromActiveDisplay() {
+        guard let appState else { return }
+        let offset = activeDisplaySpacingOffset
+        appState.spacingManager.offset = offset
+        diagLog.debug("Seeded spacingManager.offset=\(offset) from the active display at setup")
     }
 
     /// Merges info for currently-connected displays into the knownDisplays
@@ -161,40 +184,32 @@ extension DisplaySettingsManager {
         // flap window). One second coalesces a single docking event into
         // one apply.
         //
-        // First swift-async-algorithms adoption site: a NotificationCenter
-        // observer feeds an AsyncStream that `.debounce(for:)` coalesces,
-        // replacing Combine's `.debounce(for:scheduler:)`. Behaviour is
-        // identical — the two per-event skips are `continue` (skip this
-        // notification), not loop exit.
-        let (screenParameterEvents, screenParameterContinuation) = AsyncStream<Void>.makeStream()
+        // `debouncedNotificationTask` registers the observer before it
+        // returns, so a notification posted during task startup cannot slip
+        // past, and the task's defer removes it — the non-Sendable observer
+        // token stays off the class and the nonisolated deinit only needs
+        // to cancel the task.
+        //
         // A repeated setup must not leave the previous task — and the
         // NotificationCenter observer its defer owns — running.
         screenParametersTask?.cancel()
-        screenParametersTask = Task { @MainActor [weak self] in
-            // The observer is owned by this task: added when it starts and
-            // removed when it ends (cancellation ends the for-await loop, which
-            // runs the defer). This keeps the non-Sendable observer token off
-            // the class so the nonisolated deinit only needs to cancel the task.
-            let observer = NotificationCenter.default.addObserver(
-                forName: NSApplication.didChangeScreenParametersNotification,
-                object: nil,
-                queue: .main
-            ) { _ in screenParameterContinuation.yield(()) }
-            defer { NotificationCenter.default.removeObserver(observer) }
-            for await _ in screenParameterEvents.debounce(for: .seconds(1)) {
-                guard let self else { break }
-                diagLog.info("Screen parameters changed — \(NSScreen.screens.count) screen(s) connected")
-                captureCurrentlyConnectedDisplays()
-                let currentUUID = Bridging.getActiveMenuBarDisplayUUID()
-                if Self.shouldSkipSpacingApply(
-                    currentActiveDisplayUUID: currentUUID,
-                    lastAppliedActiveDisplayUUID: lastAppliedActiveDisplayUUID
-                ) {
-                    diagLog.info("Active menu bar display unchanged (\(currentUUID ?? "nil")); skipping spacing apply")
-                    continue
-                }
-                applyActiveDisplaySpacing(reason: "screenParametersChanged")
+        screenParametersTask = debouncedNotificationTask(
+            center: .default,
+            name: NSApplication.didChangeScreenParametersNotification,
+            interval: .seconds(1)
+        ) { [weak self] in
+            guard let self else { return }
+            diagLog.info("Screen parameters changed — \(NSScreen.screens.count) screen(s) connected")
+            captureCurrentlyConnectedDisplays()
+            let currentUUID = Bridging.getActiveMenuBarDisplayUUID()
+            if Self.shouldSkipSpacingApply(
+                currentActiveDisplayUUID: currentUUID,
+                lastAppliedActiveDisplayUUID: lastAppliedActiveDisplayUUID
+            ) {
+                diagLog.info("Active menu bar display unchanged (\(currentUUID ?? "nil")); skipping spacing apply")
+                return
             }
+            applyActiveDisplaySpacing(reason: "screenParametersChanged")
         }
 
         // Re-deriving the active display's spacing whenever per-display
@@ -228,7 +243,7 @@ extension DisplaySettingsManager {
     /// which stays in the measured file — re-derives spacing through it.
     func applyActiveDisplaySpacing(reason: String) {
         guard let appState else { return }
-        let desired = Int(configurationForActiveDisplay().itemSpacingOffset.rounded())
+        let desired = activeDisplaySpacingOffset
         // A display transition can fire the relaunch wave with no warning.
         // When confirmations are enabled and this apply would actually
         // relaunch apps, ask the user first. Declining keeps the current

@@ -159,4 +159,147 @@ struct PlanLCSMoveSequenceTests {
         #expect(result[1].uid == "a")
         #expect(result[1].destination == .rightOfUID("b"))
     }
+
+    // MARK: - Preferred movers
+
+    /// #885's minimal shape. The new item and `b` are interchangeable in a
+    /// length-two LCS, and the ordinary backtrack keeps the new item stable,
+    /// needlessly moving the established item instead.
+    @Test("An unmanaged arrival moves instead of an established item")
+    func unmanagedArrivalIsPreferredMover() {
+        let result = LayoutSolver.planLCSMoveSequence(
+            currentNoControls: ["a", "b", "new"],
+            desiredNoControls: ["a", "new", "b"],
+            sectionMap: ["a": "hidden", "b": "hidden", "new": "hidden"],
+            preferredMoveUIDs: ["new"]
+        )
+
+        #expect(result.count == 1)
+        #expect(result.first?.uid == "new")
+        #expect(result.first?.destination == .leftOfUID("b"))
+    }
+
+    /// The weighting is only a tie-break. If the unmanaged item already sits
+    /// correctly, it remains in the LCS and no move is invented.
+    @Test("A correctly placed unmanaged item remains stable")
+    func correctlyPlacedUnmanagedItemDoesNotMove() {
+        let result = LayoutSolver.planLCSMoveSequence(
+            currentNoControls: ["a", "new", "b"],
+            desiredNoControls: ["a", "new", "b"],
+            sectionMap: ["a": "hidden", "b": "hidden", "new": "hidden"],
+            preferredMoveUIDs: ["new"]
+        )
+
+        #expect(result.isEmpty)
+    }
+
+    /// Preferred movers only resolve ties between equally long subsequences.
+    /// They must not trade one established move for two unmanaged moves.
+    @Test("Preferred movers never shorten the LCS")
+    func preferredMoversDoNotShortenLCS() {
+        let result = LayoutSolver.planLCSMoveSequence(
+            currentNoControls: ["a", "b", "c", "n1", "n2"],
+            desiredNoControls: ["a", "b", "n1", "n2", "c"],
+            sectionMap: [
+                "a": "hidden", "b": "hidden", "c": "hidden",
+                "n1": "hidden", "n2": "hidden",
+            ],
+            preferredMoveUIDs: ["n1", "n2"]
+        )
+
+        #expect(result.count == 1)
+        #expect(result.first?.uid == "c")
+    }
+
+    /// Existing callers pass no preferred set and retain the historical LCS
+    /// tie-break, keeping the change local to unmanaged-arrival applies.
+    @Test("Without preferred movers the historical tie-break is unchanged")
+    func noPreferredMoversKeepsHistoricalTieBreak() {
+        let result = LayoutSolver.planLCSMoveSequence(
+            currentNoControls: ["a", "b", "new"],
+            desiredNoControls: ["a", "new", "b"],
+            sectionMap: ["a": "hidden", "b": "hidden", "new": "hidden"]
+        )
+
+        #expect(result.count == 1)
+        #expect(result.first?.uid == "b")
+    }
+
+    // MARK: - Unanchorable anchors
+
+    /// Thaw's chevron stays in the sequence — its position within visible is
+    /// part of the layout and is persisted — which also made it selectable
+    /// as a move anchor. Anchoring a failing move on one of Thaw's own
+    /// dividers is what walks it across the bar: the insertion lands on the
+    /// wrong side, the ordinal check refuses it, and because the bar lays
+    /// out right to left the divider is shoved further left on every attempt
+    /// (#924, #927). A neighbouring app item is an equally good insertion
+    /// point and costs nothing when the move goes wrong.
+    @Test("A control item is not chosen as an anchor when an app item is available")
+    func controlItemIsNotChosenAsAnchor() {
+        // current: [a, chevron, b, c] → desired: [a, chevron, c, b]
+        // `b` must move; scanning forward from its desired slot the first
+        // stable candidate is `chevron` going backward, `nil` going forward.
+        let sectionMap = ["a": "visible", "chevron": "visible", "b": "visible", "c": "visible"]
+        let result = LayoutSolver.planLCSMoveSequence(
+            currentNoControls: ["a", "chevron", "b", "c"],
+            desiredNoControls: ["a", "chevron", "c", "b"],
+            sectionMap: sectionMap,
+            unanchorableUIDs: ["chevron"]
+        )
+
+        for move in result {
+            if case let .leftOfUID(uid) = move.destination {
+                #expect(uid != "chevron", "planned a move anchored on the chevron")
+            }
+            if case let .rightOfUID(uid) = move.destination {
+                #expect(uid != "chevron", "planned a move anchored on the chevron")
+            }
+        }
+    }
+
+    /// Barring the chevron must not bar the move itself: with no other
+    /// stable item in the section the planner falls back to the section
+    /// boundary rather than giving up.
+    @Test("With no app-item anchor available the move falls back to the boundary")
+    func fallsBackToBoundaryWhenOnlyControlItemRemains() {
+        // Only the chevron is stable, and it is unanchorable.
+        let result = LayoutSolver.planLCSMoveSequence(
+            currentNoControls: ["chevron", "b"],
+            desiredNoControls: ["b", "chevron"],
+            sectionMap: ["chevron": "visible", "b": "visible"],
+            unanchorableUIDs: ["chevron"]
+        )
+
+        #expect(!result.isEmpty, "the move must still be planned")
+        for move in result {
+            if case .sectionBoundary = move.destination {
+                continue
+            }
+            if case let .leftOfUID(uid) = move.destination {
+                #expect(uid != "chevron")
+            }
+            if case let .rightOfUID(uid) = move.destination {
+                #expect(uid != "chevron")
+            }
+        }
+    }
+
+    /// Default argument keeps every existing caller and every existing
+    /// expectation in this suite unchanged.
+    @Test("With no unanchorable set the planner behaves exactly as before")
+    func emptyUnanchorableSetIsUnchanged() {
+        let current = ["a", "b", "c"]
+        let desired = ["b", "a", "c"]
+        let map = ["a": "visible", "b": "visible", "c": "visible"]
+
+        #expect(
+            LayoutSolver.planLCSMoveSequence(
+                currentNoControls: current, desiredNoControls: desired, sectionMap: map
+            ) == LayoutSolver.planLCSMoveSequence(
+                currentNoControls: current, desiredNoControls: desired, sectionMap: map,
+                unanchorableUIDs: []
+            )
+        )
+    }
 }

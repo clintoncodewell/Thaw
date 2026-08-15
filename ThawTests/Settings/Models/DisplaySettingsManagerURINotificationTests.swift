@@ -342,6 +342,59 @@ struct DisplaySettingsManagerURINotificationTests {
         }
     }
 
+    // MARK: useThawBarForAlwaysHidden
+
+    @Test("A useThawBarForAlwaysHidden value is written to the named display", arguments: [true, false])
+    func useThawBarForAlwaysHiddenValueIsApplied(value: Bool) throws {
+        try withScratchDefaults { _ in
+            let manager = makeManager(.defaultConfiguration.withUseThawBarForAlwaysHidden(!value))
+
+            manager.handleExternalPerDisplaySettingsChange(perDisplayChange([
+                "key": "useThawBarForAlwaysHidden",
+                "scope": "specific:\(offscreenUUID)",
+                "value": value,
+            ]))
+
+            #expect(manager.configurations[offscreenUUID]?.useThawBarForAlwaysHidden == value)
+        }
+    }
+
+    @Test("A useThawBarForAlwaysHidden toggle flips the named display", arguments: [true, false])
+    func useThawBarForAlwaysHiddenToggleFlipsTheDisplay(initial: Bool) throws {
+        try withScratchDefaults { _ in
+            let manager = makeManager(.defaultConfiguration.withUseThawBarForAlwaysHidden(initial))
+
+            manager.handleExternalPerDisplaySettingsChange(perDisplayChange([
+                "key": "useThawBarForAlwaysHidden",
+                "scope": "specific:\(offscreenUUID)",
+                "toggle": true,
+            ]))
+
+            #expect(manager.configurations[offscreenUUID]?.useThawBarForAlwaysHidden == !initial)
+        }
+    }
+
+    @Test("A useThawBarForAlwaysHidden notification with no usable payload changes nothing")
+    func useThawBarForAlwaysHiddenWithoutAUsablePayloadIsIgnored() throws {
+        try withScratchDefaults { _ in
+            let manager = makeManager()
+            let before = manager.configurations
+
+            manager.handleExternalPerDisplaySettingsChange(perDisplayChange([
+                "key": "useThawBarForAlwaysHidden",
+                "scope": "specific:\(offscreenUUID)",
+            ]))
+            #expect(manager.configurations == before, "no payload at all")
+
+            manager.handleExternalPerDisplaySettingsChange(perDisplayChange([
+                "key": "useThawBarForAlwaysHidden",
+                "scope": "specific:\(offscreenUUID)",
+                "value": "true",
+            ]))
+            #expect(manager.configurations == before, "a stringly-typed value")
+        }
+    }
+
     // MARK: alwaysShowHiddenItems
 
     @Test("An alwaysShowHiddenItems value is written to the named display", arguments: [true, false])
@@ -669,6 +722,79 @@ struct DisplaySettingsManagerURINotificationTests {
                 manager.configurations[offscreenUUID]?.alwaysShowHiddenItems == false,
                 "a stored but unattached display must not be swept up"
             )
+        }
+    }
+
+    /// The `allNonIceBar` broadcast of a `useThawBarForAlwaysHidden` value,
+    /// which walks the same non-Thaw-Bar filter as `alwaysShowHiddenItems`.
+    /// Vacuously true with no displays attached; the assertion about
+    /// ``offscreenUUID`` holds either way.
+    @Test("An allNonIceBar useThawBarForAlwaysHidden value reaches attached displays but not a stored one")
+    func allNonIceBarUseThawBarForAlwaysHiddenValueReachesAttachedDisplays() throws {
+        try withScratchDefaults { _ in
+            let manager = makeManager()
+
+            manager.handleExternalPerDisplaySettingsChange(perDisplayChange([
+                "key": "useThawBarForAlwaysHidden",
+                "scope": "allNonIceBar",
+                "value": true,
+            ]))
+
+            for display in manager.connectedDisplays() {
+                #expect(manager.configuration(forUUID: display.id).useThawBarForAlwaysHidden, "\(display.id)")
+            }
+            #expect(
+                manager.configurations[offscreenUUID]?.useThawBarForAlwaysHidden == false,
+                "a stored but unattached display must not be swept up"
+            )
+        }
+    }
+
+    /// The toggle flavour of the same broadcast. Every attached display sits
+    /// on the global template, so a flip lands them all on `true`.
+    @Test("An allNonIceBar useThawBarForAlwaysHidden toggle flips attached displays but not a stored one")
+    func allNonIceBarUseThawBarForAlwaysHiddenToggleFlipsAttachedDisplays() throws {
+        try withScratchDefaults { _ in
+            let manager = makeManager()
+
+            manager.handleExternalPerDisplaySettingsChange(perDisplayChange([
+                "key": "useThawBarForAlwaysHidden",
+                "scope": "allNonIceBar",
+                "toggle": true,
+            ]))
+
+            for display in manager.connectedDisplays() {
+                #expect(manager.configuration(forUUID: display.id).useThawBarForAlwaysHidden, "\(display.id)")
+            }
+            #expect(
+                manager.configurations[offscreenUUID]?.useThawBarForAlwaysHidden == false,
+                "a stored but unattached display must not be swept up"
+            )
+        }
+    }
+
+    /// `useThawBarForAlwaysHidden` only implements the `allNonIceBar` scope;
+    /// any other scope-wide request falls into the not-implemented arm and
+    /// must change nothing, set or toggle alike.
+    @Test("A useThawBarForAlwaysHidden broadcast on an unimplemented scope changes nothing", arguments: [
+        "value",
+        "toggle",
+    ])
+    func useThawBarForAlwaysHiddenUnimplementedScopeIsIgnored(payloadKey: String) throws {
+        try withScratchDefaults { _ in
+            let manager = makeManager()
+            let before = manager.configurations
+
+            manager.handleExternalPerDisplaySettingsChange(perDisplayChange([
+                "key": "useThawBarForAlwaysHidden",
+                "scope": "allEnabled",
+                payloadKey: true,
+            ]))
+
+            #expect(manager.configurations == before)
+            for display in manager.connectedDisplays() {
+                #expect(!manager.configuration(forUUID: display.id).useThawBarForAlwaysHidden, "\(display.id)")
+            }
         }
     }
 

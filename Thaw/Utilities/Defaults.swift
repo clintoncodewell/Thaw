@@ -191,12 +191,11 @@ nonisolated extension Defaults {
         #else
             static let enableDiagnosticLogging = false
         #endif
-        static let useLCSSortingOnNotchedDisplays = true
         static let useOptionClickToShowAlwaysHiddenSection = false
         static let useDoubleClickToShowAlwaysHiddenSection = false
         static let enableMenuBarItemOverflow = true
         static let useThawBarOnNotchOverflow = true
-        static let useAXClickDelivery = false
+        static let useAXClickDelivery = true
 
         // MARK: Search
 
@@ -205,6 +204,7 @@ nonisolated extension Defaults {
         static let searchIncludeVisible = true
         static let searchIncludeHidden = true
         static let searchIncludeAlwaysHidden = true
+        static let moveCursorToRevealedItem = false
 
         // MARK: Hotkeys Settings
 
@@ -224,6 +224,11 @@ nonisolated extension Defaults {
         // MARK: Hidden Diagnostic Flags
 
         static let inputPauseThresholdMs = 50
+        static let bulkApplyIdleThresholdMs = 300
+        static let bulkApplyIdleWaitCapMs = 2000
+        static let enforceConcealedSectionOrder = false
+        static let automaticArrangementEnabled = true
+        static let postMoveEventsToWindowOwner = true
         static let discardStrayMoveEvents = true
         static let failFastOnEventWindowMismatch = false
         static let axMessagingTimeout = SharedConstants.axMessagingTimeout
@@ -275,7 +280,6 @@ nonisolated extension Defaults {
         case iconRefreshInterval = "IconRefreshInterval"
         case showMenuBarTooltips = "ShowMenuBarTooltips"
         case enableDiagnosticLogging = "EnableDiagnosticLogging"
-        case useLCSSortingOnNotchedDisplays = "UseLCSSortingOnNotchedDisplays"
         case useOptionClickToShowAlwaysHiddenSection = "UseOptionClickToShowAlwaysHiddenSection"
         case useDoubleClickToShowAlwaysHiddenSection = "UseDoubleClickToShowAlwaysHiddenSection"
         case enableMenuBarItemOverflow = "EnableMenuBarItemOverflow"
@@ -289,6 +293,7 @@ nonisolated extension Defaults {
         case searchIncludeVisible = "SearchIncludeVisible"
         case searchIncludeHidden = "SearchIncludeHidden"
         case searchIncludeAlwaysHidden = "SearchIncludeAlwaysHidden"
+        case moveCursorToRevealedItem = "MoveCursorToRevealedItem"
 
         // MARK: Internal
 
@@ -311,6 +316,26 @@ nonisolated extension Defaults {
         /// previously stuck item movable is not hidden behind the two-week
         /// mark lifetime. Managed by ``MenuBarItemFailureLedger``.
         case unresponsiveMenuBarItemsBuild = "UnresponsiveMenuBarItemsBuild"
+
+        // MARK: Internal (Layout Identity)
+
+        /// How many consecutive applies each saved identifier has been
+        /// planned for without matching a live item, keyed by canonical
+        /// identifier. Managed by ``StaleIdentifierLedger``; not exposed in
+        /// Settings.
+        case staleIdentifierMissCounts = "StaleIdentifierMissCounts"
+
+        /// The app build the persisted miss counts were accumulated under. A
+        /// change drops them, so an improvement to identity resolution is not
+        /// hidden behind counts earned against the old behavior. Managed by
+        /// ``StaleIdentifierLedger``.
+        case staleIdentifierMissCountsBuild = "StaleIdentifierMissCountsBuild"
+
+        /// The app build whose pruning rules were last applied to the profile
+        /// files on disk. Managed by
+        /// ``ProfileManager/repairPersistedLayoutsIfNeeded()``; not exposed in
+        /// Settings.
+        case profileLayoutRepairBuild = "ProfileLayoutRepairBuild"
 
         // MARK: Appearance Settings
 
@@ -357,6 +382,106 @@ nonisolated extension Defaults {
         ///
         /// Hidden diagnostic flag; not exposed in Settings. Default: 50.
         case inputPauseThresholdMs = "inputPauseThresholdMs"
+
+        /// Milliseconds of input inactivity required before an *automatic*
+        /// bulk apply starts issuing its move sequence.
+        ///
+        /// `inputPauseThresholdMs` gates each individual move; this gates
+        /// the batch. A batch holds the cursor hidden for its whole length,
+        /// so starting one the instant a late arrival is noticed can take
+        /// the pointer away mid-interaction and then fight the user for it
+        /// move by move. Waiting for a real lull first costs nothing when
+        /// the bar is idle — the common case — and avoids the collision
+        /// entirely when it isn't.
+        ///
+        /// 300 ms is the default: a batch dispatched mid-interaction contests
+        /// the pointer for its whole length, and waiting for one real lull up
+        /// front costs nothing on an idle bar. Set 0 to disable the gate and
+        /// fall back to the per-move pause alone.
+        ///
+        /// Hidden diagnostic flag; not exposed in Settings. Default: 300.
+        case bulkApplyIdleThresholdMs = "bulkApplyIdleThresholdMs"
+
+        /// Maximum milliseconds an automatic bulk apply waits for the idle
+        /// window described by ``bulkApplyIdleThresholdMs``.
+        ///
+        /// The wait defers, it never cancels. A user who keeps the mouse
+        /// moving indefinitely would otherwise starve the apply forever,
+        /// and a layout that is never restored is a worse outcome than one
+        /// restored during input. Once the cap elapses the batch proceeds
+        /// as it always did.
+        ///
+        /// Ignored when the threshold is 0.
+        ///
+        /// Hidden diagnostic flag; not exposed in Settings. Default: 2000.
+        case bulkApplyIdleWaitCapMs = "bulkApplyIdleWaitCapMs"
+
+        /// Whether a bulk apply enforces item order *within* the hidden and
+        /// always-hidden sections, rather than only their membership.
+        ///
+        /// Every move costs the same whether or not its result is visible:
+        /// the cursor is hijacked, a drag is synthesised, the landing is
+        /// polled. On a bar with a well-populated hidden section a large
+        /// share of a batch can be spent reordering items parked thousands
+        /// of points off-screen, which the Thaw Bar renders from the cache
+        /// anyway. Setting this to false surrenders that ordering and keeps
+        /// membership, shortening batches on exactly the bars where long
+        /// batches hurt most.
+        ///
+        /// False by default: on a well-populated hidden section the ordering
+        /// moves are the bulk of a batch and none of their results are
+        /// visible, so surrendering them is what keeps batches short enough
+        /// not to fight the user. Set true to restore order as well as
+        /// membership inside the concealed sections.
+        ///
+        /// Hidden diagnostic flag; not exposed in Settings. Default: false.
+        case enforceConcealedSectionOrder = "enforceConcealedSectionOrder"
+
+        /// Whether Thaw rearranges the bar on its own initiative.
+        ///
+        /// The escape hatch for bars where the automatic paths misbehave in
+        /// ways no gate has caught. Set to false and the late-arrival
+        /// re-sort and the saved-layout restore both stand down; applying a
+        /// profile still works, so the user keeps a way to arrange the bar
+        /// deliberately — they just decide when.
+        ///
+        /// This is the blunt instrument. The graduated responses —
+        /// ``bulkApplyIdleThresholdMs``, ``enforceConcealedSectionOrder``,
+        /// and the unfinished-batch rationing in
+        /// `automaticBulkApplyPermitted` — are all better first attempts.
+        /// Reach for this when they have not helped.
+        ///
+        /// Hidden diagnostic flag; not exposed in Settings. Default: true.
+        case automaticArrangementEnabled = "automaticArrangementEnabled"
+
+        /// Whether synthetic move events are posted to the process that owns
+        /// the item's *window* rather than the app that owns the *item*.
+        ///
+        /// On macOS 26 those are different processes: Control Center hosts
+        /// every status item window, so the CG owner of the window Thaw is
+        /// dragging is Control Center, while `sourcePID` names the app whose
+        /// status item it logically is. Thaw has always preferred
+        /// `sourcePID`, which was right when the owning app really did own
+        /// the window, and on 26 targets a process that does not own the
+        /// window being dragged.
+        ///
+        /// Two consequences, both confirmed by the rc.3 test build. Moves
+        /// that failed with `itemResponseTimeout` were failing because the
+        /// events went to the wrong process (#900, #923, and the
+        /// notch-overflow ejections in #924). And an item whose owning app
+        /// never resolved need not be
+        /// immovable at all: with the host as the target, the move does not
+        /// require knowing who owns the item, so
+        /// ``MenuBarItem/ImmovabilityReason/unresolvedControlCenterPlaceholder``
+        /// stops applying while this is on, which is now the shipping
+        /// posture.
+        ///
+        /// On by default: on macOS 26 the window's owner is the process that
+        /// actually receives the drag, and addressing it is what lets a
+        /// Control Center slot with no resolved owner move at all.
+        ///
+        /// Hidden diagnostic flag; not exposed in Settings. Default: true.
+        case postMoveEventsToWindowOwner = "postMoveEventsToWindowOwner"
 
         /// Whether stray echoes of synthetic move events are discarded
         /// before they can be delivered against the wrong window.

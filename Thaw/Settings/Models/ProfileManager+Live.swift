@@ -27,6 +27,12 @@ extension ProfileManager {
         lastActiveDisplayUUID = Bridging.getActiveMenuBarDisplayUUID()
         rebuildProfileHotkeys()
 
+        // Before anything can apply a profile. Once per build, because each
+        // build is the only thing that can widen what pruning recognizes as
+        // unmatchable — repeating it within a build would rewrite the same
+        // files to the same bytes on every launch.
+        repairPersistedLayoutsIfNeeded()
+
         // Note: profiles' didSet already calls rebuildProfileHotkeys() for
         // every assignment after this class's own init, so no explicit
         // subscription is needed here (see the doc comment on `profiles`).
@@ -176,6 +182,19 @@ extension ProfileManager {
             // 2. Snapshot apply: push profile settings into the running
             //    app state.
             self?.applySnapshot(profile, to: appState)
+
+            // Take the offset from the configuration the snapshot just
+            // installed, rather than trusting whatever spacingManager
+            // happens to be holding. The push that normally keeps it in
+            // sync lives in configurations.didSet, which guards on
+            // oldValue != configurations, so applying a profile whose
+            // display configurations already match the live ones — the
+            // usual case, since the profile is where they came from —
+            // leaves the offset at its launch value of 0. applyOffset()
+            // below would then write the system default over the user's
+            // spacing and relaunch every menu bar app to do it.
+            appState.spacingManager.offset = appState.settings.displaySettings
+                .activeDisplaySpacingOffset
 
             // Run the spacing apply BEFORE the layout pass. Otherwise the
             // two race: applyOffset() kills and relaunches every menu bar

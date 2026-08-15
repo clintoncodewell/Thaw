@@ -95,13 +95,13 @@ struct AdvancedSettingsTests {
             Defaults.set(2.5, forKey: .tooltipDelay)
             Defaults.set(3.5, forKey: .iconRefreshInterval)
             Defaults.set(true, forKey: .showMenuBarTooltips)
-            Defaults.set(false, forKey: .useLCSSortingOnNotchedDisplays)
             Defaults.set(false, forKey: .enableMenuBarItemOverflow)
             Defaults.set(false, forKey: .useThawBarOnNotchOverflow)
             Defaults.set(true, forKey: .useAXClickDelivery)
             Defaults.set(false, forKey: .searchIncludeVisible)
             Defaults.set(false, forKey: .searchIncludeHidden)
             Defaults.set(false, forKey: .searchIncludeAlwaysHidden)
+            Defaults.set(true, forKey: .moveCursorToRevealedItem)
 
             let settings = makeSettings()
 
@@ -117,13 +117,13 @@ struct AdvancedSettingsTests {
             #expect(settings.iconRefreshInterval == 1.0)
             #expect(Defaults.double(forKey: .iconRefreshInterval) == 1.0)
             #expect(settings.showMenuBarTooltips)
-            #expect(!settings.useLCSSortingOnNotchedDisplays)
             #expect(!settings.enableMenuBarItemOverflow)
             #expect(!settings.useThawBarOnNotchOverflow)
             #expect(settings.useAXClickDelivery)
             #expect(!settings.searchIncludeVisible)
             #expect(!settings.searchIncludeHidden)
             #expect(!settings.searchIncludeAlwaysHidden)
+            #expect(settings.moveCursorToRevealedItem)
         }
     }
 
@@ -217,7 +217,9 @@ struct AdvancedSettingsTests {
             settings.tooltipDelay = 1.25
             settings.sectionDividerStyle = .chevron
             settings.searchSectionOrder = [.alwaysHidden, .hidden, .visible]
+            settings.moveCursorToRevealedItem = true
 
+            #expect(Defaults.bool(forKey: .moveCursorToRevealedItem))
             #expect(Defaults.bool(forKey: .enableAlwaysHiddenSection))
             #expect(Defaults.double(forKey: .tooltipDelay) == 1.25)
             #expect(Defaults.integer(forKey: .sectionDividerStyle) == SectionDividerStyle.chevron.rawValue)
@@ -257,7 +259,6 @@ struct AdvancedSettingsTests {
                 ["key": "enableSecondaryContextMenu", "value": false],
                 ["key": "enableSecondaryContextMenuQuit", "value": true],
                 ["key": "showMenuBarTooltips", "value": true],
-                ["key": "useLCSSortingOnNotchedDisplays", "value": false],
                 ["key": "enableMenuBarItemOverflow", "value": false],
                 ["key": "useThawBarOnNotchOverflow", "value": false],
                 ["key": "useAXClickDelivery", "value": true],
@@ -271,7 +272,6 @@ struct AdvancedSettingsTests {
             #expect(!settings.enableSecondaryContextMenu)
             #expect(settings.enableSecondaryContextMenuQuit)
             #expect(settings.showMenuBarTooltips)
-            #expect(!settings.useLCSSortingOnNotchedDisplays)
             #expect(!settings.enableMenuBarItemOverflow)
             #expect(!settings.useThawBarOnNotchOverflow)
             #expect(settings.useAXClickDelivery)
@@ -292,6 +292,17 @@ struct AdvancedSettingsTests {
             #expect(!settings.searchIncludeVisible)
             #expect(!settings.searchIncludeHidden)
             #expect(!settings.searchIncludeAlwaysHidden)
+        }
+    }
+
+    @Test("An external change to the pointer-move setting updates it")
+    func externalMoveCursorChangeIsApplied() async throws {
+        try await withScratchDefaults { _ in
+            let settings = makeSettings()
+
+            await postExternalChange(["key": "moveCursorToRevealedItem", "value": true])
+
+            #expect(settings.moveCursorToRevealedItem)
         }
     }
 

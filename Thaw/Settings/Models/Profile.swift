@@ -104,16 +104,30 @@ nonisolated struct AdvancedSettingsSnapshot: Codable {
     var tooltipDelay: TimeInterval
     var showMenuBarTooltips: Bool
     var iconRefreshInterval: TimeInterval
-    var enableDiagnosticLogging: Bool
+    // enableDiagnosticLogging is deliberately NOT part of a profile.
+    //
+    // It is a diagnostic control, not a preference: a user turns it on to
+    // capture a log, and the thing they most often need to capture is a
+    // profile switch. Carrying it in the snapshot meant applying a profile
+    // restored whatever the switch was when that profile was saved — off,
+    // for every profile that already exists — so the logging stopped at
+    // the exact moment it was wanted, and the switch appeared to flip
+    // itself back (reported on #899). Leaving it out means it stays where
+    // the user put it, for the whole session, across every profile.
+    //
+    // Removing the field is safe in both directions: every property here
+    // decodes with `decodeIfPresent` and a default, so a new build ignores
+    // the key still present in old profiles, and an older build reading a
+    // newly-written profile falls back to the default rather than failing.
     var useDoubleClickToShowAlwaysHiddenSection: Bool
     var useOptionClickToShowAlwaysHiddenSection: Bool
-    var useLCSSortingOnNotchedDisplays: Bool
     var enableMenuBarItemOverflow: Bool
     var useThawBarOnNotchOverflow: Bool
     var searchSectionOrder: [String]
     var searchIncludeVisible: Bool
     var searchIncludeHidden: Bool
     var searchIncludeAlwaysHidden: Bool
+    var moveCursorToRevealedItem: Bool
 
     @MainActor
     static func capture(from settings: AdvancedSettings) -> AdvancedSettingsSnapshot {
@@ -128,16 +142,15 @@ nonisolated struct AdvancedSettingsSnapshot: Codable {
             tooltipDelay: settings.tooltipDelay,
             showMenuBarTooltips: settings.showMenuBarTooltips,
             iconRefreshInterval: settings.iconRefreshInterval,
-            enableDiagnosticLogging: settings.enableDiagnosticLogging,
             useDoubleClickToShowAlwaysHiddenSection: settings.useDoubleClickToShowAlwaysHiddenSection,
             useOptionClickToShowAlwaysHiddenSection: settings.useOptionClickToShowAlwaysHiddenSection,
-            useLCSSortingOnNotchedDisplays: settings.useLCSSortingOnNotchedDisplays,
             enableMenuBarItemOverflow: settings.enableMenuBarItemOverflow,
             useThawBarOnNotchOverflow: settings.useThawBarOnNotchOverflow,
             searchSectionOrder: settings.searchSectionOrder.map(\.rawValue),
             searchIncludeVisible: settings.searchIncludeVisible,
             searchIncludeHidden: settings.searchIncludeHidden,
-            searchIncludeAlwaysHidden: settings.searchIncludeAlwaysHidden
+            searchIncludeAlwaysHidden: settings.searchIncludeAlwaysHidden,
+            moveCursorToRevealedItem: settings.moveCursorToRevealedItem
         )
     }
 
@@ -155,16 +168,16 @@ nonisolated struct AdvancedSettingsSnapshot: Codable {
         settings.tooltipDelay = tooltipDelay
         settings.showMenuBarTooltips = showMenuBarTooltips
         settings.iconRefreshInterval = iconRefreshInterval
-        settings.enableDiagnosticLogging = enableDiagnosticLogging
+        // enableDiagnosticLogging intentionally untouched — see the property list.
         settings.useDoubleClickToShowAlwaysHiddenSection = useDoubleClickToShowAlwaysHiddenSection
         settings.useOptionClickToShowAlwaysHiddenSection = useOptionClickToShowAlwaysHiddenSection
-        settings.useLCSSortingOnNotchedDisplays = useLCSSortingOnNotchedDisplays
         settings.enableMenuBarItemOverflow = enableMenuBarItemOverflow
         settings.useThawBarOnNotchOverflow = useThawBarOnNotchOverflow
         settings.searchSectionOrder = AdvancedSettings.sanitizedSearchSectionOrder(from: searchSectionOrder)
         settings.searchIncludeVisible = searchIncludeVisible
         settings.searchIncludeHidden = searchIncludeHidden
         settings.searchIncludeAlwaysHidden = searchIncludeAlwaysHidden
+        settings.moveCursorToRevealedItem = moveCursorToRevealedItem
     }
 
     enum CodingKeys: String, CodingKey {
@@ -178,16 +191,15 @@ nonisolated struct AdvancedSettingsSnapshot: Codable {
         case tooltipDelay
         case showMenuBarTooltips
         case iconRefreshInterval
-        case enableDiagnosticLogging
         case useDoubleClickToShowAlwaysHiddenSection
         case useOptionClickToShowAlwaysHiddenSection
-        case useLCSSortingOnNotchedDisplays
         case enableMenuBarItemOverflow
         case useThawBarOnNotchOverflow
         case searchSectionOrder
         case searchIncludeVisible
         case searchIncludeHidden
         case searchIncludeAlwaysHidden
+        case moveCursorToRevealedItem
     }
 
     init(
@@ -201,16 +213,15 @@ nonisolated struct AdvancedSettingsSnapshot: Codable {
         tooltipDelay: TimeInterval,
         showMenuBarTooltips: Bool,
         iconRefreshInterval: TimeInterval,
-        enableDiagnosticLogging: Bool,
         useDoubleClickToShowAlwaysHiddenSection: Bool,
         useOptionClickToShowAlwaysHiddenSection: Bool,
-        useLCSSortingOnNotchedDisplays: Bool,
         enableMenuBarItemOverflow: Bool,
         useThawBarOnNotchOverflow: Bool = Defaults.DefaultValue.useThawBarOnNotchOverflow,
         searchSectionOrder: [String],
         searchIncludeVisible: Bool,
         searchIncludeHidden: Bool,
-        searchIncludeAlwaysHidden: Bool
+        searchIncludeAlwaysHidden: Bool,
+        moveCursorToRevealedItem: Bool = Defaults.DefaultValue.moveCursorToRevealedItem
     ) {
         self.enableAlwaysHiddenSection = enableAlwaysHiddenSection
         self.showAllSectionsOnUserDrag = showAllSectionsOnUserDrag
@@ -222,16 +233,15 @@ nonisolated struct AdvancedSettingsSnapshot: Codable {
         self.tooltipDelay = tooltipDelay
         self.showMenuBarTooltips = showMenuBarTooltips
         self.iconRefreshInterval = iconRefreshInterval
-        self.enableDiagnosticLogging = enableDiagnosticLogging
         self.useDoubleClickToShowAlwaysHiddenSection = useDoubleClickToShowAlwaysHiddenSection
         self.useOptionClickToShowAlwaysHiddenSection = useOptionClickToShowAlwaysHiddenSection
-        self.useLCSSortingOnNotchedDisplays = useLCSSortingOnNotchedDisplays
         self.enableMenuBarItemOverflow = enableMenuBarItemOverflow
         self.useThawBarOnNotchOverflow = useThawBarOnNotchOverflow
         self.searchSectionOrder = searchSectionOrder
         self.searchIncludeVisible = searchIncludeVisible
         self.searchIncludeHidden = searchIncludeHidden
         self.searchIncludeAlwaysHidden = searchIncludeAlwaysHidden
+        self.moveCursorToRevealedItem = moveCursorToRevealedItem
     }
 
     init(from decoder: Decoder) throws {
@@ -266,18 +276,14 @@ nonisolated struct AdvancedSettingsSnapshot: Codable {
         iconRefreshInterval = try container.decodeIfPresent(
             TimeInterval.self, forKey: .iconRefreshInterval
         ) ?? Defaults.DefaultValue.iconRefreshInterval
-        enableDiagnosticLogging = try container.decodeIfPresent(
-            Bool.self, forKey: .enableDiagnosticLogging
-        ) ?? Defaults.DefaultValue.enableDiagnosticLogging
+        // No enableDiagnosticLogging decode: the key may still be present in
+        // profiles written by earlier builds and is ignored on purpose.
         useDoubleClickToShowAlwaysHiddenSection = try container.decodeIfPresent(
             Bool.self, forKey: .useDoubleClickToShowAlwaysHiddenSection
         ) ?? Defaults.DefaultValue.useDoubleClickToShowAlwaysHiddenSection
         useOptionClickToShowAlwaysHiddenSection = try container.decodeIfPresent(
             Bool.self, forKey: .useOptionClickToShowAlwaysHiddenSection
         ) ?? Defaults.DefaultValue.useOptionClickToShowAlwaysHiddenSection
-        useLCSSortingOnNotchedDisplays = try container.decodeIfPresent(
-            Bool.self, forKey: .useLCSSortingOnNotchedDisplays
-        ) ?? Defaults.DefaultValue.useLCSSortingOnNotchedDisplays
         enableMenuBarItemOverflow = try container.decodeIfPresent(
             Bool.self, forKey: .enableMenuBarItemOverflow
         ) ?? Defaults.DefaultValue.enableMenuBarItemOverflow
@@ -296,6 +302,9 @@ nonisolated struct AdvancedSettingsSnapshot: Codable {
         searchIncludeAlwaysHidden = try container.decodeIfPresent(
             Bool.self, forKey: .searchIncludeAlwaysHidden
         ) ?? Defaults.DefaultValue.searchIncludeAlwaysHidden
+        moveCursorToRevealedItem = try container.decodeIfPresent(
+            Bool.self, forKey: .moveCursorToRevealedItem
+        ) ?? Defaults.DefaultValue.moveCursorToRevealedItem
     }
 }
 
@@ -339,11 +348,23 @@ nonisolated struct MenuBarLayoutSnapshot: Codable {
     /// a plain `??` that empty dictionary shadows a perfectly good
     /// `savedSectionOrder`, and the next apply sees no layout at all. Treating
     /// it as absent also repairs profiles already written that way.
+    /// Pruned on the way out, the way ``MenuBarItemManager`` prunes the saved
+    /// section order it loads from disk. A profile is captured from the live
+    /// bar, so a capture taken while source-PID resolution was degraded bakes
+    /// in identifiers that can never match a live item again — and unlike the
+    /// saved order, nothing rewrites a profile in the background to repair it.
+    /// #881's reporter carried a profile holding both the provisional and the
+    /// resolved form of several items, and the apply planned against both.
+    ///
+    /// Every consumer reads the layout through here or through
+    /// ``resolvedItemSectionMap`` below, including the identifier set that
+    /// arrival detection matches against, so pruning once at the read covers
+    /// them all.
     var resolvedItemOrder: [String: [String]] {
         guard let itemOrder, !itemOrder.isEmpty else {
-            return savedSectionOrder
+            return LayoutSolver.prunedSectionOrder(savedSectionOrder)
         }
-        return itemOrder
+        return LayoutSolver.prunedSectionOrder(itemOrder)
     }
 
     /// Resolves per-item section assignments for both current and legacy
@@ -515,16 +536,15 @@ nonisolated struct Profile: Codable, Identifiable {
             tooltipDelay: Defaults.DefaultValue.tooltipDelay,
             showMenuBarTooltips: Defaults.DefaultValue.showMenuBarTooltips,
             iconRefreshInterval: Defaults.DefaultValue.iconRefreshInterval,
-            enableDiagnosticLogging: Defaults.DefaultValue.enableDiagnosticLogging,
             useDoubleClickToShowAlwaysHiddenSection: Defaults.DefaultValue.useDoubleClickToShowAlwaysHiddenSection,
             useOptionClickToShowAlwaysHiddenSection: Defaults.DefaultValue.useOptionClickToShowAlwaysHiddenSection,
-            useLCSSortingOnNotchedDisplays: Defaults.DefaultValue.useLCSSortingOnNotchedDisplays,
             enableMenuBarItemOverflow: Defaults.DefaultValue.enableMenuBarItemOverflow,
             useThawBarOnNotchOverflow: Defaults.DefaultValue.useThawBarOnNotchOverflow,
             searchSectionOrder: Defaults.DefaultValue.searchSectionOrder,
             searchIncludeVisible: Defaults.DefaultValue.searchIncludeVisible,
             searchIncludeHidden: Defaults.DefaultValue.searchIncludeHidden,
-            searchIncludeAlwaysHidden: Defaults.DefaultValue.searchIncludeAlwaysHidden
+            searchIncludeAlwaysHidden: Defaults.DefaultValue.searchIncludeAlwaysHidden,
+            moveCursorToRevealedItem: Defaults.DefaultValue.moveCursorToRevealedItem
         )
 
         hotkeys = try container.decodeIfPresent(

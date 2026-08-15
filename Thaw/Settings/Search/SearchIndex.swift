@@ -77,10 +77,10 @@ nonisolated struct SearchEntry: Identifiable, @unchecked Sendable {
     var disclosure: AppNavigationState.SettingsDisclosure? {
         switch id {
         case "advanced.alwaysUseAppIconForMenuBarItems",
+             "advanced.automaticArrangementEnabled",
              "advanced.enableMenuBarItemOverflow",
              "advanced.useThawBarOnNotchOverflow",
-             "advanced.menuBarOrderFulfillmentTimeout",
-             "advanced.useLCSSortingOnNotchedDisplays":
+             "advanced.menuBarOrderFulfillmentTimeout":
             .advancedLayoutControls
         default:
             nil
@@ -497,6 +497,20 @@ nonisolated enum SearchIndex {
             property: .advanced("searchIncludeAlwaysHidden")
         ),
         SearchEntry(
+            id: "advanced.moveCursorToRevealedItem",
+            titleKey: "Move the pointer to revealed items",
+            titleText: "Move the pointer to revealed items",
+            descriptionText: """
+            When you open a menu bar item from the search panel, move the mouse \
+            pointer next to it, so its menu appears under the pointer.
+            """,
+            pane: .advanced,
+            sectionKey: "Menu Bar Search",
+            sectionText: "Menu Bar Search",
+            keywords: ["search", "cursor", "pointer", "mouse", "move"],
+            property: .advanced("moveCursorToRevealedItem")
+        ),
+        SearchEntry(
             id: "advanced.showMenuBarTooltips",
             titleKey: "Show tooltips in the menu bar",
             titleText: "Show tooltips in the menu bar",
@@ -519,6 +533,19 @@ nonisolated enum SearchIndex {
             property: .advanced("tooltipDelay")
         ),
         SearchEntry(
+            id: "advanced.automaticArrangementEnabled",
+            // Reuses catalog strings that are already fully translated, so
+            // the entry ships localized without a new Crowdin round.
+            titleKey: "Arrange menu bar items.",
+            titleText: "Arrange menu bar items.",
+            descriptionText: "Items can also be arranged by ⌘ Command + dragging them in the menu bar.",
+            pane: .menuBarLayout,
+            sectionKey: "Advanced layout controls",
+            sectionText: "Advanced layout controls",
+            keywords: ["arrange", "automatic", "manual", "reorder", "layout"],
+            property: .advanced("automaticArrangementEnabled")
+        ),
+        SearchEntry(
             id: "advanced.enableMenuBarItemOverflow",
             titleKey: "Move items that don't fit into Hidden",
             titleText: "Move items that don't fit into Hidden",
@@ -539,17 +566,6 @@ nonisolated enum SearchIndex {
             sectionText: "Advanced layout controls",
             keywords: ["overflow", "notch", "thaw bar", "ice bar", "hidden", "reveal"],
             property: .advanced("useThawBarOnNotchOverflow")
-        ),
-        SearchEntry(
-            id: "advanced.useLCSSortingOnNotchedDisplays",
-            titleKey: "Use LCS sorting on notched displays",
-            titleText: "Use LCS sorting on notched displays",
-            descriptionText: "Use the faster LCS algorithm for profile sorting on notched displays instead of the full sort.",
-            pane: .menuBarLayout,
-            sectionKey: "Advanced layout controls",
-            sectionText: "Advanced layout controls",
-            keywords: ["lcs", "sorting", "notch", "profile", "sort"],
-            property: .advanced("useLCSSortingOnNotchedDisplays")
         ),
         SearchEntry(
             id: "advanced.hideApplicationMenus",
@@ -613,6 +629,17 @@ nonisolated enum SearchIndex {
             sectionKey: "Global",
             sectionText: "Global",
             keywords: ["ice bar", "thaw bar", "hidden", "separate bar"],
+            property: nil
+        ),
+        SearchEntry(
+            id: "displays.useThawBarForAlwaysHidden",
+            titleKey: "Always-hidden items only",
+            titleText: "Always-hidden items only",
+            descriptionText: "Show always-hidden menu bar items in the \(Constants.displayName) Bar, while hidden items keep expanding in the menu bar.",
+            pane: .displays,
+            sectionKey: "Global",
+            sectionText: "Global",
+            keywords: ["ice bar", "thaw bar", "always-hidden", "always hidden", "only"],
             property: nil
         ),
         SearchEntry(

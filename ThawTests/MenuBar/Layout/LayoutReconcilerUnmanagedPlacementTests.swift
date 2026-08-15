@@ -232,6 +232,93 @@ struct LayoutReconcilerUnmanagedPlacementTests {
         ])
     }
 
+    // MARK: - Pass 2: multiple anchored placements sharing one anchor
+
+    //
+    // `LayoutSolver.planUnmanagedPlacement` gives every unmanaged item that
+    // lacks a saved position the *same* `.newItemAnchored` placement — the
+    // user's configured NewItemsPlacement anchor — so several items sharing
+    // one anchor is the common case, not an edge case. These tests pin the
+    // contract that the group keeps its unmanagedUIDs relative order, which
+    // mirrors the order-preservation guarantee Pass 3 states explicitly.
+
+    @Test("Several rightOfAnchor placements sharing one anchor keep their unmanagedUIDs order")
+    func rightOfAnchorPlacementsPreserveUnmanagedOrder() {
+        // Inserting after the anchor does not shift it, so a naive rightOf
+        // pass re-derives the same `anchorIdx + 1` slot on every iteration
+        // and reverses the group ([anchor, second, first] instead of
+        // [anchor, first, second]). The pass must advance past the items
+        // already placed right of the anchor.
+        let result = apply(
+            placements: [
+                "app:first": .newItemAnchored(
+                    section: .visible,
+                    anchorUID: "app:anchor",
+                    relation: .rightOfAnchor
+                ),
+                "app:second": .newItemAnchored(
+                    section: .visible,
+                    anchorUID: "app:anchor",
+                    relation: .rightOfAnchor
+                ),
+            ],
+            unmanagedUIDs: ["app:first", "app:second"],
+            desiredFiltered: [Self.chevron, "app:anchor", Self.hiddenControl]
+        )
+
+        #expect(result.desiredFiltered == [
+            Self.chevron, "app:anchor", "app:first", "app:second", Self.hiddenControl,
+        ])
+        #expect(result.sectionMap["app:first"] == "visible")
+        #expect(result.sectionMap["app:second"] == "visible")
+    }
+
+    @Test("Three rightOfAnchor placements sharing one anchor keep their order")
+    func rightOfAnchorPreservesOrderForThreeItems() {
+        // The offset must scale with the group size, not just the pair case.
+        let result = apply(
+            placements: [
+                "app:a": .newItemAnchored(section: .visible, anchorUID: "app:anchor", relation: .rightOfAnchor),
+                "app:b": .newItemAnchored(section: .visible, anchorUID: "app:anchor", relation: .rightOfAnchor),
+                "app:c": .newItemAnchored(section: .visible, anchorUID: "app:anchor", relation: .rightOfAnchor),
+            ],
+            unmanagedUIDs: ["app:a", "app:b", "app:c"],
+            desiredFiltered: [Self.chevron, "app:anchor", Self.hiddenControl]
+        )
+
+        #expect(result.desiredFiltered == [
+            Self.chevron, "app:anchor", "app:a", "app:b", "app:c", Self.hiddenControl,
+        ])
+    }
+
+    @Test("Several leftOfAnchor placements sharing one anchor keep their unmanagedUIDs order")
+    func leftOfAnchorPlacementsPreserveUnmanagedOrder() {
+        // Mirror of the rightOf case. leftOf already preserves order
+        // because inserting before the anchor shifts it right, advancing
+        // the resolved anchor index. Pinned here so the rightOf fix cannot
+        // silently regress the leftOf path.
+        let result = apply(
+            placements: [
+                "app:first": .newItemAnchored(
+                    section: .visible,
+                    anchorUID: "app:anchor",
+                    relation: .leftOfAnchor
+                ),
+                "app:second": .newItemAnchored(
+                    section: .visible,
+                    anchorUID: "app:anchor",
+                    relation: .leftOfAnchor
+                ),
+            ],
+            unmanagedUIDs: ["app:first", "app:second"],
+            desiredFiltered: [Self.chevron, "app:anchor", Self.hiddenControl]
+        )
+
+        #expect(result.desiredFiltered == [
+            Self.chevron, "app:first", "app:second", "app:anchor", Self.hiddenControl,
+        ])
+    }
+
     @Test("An anchored placement with the sectionDefault relation ignores its anchor and lands at the section end")
     func anchoredSectionDefaultRelationLandsAtSectionEnd() {
         // .sectionDefault means "no anchor preference", so the anchor uid
@@ -558,5 +645,53 @@ struct LayoutReconcilerUnmanagedPlacementTests {
         #expect(result.desiredFiltered == [
             Self.chevron, "app:other", "app:dup", Self.hiddenControl,
         ])
+    }
+
+    /// The rightOf offset counts insertions, but the computed slot is then
+    /// clamped into the named section. When the anchor lives left of that
+    /// section, every slot clamps to the same section start, and counting
+    /// does not help: the second item is inserted at the start again, ahead
+    /// of the first, reversing exactly the group order #919 set out to
+    /// preserve.
+    @Test("rightOf items keep their order even when the anchor is outside their section")
+    func rightOfAnchorOutsideSectionKeepsOrder() throws {
+        let anchor = "vis1"
+        let result = apply(
+            placements: [
+                "newA": .newItemAnchored(section: .alwaysHidden, anchorUID: anchor, relation: .rightOfAnchor),
+                "newB": .newItemAnchored(section: .alwaysHidden, anchorUID: anchor, relation: .rightOfAnchor),
+            ],
+            unmanagedUIDs: ["newA", "newB"],
+            desiredFiltered: [Self.chevron, anchor, Self.hiddenControl, Self.alwaysHiddenControl]
+        )
+
+        let a = result.desiredFiltered.firstIndex(of: "newA")
+        let b = result.desiredFiltered.firstIndex(of: "newB")
+        #expect(a != nil && b != nil)
+        #expect(try #require(a) < b!, "newA was listed first in unmanagedUIDs, so it must stay left of newB")
+    }
+
+    /// A leftOf insertion at the clamped section start shifts every item
+    /// already placed there one slot right. A landing site recorded as an
+    /// *index* goes stale at that moment: the next rightOf item's floor is
+    /// one slot low and it lands ahead of its predecessor, reversing the
+    /// group. The floor must follow the placed item, not its old index.
+    @Test("rightOf items keep their order when a leftOf insertion shifts the clamped section start")
+    func rightOfAnchorKeepsOrderAcrossInterleavedLeftOfInsertion() throws {
+        let anchor = "vis1"
+        let result = apply(
+            placements: [
+                "newA": .newItemAnchored(section: .alwaysHidden, anchorUID: anchor, relation: .rightOfAnchor),
+                "newB": .newItemAnchored(section: .alwaysHidden, anchorUID: anchor, relation: .leftOfAnchor),
+                "newC": .newItemAnchored(section: .alwaysHidden, anchorUID: anchor, relation: .rightOfAnchor),
+            ],
+            unmanagedUIDs: ["newA", "newB", "newC"],
+            desiredFiltered: [Self.chevron, anchor, Self.hiddenControl, Self.alwaysHiddenControl]
+        )
+
+        let a = result.desiredFiltered.firstIndex(of: "newA")
+        let c = result.desiredFiltered.firstIndex(of: "newC")
+        #expect(a != nil && c != nil)
+        #expect(try #require(a) < c!, "newA was listed first in unmanagedUIDs, so it must stay left of newC")
     }
 }

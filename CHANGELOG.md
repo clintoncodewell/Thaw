@@ -9,6 +9,174 @@ and the Sparkle appcast, unless overridden with the `release_notes` input.
 
 ## [Unreleased]
 
+## [2.0.0-rc.3]
+
+Please report issues at
+[github.com/thaw-app/Thaw/issues](https://github.com/thaw-app/Thaw/issues).
+
+Almost all of this release is one reliability track through the launch/move
+pipeline, driven by field logs from rc.2.1: cold-start restore, move planning,
+control-item pairing, and the persist gates that decide whether any of it
+reaches disk. Each storm fix exposed the next failure mode in the same chain,
+so they land together.
+
+---
+
+### Highlights
+
+- **Launch restore actually runs** — the saved layout is applied at cold start instead of losing to a move cooldown that launch itself had stamped ~0.4 s earlier (#881, #900).
+- **Storms are bounded** — a failed or parked-divider move can no longer hijack the cursor indefinitely or write a half-finished order into `savedSectionOrder`.
+- **Control-item pairing repaired** — Thaw's visible chevron is no longer mistaken for the hidden divider, the mispair behind hidden sections reading zero width (#923, #924, #927).
+- **Memory leak closed** — recache backoff stops the CA fence port growth reported at 47 GiB on macOS 26 (#933).
+- **Field repair** — `Thaw --reset-layout` clears persisted order and re-seeds dividers without starting the app.
+
+---
+
+### Menu bar & layout
+
+#### Cold start and settling
+- Launch restore bypasses the saved-layout and move cooldowns that launch itself stamped. `applySavedLayout` had been rejected on every launch by the cooldown its own chain created when it moved our control item (#881).
+- Early apply moves identities whose `sourcePID` has already resolved rather than waiting out the full resolution pass, which runs ~8 s on a dense bar while Control Center is slow to answer. The match is exact on `uniqueIdentifier`, so an unresolved sibling cannot be moved by mistake.
+- The Thaw icon relocates immediately when macOS parks it left of the hidden divider, instead of leaving the menu bar without a Thaw icon for the whole settling period.
+
+#### Move planning and storm bounds
+- The full-sort planner that rearranged the entire bar is gone. Bulk apply keeps the per-item and control-item paths (#885).
+- Move success is verified by adjacency in a single snapshot instead of exact `CGFloat` coordinate equality against a target that reflows mid-drag. Stale destinations abort rather than burn retries.
+- Failed move attempts no longer starve the operation timeout budget.
+- An unfinished bulk apply no longer writes its partial order into `savedSectionOrder`.
+- Automatic re-applies are capped: one retry after an unfinished batch, then a 60 s cooldown, and a batch abandons after three consecutive failures. Notch-overflow ejections now go through the failure ledger (#900).
+- An automatic bulk apply waits for a 300 ms lull in input before issuing its sequence, capped at 2 s so the batch still runs. A batch holds the cursor for its whole length, so one dispatched the instant a late arrival is noticed used to take the pointer mid-interaction and then contest it move by move (#899, #723).
+- Synthetic move events address the window's owner instead of the app that owns the item. On macOS 26 Control Center hosts every status item window, so those are different processes; addressing the host is what lets a slot with an unresolved owner move at all, and it clears move failures that were timing out against a process that did not own the drag (#900, #923, #924).
+- Bulk apply restores membership in the hidden and always-hidden sections but no longer reorders *within* them. Each of those moves costs a cursor hijack and a synthesised drag to land an item thousands of points off-screen, where Thaw Bar renders from the cache anyway. Dropping them is most of what shortens long batches on the bars where length hurts.
+- Parked off-screen items are excluded from the `H_ctrl` drag anchor, and a parked divider skips the boundary move and records ledger backoff (#899).
+- Late-arrival detection ignores unresolved identities, so a `sourcePID` flap no longer reads as a bar full of new items.
+- Display-sized overlay windows (Droppy's drag catcher, for one) are no longer treated as an open menu.
+- Diagnostics log a section-order digest instead of counts alone.
+
+#### Control items and identity
+- Control-item pairing no longer selects Thaw's visible chevron as the hidden divider. The mispair made the hidden section read zero width, so every item landed visible after a restart (#927), hidden icons left of the notch had no region to render into (#924), and layout-editor drags had no divider to verify against (#923).
+- Divider seeding and restore write through the section-divider guard, and hide or removal restores divider positions too (#890).
+- `preflightSetup` no longer re-stamps the hidden divider to `1` on every launch and status-item recreation. That second write had been draining `savedSectionOrder` across launches, 64/46/12 down to 42/52/12 in two clean starts (#895).
+- Source PID resolution no longer skips Thaw's own disabled dividers, which is the normal state of a collapsed section (#899).
+- AX-correlated identity can promote an unresolved Control Center placeholder, so layout-editor moves and saved order use the owning app's identifier (#905).
+- Owner-titled degraded readings (`bundleId:bundleId`) count as a failed observation rather than a new bar, so they stop minting a second identifier set (#881, #927).
+- Stale saved identifiers stop matching once the bar retires them, and foreign items are no longer namespaced under `com.stonerl.Thaw:`.
+- Source PIDs are re-asked when the first scan after login leaves items provisional, and a dead cached PID no longer wins over live resolution.
+- Silent move refusals log the stage, gate, and owner instead of a bare `cannotComplete` (#905).
+
+#### Persist gates
+- An emptied hidden section (everything dragged into Visible) no longer latches `hiddenSectionHasRoom` permanently read-only. A genuine collapse still refuses; parked off-display items are what tell the two apart (#868).
+- Temporarily shown items no longer register as layout drift, so opening a hidden item's menu stops dispatching a bulk apply that dumps the hidden section (#907).
+- The always-hidden display-spread gate ignores parked items. It had been skipping `saveSectionOrder` on every cache cycle on multi-display setups, 1088 skips and zero writes in one day of field logs, which left always-hidden items looking new and let quitting any app drag them back to Visible (#930, thanks @nightah).
+- LyricsX-style lyric titles collapse to a stable identity, so a song change stops minting new items (#815, thanks @yoodu).
+- Saved-layout entries that can never match a live item again are pruned.
+
+---
+
+### Settings, profiles & onboarding
+
+- Profile list rows preview the saved layout next to the key behaviour settings (#887).
+- "Update All" marks a profile active when its capture matches the running state (#904).
+- Applying a profile uses that profile's spacing offset instead of a stale `0` (#903).
+- Profiles prune Control-Center-hosted empty-title identifiers that can never match a live item.
+- The layout editor names the display it is showing (#886).
+- Independent shape and border settings for the menu bar overlay and Thaw Bar (#248, thanks @kn666).
+- Per-display option to route only the always-hidden section to Thaw Bar (#751, thanks @MashnoorKek).
+- Optional Advanced toggle moves the pointer onto a revealed search result, off by default (#769, thanks @brucemakes012).
+- Sections holding nothing but the new-items badge accept drops again (#897, thanks @alvst).
+- Advanced settings reset clears every persisted boolean, not just some of them (#910, thanks @YuriNachos). The two toggles added later in this cycle, "Arrange menu bar items" and "Move the pointer to revealed items", are covered too; leaving automatic arrangement off and then resetting to defaults used to keep it off with nothing on screen to explain why layouts stopped restoring.
+- `leftAligned` and `rightAligned` accepted as valid `iceBarLocation` values (#911, thanks @YuriNachos).
+- Settings search weights un-inverted: title now outranks keywords (#918, thanks @YuriNachos).
+- Icon refresh rate normalized onto one grid shared by the slider, URI handler, live capture floor, and Defaults: off, or `1/n` seconds for integer `n` in 1…30 (#929, thanks @CamilleGuillory).
+- Relaunches after a revoked permission show the onboarding permissions flow rather than the pre-redesign `PermissionsView`.
+- Auto-rehide `focusedApp` and timed strategy guards restored after a merge dropped them.
+- New CLI: `Thaw --reset-layout` clears persisted order, pinning, and relocation bookkeeping and re-seeds divider positions without starting the app. It and the settings reset both clear the stale-identifier ledger.
+
+---
+
+### Appearance, capture & IceBar
+
+- ScreenCaptureKit picks the display with the largest intersection and rejects zero-area ones, and refreshes shareable content when cached topology leaves a window looking orphaned (#794, thanks @bpresles).
+- Screen recording no longer pushes notch overflow into a `cannotComplete` ejection loop that holds the cursor (#935, thanks @Zophiekat).
+- IceBar color sampling survives a horizontal bar that overflows to full screen width; the inset-frame math falls back to panel center instead of dividing by zero (#915, thanks @YuriNachos).
+- `IceGradient.averageColor` returns `nil` on an all-nil sample count instead of averaging by zero (#914, thanks @YuriNachos).
+
+---
+
+### Performance & memory
+
+- Change-detector recaches back off while control-item lookups keep failing, exponential and capped at 60 s. Each rebuild was leaking a CA fence Mach port on macOS 26; bounding the retry cadence stops the 47 GiB owned-unmapped growth reported against rc.2.1 (#933, thanks @slatlasdev). This bounds the storm, it does not patch AppKit's `NSSceneStatusItem`.
+- No-op status-item rewrites on state reassignment dropped, same leak class.
+
+---
+
+### Platform & engineering
+
+- `swift-subprocess` 1.0.0 adopted; the env trampoline is gone.
+- `AlphaChannelView` centralizes alpha-channel access and transparency scanning, so bounds validation happens in one place instead of in each `isTransparent` implementation.
+- `LayoutSolver` base-ID extraction deduplicated; three inline copies and a dead helper became one (#906, thanks @YuriNachos).
+- Statement coverage raised toward 90% by splitting untestable live AppKit / WindowServer paths out of `ProfileManager` and `DisplaySettingsManager` and covering the decision logic that remains (#916).
+- New suites around the storm bounds: layout storm replay, move timeout, section-order digest, control-item seeding and recovery, stale destination, unfinished batch, early-apply restriction, parked divider, section geometry, placeholder alias, Thaw Bar routing.
+
+---
+
+### Release, CI & docs
+
+- Workflows migrated to Blacksmith runners (#901), then narrowed to the release workflows.
+- CodeQL runs on GitHub-hosted macOS 26.
+- Issue triage keeps regressions open instead of closing P0 reports (#882, thanks @jamesyc), and no longer trips its own threat detection.
+- Agentic workflows upgraded to v0.85.4; native GitHub issue taxonomy adopted (#867).
+- OpenSSF Best Practices badge moved from Silver to Gold; README badges and links reworked.
+- github-actions dependency group bumped (#926).
+
+---
+
+### Contributors
+
+Thanks to everyone who reported, diagnosed, or landed fixes in this RC:
+
+@aliaskar-rockeater · @alvst · @bpresles · @brucemakes012 · @CamilleGuillory · @Daventure91 · @howardhey · @jamesyc · @Jizzy015 · @kn666 · @lathe-agent-oa · @lucifercraig12345-create · @MashnoorKek · @nightah · @nk-tedo-001 · @slatlasdev · @stu-carter · @VailElla · @warmup72 · @yoodu · @YuriNachos · @Zophiekat
+
+---
+
+### Notable issue closures
+
+| Area | Issues |
+|------|--------|
+| Cold start / launch restore | #881, #900 |
+| Move planning / storms | #885, #899, #930 |
+| Control items / identity | #890, #895, #905, #923, #924, #927 |
+| Persist gates / hidden section | #815, #868, #907 |
+| Profiles | #887, #903, #904 |
+| Settings / layout editor | #886, #897, #910, #911, #918, #929 |
+| Appearance / capture / IceBar | #794, #914, #915, #935 |
+| Memory | #933 |
+| Feature requests | #248, #751, #769 |
+| Ops / CI | #867, #882 |
+| Closed without code in this release (duplicate, not planned, user-resolved, or already fixed) | #800, #891, #893, #902, #908, #931 |
+
+Merged PRs behind the above: #889, #892, #897, #901, #906, #910, #911, #914, #915, #916, #918, #926, #928, #929, #930.
+
+---
+
+### Known limitations
+
+- Control Center source PID resolution is still slow on dense bars (~8 s). Early apply only moves identities that have already resolved.
+- The first-press warm-up nudge after a move-drag remains open.
+- #788, #634, and #791 need a field pass. The emptied-section and parked-divider work helps some #868 collapse cases, but the docked / notched / secondary-display combination still wants verification.
+- #898 and #939 were reviewed against this branch and left open; the evidence does not yet point at a code path here.
+
+---
+
+### Upgrade notes
+
+1. **From 2.0.0-rc.2.1:** in-place Sparkle update. If the bar is already scrambled, run `/Applications/Thaw.app/Contents/MacOS/Thaw --reset-layout` once before launching.
+2. **AX click delivery** is now on by default and no longer shown in Advanced. It ran behind an experimental flag without failure reports and still falls back to a synthetic click on any error. Anyone who set `UseAXClickDelivery` explicitly keeps their choice, and with the toggle gone from Settings, a tester who switched it off during the RC stays off. `defaults delete com.stonerl.Thaw UseAXClickDelivery` restores the new default.
+3. **The reliability gates ship on.** `postMoveEventsToWindowOwner` (on), `bulkApplyIdleThresholdMs` (300 ms), and `enforceConcealedSectionOrder` (off, trading invisible ordering moves for shorter batches) now default to the configuration the test build handed to reporters, rather than the conservative values they were developed behind. They remain hidden diagnostic flags, so `defaults write com.stonerl.Thaw <key> …` still overrides any of them. Note that an override set during RC testing survives the update and wins over the new default; `defaults delete com.stonerl.Thaw <key>` returns that machine to shipping behaviour.
+4. **Icon refresh rate** is normalized to off or `1/n` seconds for integer `n` in 1…30. Values off that grid are snapped on read, so a custom URI or defaults value may shift slightly.
+5. **Legacy Ice / V1 appearance:** still converted on import.
+6. **Update feed:** unchanged. New installs use `thaw-app/updates`; the legacy stonerl feed keeps receiving the mirrored appcast. macOS 27 remains on the alpha channel, which requires beta updates to be enabled.
+
 ## [2.0.0-rc.2.1]
 
 ### Hotfix

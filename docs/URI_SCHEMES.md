@@ -145,7 +145,6 @@ Thaw supports programmatic settings manipulation via the `thaw://` URL scheme wi
 | `customIceIconIsTemplate`                 | Bool | Custom icon renders as template              |
 | `showIceIcon`                             | Bool | Show the Thaw icon in menu bar               |
 | `iceBarLocationOnHotkey`                  | Bool | Thaw Bar appears at mouse location on hotkey     |
-| `useLCSSortingOnNotchedDisplays`          | Bool | Use LCS sorting on notched displays          |
 
 #### Double/Time Interval Settings
 
@@ -171,6 +170,7 @@ These settings affect specific displays based on context:
 | Key                      | Type | Scope | Description |
 | ------------------------ | ---- | ----- | ----------- |
 | `useIceBar`              | Bool | Active display only | Enable/disable Thaw Bar on the display with the active menu bar |
+| `useThawBarForAlwaysHidden` | Bool | All displays without IceBar | Open only the always-hidden section in the Thaw Bar, leaving hidden items to expand inline |
 | `iceBarLocation`         | String | All displays with IceBar enabled | Thaw Bar position: `dynamic`, `mousePointer`, `iceIcon`, `leftAligned`, or `rightAligned` |
 | `alwaysShowHiddenItems`  | Bool | All displays without IceBar | Show hidden items inline when IceBar is disabled |
 | `iceBarLayout`           | String | All displays with IceBar enabled | Thaw Bar layout: `horizontal`, `vertical`, or `grid` |
@@ -180,6 +180,7 @@ These settings affect specific displays based on context:
 
 By default:
 - `useIceBar`: Only affects the display with the currently active menu bar (where your cursor is)
+- `useThawBarForAlwaysHidden`: Updates all displays that do NOT have the IceBar enabled
 - `iceBarLocation`: Updates all displays that currently have the IceBar enabled
 - `alwaysShowHiddenItems`: Updates all displays that do NOT have the IceBar enabled
 
@@ -327,6 +328,7 @@ open "thaw://get?key=all&callback=droppy://thaw-response&requestId=abc123"
         "hasNotch": true,
         "resolution": "2560x1600",
         "useIceBar": true,
+        "useThawBarForAlwaysHidden": false,
         "iceBarLocation": "mousePointer",
         "alwaysShowHiddenItems": false
       }
@@ -420,6 +422,7 @@ open "thaw://get?key=display&display=37D8832A-...&callback=droppy://thaw-respons
         "hasNotch": true,
         "resolution": "2560x1600",
         "useIceBar": true,
+        "useThawBarForAlwaysHidden": false,
         "iceBarLocation": "mousePointer",
         "alwaysShowHiddenItems": false
       }

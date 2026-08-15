@@ -29,11 +29,11 @@ import Testing
 /// is process-wide.
 ///
 /// Deliberate gaps:
-/// - `enableDiagnosticLogging` is always left at its compiled-in default. Its
-///   `didSet` reaches into the shared `DiagnosticLogger`, and in a debug build
-///   it unconditionally enables logging, which mints a file in the developer's
-///   real `~/Library/Logs/Thaw`. Holding it equal on both sides makes the
-///   `guard oldValue != newValue` short-circuit fire instead.
+/// - `enableDiagnosticLogging` is no longer part of the snapshot at all, so
+///   there is nothing here to hold equal. It was removed because a profile
+///   apply restored it, switching diagnostic logging off in the middle of the
+///   capture a user had turned it on to take (#899). The key may still appear
+///   in profiles written by earlier builds and is ignored on decode.
 /// - The models are built bare rather than through `performSetup()`, which
 ///   would load `Defaults` and subscribe to the Settings-URI notification.
 ///   `GeneralSettingsTests` and `AdvancedSettingsTests` own that path.
@@ -253,13 +253,13 @@ struct ProfileSnapshotLiveSettingsTests {
             settings.iconRefreshInterval = 2.5
             settings.useDoubleClickToShowAlwaysHiddenSection = true
             settings.useOptionClickToShowAlwaysHiddenSection = true
-            settings.useLCSSortingOnNotchedDisplays = false
             settings.enableMenuBarItemOverflow = false
             settings.useThawBarOnNotchOverflow = false
             settings.searchSectionOrder = [.alwaysHidden, .visible, .hidden]
             settings.searchIncludeVisible = false
             settings.searchIncludeHidden = false
             settings.searchIncludeAlwaysHidden = false
+            settings.moveCursorToRevealedItem = true
 
             let snapshot = AdvancedSettingsSnapshot.capture(from: settings)
 
@@ -275,7 +275,6 @@ struct ProfileSnapshotLiveSettingsTests {
             #expect(snapshot.iconRefreshInterval == 1.0)
             #expect(snapshot.useDoubleClickToShowAlwaysHiddenSection)
             #expect(snapshot.useOptionClickToShowAlwaysHiddenSection)
-            #expect(snapshot.useLCSSortingOnNotchedDisplays == false)
             #expect(snapshot.enableMenuBarItemOverflow == false)
             #expect(snapshot.useThawBarOnNotchOverflow == false)
             // The snapshot stores raw strings so a section name this build does
@@ -284,8 +283,8 @@ struct ProfileSnapshotLiveSettingsTests {
             #expect(snapshot.searchIncludeVisible == false)
             #expect(snapshot.searchIncludeHidden == false)
             #expect(snapshot.searchIncludeAlwaysHidden == false)
+            #expect(snapshot.moveCursorToRevealedItem)
             // Left at the compiled-in default; see the suite's deliberate gaps.
-            #expect(snapshot.enableDiagnosticLogging == Defaults.DefaultValue.enableDiagnosticLogging)
         }
     }
 
@@ -304,16 +303,15 @@ struct ProfileSnapshotLiveSettingsTests {
                 tooltipDelay: 1.25,
                 showMenuBarTooltips: true,
                 iconRefreshInterval: 2.5,
-                enableDiagnosticLogging: Defaults.DefaultValue.enableDiagnosticLogging,
                 useDoubleClickToShowAlwaysHiddenSection: true,
                 useOptionClickToShowAlwaysHiddenSection: true,
-                useLCSSortingOnNotchedDisplays: false,
                 enableMenuBarItemOverflow: false,
                 useThawBarOnNotchOverflow: false,
                 searchSectionOrder: ["alwaysHidden", "hidden", "visible"],
                 searchIncludeVisible: false,
                 searchIncludeHidden: false,
-                searchIncludeAlwaysHidden: false
+                searchIncludeAlwaysHidden: false,
+                moveCursorToRevealedItem: true
             )
 
             snapshot.apply(to: settings)
@@ -331,13 +329,13 @@ struct ProfileSnapshotLiveSettingsTests {
             #expect(Defaults.double(forKey: .iconRefreshInterval) == 1.0)
             #expect(settings.useDoubleClickToShowAlwaysHiddenSection)
             #expect(settings.useOptionClickToShowAlwaysHiddenSection)
-            #expect(settings.useLCSSortingOnNotchedDisplays == false)
             #expect(settings.enableMenuBarItemOverflow == false)
             #expect(settings.useThawBarOnNotchOverflow == false)
             #expect(settings.searchSectionOrder == [.alwaysHidden, .hidden, .visible])
             #expect(settings.searchIncludeVisible == false)
             #expect(settings.searchIncludeHidden == false)
             #expect(settings.searchIncludeAlwaysHidden == false)
+            #expect(settings.moveCursorToRevealedItem)
         }
     }
 
@@ -468,7 +466,6 @@ struct ProfileSnapshotLiveSettingsTests {
             source.iconRefreshInterval = 1.5
             source.useDoubleClickToShowAlwaysHiddenSection = true
             source.useOptionClickToShowAlwaysHiddenSection = true
-            source.useLCSSortingOnNotchedDisplays = false
             source.enableMenuBarItemOverflow = false
             source.useThawBarOnNotchOverflow = false
             source.searchSectionOrder = [.hidden, .alwaysHidden, .visible]
@@ -499,7 +496,6 @@ struct ProfileSnapshotLiveSettingsTests {
                 destination.useOptionClickToShowAlwaysHiddenSection
                     == source.useOptionClickToShowAlwaysHiddenSection
             )
-            #expect(destination.useLCSSortingOnNotchedDisplays == source.useLCSSortingOnNotchedDisplays)
             #expect(destination.enableMenuBarItemOverflow == source.enableMenuBarItemOverflow)
             #expect(destination.useThawBarOnNotchOverflow == source.useThawBarOnNotchOverflow)
             #expect(destination.searchSectionOrder == source.searchSectionOrder)

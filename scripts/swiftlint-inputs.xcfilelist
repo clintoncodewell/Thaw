@@ -25,6 +25,7 @@ $(SRCROOT)/Thaw/Hotkeys/Modifiers.swift
 $(SRCROOT)/Thaw/Main/AppDelegate.swift
 $(SRCROOT)/Thaw/Main/AppState.swift
 $(SRCROOT)/Thaw/Main/IceApp.swift
+$(SRCROOT)/Thaw/Main/LayoutResetCommand.swift
 $(SRCROOT)/Thaw/Main/Navigation/AppNavigationState.swift
 $(SRCROOT)/Thaw/Main/Navigation/NavigationIdentifiers/NavigationIdentifier.swift
 $(SRCROOT)/Thaw/Main/Navigation/NavigationIdentifiers/SettingsNavigationIdentifier.swift
@@ -69,6 +70,7 @@ $(SRCROOT)/Thaw/MenuBar/MenuBarItems/MenuBarItemManager.swift
 $(SRCROOT)/Thaw/MenuBar/MenuBarItems/MenuBarItemServiceConnection.swift
 $(SRCROOT)/Thaw/MenuBar/MenuBarItems/MenuBarItemTag.swift
 $(SRCROOT)/Thaw/MenuBar/MenuBarItems/PendingLedger.swift
+$(SRCROOT)/Thaw/MenuBar/MenuBarItems/StaleIdentifierLedger.swift
 $(SRCROOT)/Thaw/MenuBar/MenuBarManager.swift
 $(SRCROOT)/Thaw/MenuBar/MenuBarSection.swift
 $(SRCROOT)/Thaw/MenuBar/MenuBarSectionLayout.swift
@@ -118,6 +120,7 @@ $(SRCROOT)/Thaw/Settings/SettingsPanes/GeneralSettingsPane.swift
 $(SRCROOT)/Thaw/Settings/SettingsPanes/HotkeysSettingsPane.swift
 $(SRCROOT)/Thaw/Settings/SettingsPanes/MenuBarAppearanceSettingsPane.swift
 $(SRCROOT)/Thaw/Settings/SettingsPanes/MenuBarLayoutSettingsPane.swift
+$(SRCROOT)/Thaw/Settings/SettingsPanes/ProfilePreviewView.swift
 $(SRCROOT)/Thaw/Settings/SettingsPanes/ProfileSettingsPane.swift
 $(SRCROOT)/Thaw/Settings/SettingsView.swift
 $(SRCROOT)/Thaw/Settings/SettingsWindow.swift
@@ -157,6 +160,7 @@ $(SRCROOT)/Thaw/Utilities/HookRunner.swift
 $(SRCROOT)/Thaw/Utilities/IceSettingsImporter.swift
 $(SRCROOT)/Thaw/Utilities/IconResource.swift
 $(SRCROOT)/Thaw/Utilities/LocalizedErrorWrapper.swift
+$(SRCROOT)/Thaw/Utilities/MacOSCompatibilityWarning.swift
 $(SRCROOT)/Thaw/Utilities/Migration.swift
 $(SRCROOT)/Thaw/Utilities/MouseHelpers.swift
 $(SRCROOT)/Thaw/Utilities/ObjectStorage.swift

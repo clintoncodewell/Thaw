@@ -510,6 +510,13 @@ private struct MenuBarSearchContentView: View {
                 selectFirstDisplayedItem()
             }
             .onChange(of: itemManager.itemCache, initial: true) {
+                // The memo's inputs are the cached items, so a new cache is the
+                // one moment it can be wrong. It matters for an item whose
+                // source process resolved late: the row was built while the
+                // item had no owner to be named after, and the recache that
+                // finally supplies one arrives here. Keystrokes, which is what
+                // the memo is actually there to absorb, don't reach this.
+                ItemNameCache.clear()
                 updateDisplayedItems()
                 if model.selection == nil {
                     selectFirstDisplayedItem()
@@ -757,7 +764,27 @@ private struct MenuBarSearchContentView: View {
             // as the panel hides rather than waiting a fixed 25 ms.
             await panel.waitUntilClosed(timeout: .milliseconds(200))
             await itemManager.activate(item: item, on: displayID)
+            if appState.settings.advanced.moveCursorToRevealedItem {
+                moveCursor(to: item)
+            }
         }
+    }
+
+    /// Moves the pointer onto `item` once it has been revealed, so that the
+    /// menu it opened sits under the pointer.
+    private func moveCursor(to item: MenuBarItem) {
+        // The cached bounds predate the reveal, so read the live window
+        // bounds to find where the item actually ended up.
+        let bounds = Bridging.getWindowBounds(for: item.windowID) ?? item.bounds
+        guard
+            let point = MouseHelpers.cursorPoint(
+                overItemWithBounds: bounds,
+                displayBounds: NSScreen.screens.map { CGDisplayBounds($0.displayID) }
+            )
+        else {
+            return
+        }
+        MouseHelpers.warpCursor(to: point)
     }
 }
 

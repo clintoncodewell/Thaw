@@ -154,15 +154,6 @@ final class AdvancedSettings {
         }
     }
 
-    /// A Boolean value that indicates whether to use LCS sorting instead of
-    /// full sorting on notched displays.
-    var useLCSSortingOnNotchedDisplays = Defaults.DefaultValue.useLCSSortingOnNotchedDisplays {
-        didSet {
-            guard oldValue != useLCSSortingOnNotchedDisplays else { return }
-            Defaults.set(useLCSSortingOnNotchedDisplays, forKey: .useLCSSortingOnNotchedDisplays)
-        }
-    }
-
     /// A Boolean value that controls whether profile-apply overflows menu bar
     /// items from visible to hidden when they don't fit on a notched display.
     /// Only affects notched displays; non-notched displays never use this path.
@@ -170,6 +161,23 @@ final class AdvancedSettings {
         didSet {
             guard oldValue != enableMenuBarItemOverflow else { return }
             Defaults.set(enableMenuBarItemOverflow, forKey: .enableMenuBarItemOverflow)
+        }
+    }
+
+    /// A Boolean value that controls whether Thaw rearranges the menu bar on
+    /// its own initiative.
+    ///
+    /// The escape hatch for bars where the automatic paths misbehave. When
+    /// off, the late-arrival re-sort and the saved-layout restore both stand
+    /// down; applying a profile still works, and items can still be arranged
+    /// by ⌘ Command + dragging them in the menu bar. Read at the single
+    /// choke point in `MenuBarItemManager.applyProfileLayout`, which is also
+    /// where the graduated responses (the idle gate, concealed-order
+    /// relaxation, unfinished-batch rationing) live.
+    var automaticArrangementEnabled = Defaults.DefaultValue.automaticArrangementEnabled {
+        didSet {
+            guard oldValue != automaticArrangementEnabled else { return }
+            Defaults.set(automaticArrangementEnabled, forKey: .automaticArrangementEnabled)
         }
     }
 
@@ -191,8 +199,9 @@ final class AdvancedSettings {
     /// A Boolean value that controls whether left-clicks on menu bar items
     /// from the IceBar are delivered via an accessibility action (AXShowMenu,
     /// falling back to AXPress) instead of a synthetic mouse click.
-    /// Experimental; automatically falls back to the synthetic click on any
-    /// failure. Moves and right-clicks are unaffected.
+    /// Default on and no longer surfaced in Settings; automatically falls
+    /// back to the synthetic click on any failure. Moves and right-clicks
+    /// are unaffected.
     var useAXClickDelivery = Defaults.DefaultValue.useAXClickDelivery {
         didSet {
             guard oldValue != useAXClickDelivery else { return }
@@ -237,6 +246,19 @@ final class AdvancedSettings {
         }
     }
 
+    /// A Boolean value that indicates whether the mouse pointer is moved to a
+    /// menu bar item that was opened from the search panel.
+    ///
+    /// Only the search panel warps the pointer. Opening an item from the Thaw
+    /// Bar means the pointer is already there, so moving it would only take it
+    /// somewhere the user did not put it.
+    var moveCursorToRevealedItem = Defaults.DefaultValue.moveCursorToRevealedItem {
+        didSet {
+            guard oldValue != moveCursorToRevealedItem else { return }
+            Defaults.set(moveCursorToRevealedItem, forKey: .moveCursorToRevealedItem)
+        }
+    }
+
     /// Storage for internal observers.
     @ObservationIgnored
     private var cancellables = Set<AnyCancellable>()
@@ -271,13 +293,14 @@ final class AdvancedSettings {
         Defaults.ifPresent(key: .showMenuBarTooltips, assign: &showMenuBarTooltips)
         Defaults.ifPresent(key: .iconRefreshInterval, assign: &iconRefreshInterval)
         Defaults.ifPresent(key: .enableDiagnosticLogging, assign: &enableDiagnosticLogging)
-        Defaults.ifPresent(key: .useLCSSortingOnNotchedDisplays, assign: &useLCSSortingOnNotchedDisplays)
         Defaults.ifPresent(key: .enableMenuBarItemOverflow, assign: &enableMenuBarItemOverflow)
+        Defaults.ifPresent(key: .automaticArrangementEnabled, assign: &automaticArrangementEnabled)
         Defaults.ifPresent(key: .useThawBarOnNotchOverflow, assign: &useThawBarOnNotchOverflow)
         Defaults.ifPresent(key: .useAXClickDelivery, assign: &useAXClickDelivery)
         Defaults.ifPresent(key: .searchIncludeVisible, assign: &searchIncludeVisible)
         Defaults.ifPresent(key: .searchIncludeHidden, assign: &searchIncludeHidden)
         Defaults.ifPresent(key: .searchIncludeAlwaysHidden, assign: &searchIncludeAlwaysHidden)
+        Defaults.ifPresent(key: .moveCursorToRevealedItem, assign: &moveCursorToRevealedItem)
 
         Defaults.ifPresent(key: .sectionDividerStyle) { rawValue in
             if let style = SectionDividerStyle(rawValue: rawValue) {
@@ -338,10 +361,10 @@ final class AdvancedSettings {
                 showMenuBarTooltips = boolValue
             case "enableDiagnosticLogging":
                 enableDiagnosticLogging = boolValue
-            case "useLCSSortingOnNotchedDisplays":
-                useLCSSortingOnNotchedDisplays = boolValue
             case "enableMenuBarItemOverflow":
                 enableMenuBarItemOverflow = boolValue
+            case "automaticArrangementEnabled":
+                automaticArrangementEnabled = boolValue
             case "useThawBarOnNotchOverflow":
                 useThawBarOnNotchOverflow = boolValue
             case "useAXClickDelivery":
@@ -352,6 +375,8 @@ final class AdvancedSettings {
                 searchIncludeHidden = boolValue
             case "searchIncludeAlwaysHidden":
                 searchIncludeAlwaysHidden = boolValue
+            case "moveCursorToRevealedItem":
+                moveCursorToRevealedItem = boolValue
             default:
                 // Key not handled by AdvancedSettings
                 break

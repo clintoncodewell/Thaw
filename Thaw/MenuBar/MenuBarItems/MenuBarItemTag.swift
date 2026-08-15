@@ -218,14 +218,45 @@ nonisolated struct MenuBarItemTag: Hashable, CustomStringConvertible {
             .replacing(/#\s*[KMGTPE]?[Bb]/, with: "# B")
     }
 
+    /// Bundle identifier of LyricsX, whose menu bar item titles itself with
+    /// the lyric line currently on screen.
+    static let lyricsXBundleID = "ddddxxx.LyricsX"
+
+    /// The canonical title for an owner whose title carries no identity.
+    ///
+    /// A metric title has a stable skeleton worth keeping — "CPU #" and
+    /// "Network #" still tell two iStat items apart. A lyric has none: every
+    /// character of it is the volatile part, and two consecutive lines share
+    /// nothing. Collapsing to a constant is therefore the whole title
+    /// canonicalization for such an owner, which means its items are
+    /// distinguished only by instance index. That is fine while the owner
+    /// contributes a single item, and is the reason this is an allowlist
+    /// rather than a heuristic.
+    static let opaqueTitle = "#"
+
+    /// The volatile-title owner an identifier belongs to, if any, paired with
+    /// how that owner's titles collapse.
+    private static func volatileTitleOwner(
+        of identifier: String
+    ) -> (prefix: String, canonicalize: (String) -> String)? {
+        let iStatPrefix = "\(iStatMenusStatusBundleID):"
+        if identifier.hasPrefix(iStatPrefix) {
+            return (iStatPrefix, canonicalMetricTitle)
+        }
+        let lyricsXPrefix = "\(lyricsXBundleID):"
+        if identifier.hasPrefix(lyricsXPrefix) {
+            return (lyricsXPrefix, { _ in opaqueTitle })
+        }
+        return nil
+    }
+
     /// The canonical form of a `namespace:title[:index]` identifier.
     ///
     /// A no-op for every owner except the volatile-title ones above, so it is
     /// safe to apply to identifiers of unknown provenance — including ones
     /// read back from a profile written before this existed.
     static func canonicalPersistentIdentifier(_ identifier: String) -> String {
-        let prefix = "\(iStatMenusStatusBundleID):"
-        guard identifier.hasPrefix(prefix) else {
+        guard let (prefix, canonicalize) = volatileTitleOwner(of: identifier) else {
             return identifier
         }
 
@@ -236,10 +267,10 @@ nonisolated struct MenuBarItemTag: Hashable, CustomStringConvertible {
             let title = String(suffix[..<separator])
             let instance = String(suffix[suffix.index(after: separator)...])
             if Int(instance) != nil {
-                return "\(prefix)\(canonicalMetricTitle(title)):\(instance)"
+                return "\(prefix)\(canonicalize(title)):\(instance)"
             }
         }
-        return "\(prefix)\(canonicalMetricTitle(suffix))"
+        return "\(prefix)\(canonicalize(suffix))"
     }
 
     /// Canonicalizes a list of identifiers, dropping duplicates that only
@@ -421,4 +452,49 @@ nonisolated extension MenuBarItemTag.Namespace {
 
     /// The namespace for the "WeatherMenu" process.
     static let weather = string("com.apple.weather.menu")
+
+    /// Bundle identifiers of helper processes that own a menu bar item on
+    /// behalf of a user-facing app, mapped to that app's identifier.
+    ///
+    /// Some apps put their status item in a nested helper rather than in
+    /// the app the user installed. The window's owner is then the helper,
+    /// so the namespace — and with it `uniqueIdentifier`, the saved
+    /// position, and the name shown in the layout editor — is named after
+    /// a process the user has never heard of. Worse, a helper that is
+    /// relaunched under a different build (or a user who switches between
+    /// the App Store and direct-download builds of the same app) reads as
+    /// a different item entirely.
+    ///
+    /// Deliberately a short, explicit list rather than a heuristic. A rule
+    /// like "strip the last dot-component" would fold genuinely distinct
+    /// items together — `com.apple.controlcenter` hosts many — and the
+    /// cost of being wrong here is a mis-restored layout.
+    ///
+    /// Changing an item's namespace changes its `uniqueIdentifier`, so an
+    /// entry already persisted under the helper's identifier no longer
+    /// matches. It is pruned as unmatchable and the item re-persists under
+    /// its canonical identifier: a one-time loss of that item's saved
+    /// position, not a permanent one.
+    /// Every entry must be verified against a live bar. OneDrive is the
+    /// cautionary case: it looks like it belongs here, and does not. The
+    /// installed app's *own* bundle identifier is
+    /// `com.microsoft.OneDrive-mac`, so "normalising" that to
+    /// `com.microsoft.OneDrive` renames a real app to an identifier no
+    /// process reports. Its status item is owned by the main app; there is
+    /// no helper to alias away.
+    static let helperBundleIDAliases: [String: String] = [
+        // Verified: /Applications/Little Snitch.app/Contents/Components/
+        // Little Snitch Agent.app owns the status item and reports this
+        // identifier, while the app the user installed is at.obdev.littlesnitch.
+        "at.obdev.littlesnitch.agent": "at.obdev.littlesnitch",
+    ]
+
+    /// Returns the user-facing app's bundle identifier for a bundle
+    /// identifier that may belong to one of its helpers.
+    ///
+    /// The identity function for everything not in
+    /// ``helperBundleIDAliases``, which is the overwhelming majority.
+    static func canonicalBundleID(_ bundleID: String) -> String {
+        helperBundleIDAliases[bundleID] ?? bundleID
+    }
 }

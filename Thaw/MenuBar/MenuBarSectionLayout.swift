@@ -75,6 +75,27 @@ nonisolated extension MenuBarSection {
         overflowEnabled && useThawBarOnOverflow && hasEjectedItems
     }
 
+    /// Whether the given section presents in the Thaw Bar.
+    ///
+    /// `displayUsesThawBar` sends every section there. `alwaysHiddenUsesThawBar`
+    /// sends the always-hidden section alone, leaving the hidden section to
+    /// expand inline, which is the point of the setting: reaching the
+    /// always-hidden items inline means expanding the hidden section too,
+    /// since always-hidden items sit to the left of the hidden control item.
+    ///
+    /// Notch overflow can force the Thaw Bar on top of this; see
+    /// ``forcesIceBarForNotchOverflow(overflowEnabled:useThawBarOnOverflow:hasEjectedItems:)``.
+    static func usesThawBar(
+        for name: Name,
+        displayUsesThawBar: Bool,
+        alwaysHiddenUsesThawBar: Bool
+    ) -> Bool {
+        if displayUsesThawBar {
+            return true
+        }
+        return name == .alwaysHidden && alwaysHiddenUsesThawBar
+    }
+
     /// The gap that macOS leaves to the left and right of the notch (in points).
     static let notchGap: CGFloat = 24
 
@@ -88,7 +109,10 @@ nonisolated extension MenuBarSection {
         case iceBar
     }
 
-    /// Calculates the usable inline width for menu bar items on a screen.
+    /// Calculates the contiguous width where status items can render inline.
+    /// On a notched display, macOS does not relocate an expanded status-item
+    /// run into the application-menu region left of the notch, so counting
+    /// both sides promises capacity that `ControlItem` cannot expose (#924).
     static func usableInlineWidth(
         from appMenuRightEdge: CGFloat?,
         screenFrameMinX: CGFloat,
@@ -98,11 +122,8 @@ nonisolated extension MenuBarSection {
         let clampedAppMenuRightEdge = max(screenFrameMinX, appMenuRightEdge ?? screenFrameMinX)
 
         if let notchFrame {
-            let usableLeftOfNotch = notchFrame.minX - notchGap
             let usableRightOfNotchStart = notchFrame.maxX + notchGap
-            let leftWidth = max(0, usableLeftOfNotch - clampedAppMenuRightEdge)
-            let rightWidth = max(0, screenVisibleMaxX - usableRightOfNotchStart)
-            return leftWidth + rightWidth
+            return max(0, screenVisibleMaxX - usableRightOfNotchStart)
         }
 
         return max(0, screenVisibleMaxX - clampedAppMenuRightEdge)

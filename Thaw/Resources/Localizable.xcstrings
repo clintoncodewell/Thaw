@@ -1,958 +1,6 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "Active profile" : {
-      "comment" : "Picker option: save spacing changes to the active profile only when relaunch confirmations are disabled.",
-      "localizations" : {
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aktivní profil"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aktives Profil"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Perfil activo"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Profil actif"
-          }
-        },
-        "hu" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Active profile"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Profil aktif"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Profilo Attivo"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Active profile"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "활성 프로파일"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Actief profiel"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aktywny profil"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Active profile"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Активный профиль"
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "โปรไฟล์ที่ใช้งานอยู่"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aktif profil"
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Активний профіль"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hồ sơ hoạt động"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "当前配置文件"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "目前設定檔"
-          }
-        }
-      }
-    },
-    "All profiles" : {
-      "comment" : "Picker option: save spacing changes to every profile when relaunch confirmations are disabled.",
-      "localizations" : {
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Všechny profily"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Alle Profile"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Todos los perfiles"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tous les profils"
-          }
-        },
-        "hu" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "All profiles"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Semua profil"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tutti i profili"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "All profiles"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "모든 프로필"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Alle profielen"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wszystkie profile"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "All profiles"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Все профили"
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "โปรไฟล์ทั้งหมด"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tüm Profiller"
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Всі профілі"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tất cả hồ sơ"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "所有配置"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "所有設定檔"
-          }
-        }
-      }
-    },
-    "Apply menu bar spacing change?" : {
-      "comment" : "Title of the just-in-time confirmation shown before a display transition relaunches menu bar apps to apply new spacing.",
-      "localizations" : {
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Použít změnu nastavení rozestupů?"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Änderung der Menüleisten-Abstände anwenden?"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "¿Aplicar cambios a la barra de menús?"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Appliquer les changements d'espacement de barre de menu ?"
-          }
-        },
-        "hu" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Apply menu bar spacing change?"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Terapkan perubahan jarak pada bar menu?"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Applicare la modifica alla spaziatura della barra dei menu?"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Apply menu bar spacing change?"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "메뉴 바 간격 변경을 적용하시겠습니까?"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "De wijziging in de afstand tussen de menubalken toepassen?"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Zastosować zmianę odstępów?"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Apply menu bar spacing change?"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Применить изменение интервалов в строке меню?"
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ปรับเปลี่ยนระยะห่างแถบเมนู?"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Menü çubuğundaki boşluk ayarını uygulamak ister misiniz?"
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Apply menu bar spacing change?"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Áp dụng thay đổi khoảng cách thanh menu?"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "确定应用菜单栏间隔变动吗？"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "確定套用選單列間距變更？"
-          }
-        }
-      }
-    },
-    "Before a display change or spacing edit relaunches your menu bar apps, Thaw asks you to confirm. Turn this off to apply spacing changes and relaunch apps without confirmation." : {
-      "comment" : "Annotation for the Confirm before relaunching apps toggle in the Displays pane.",
-      "localizations" : {
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Předtím, než přepnutí monitorů nebo změna rozestupů restartuje aplikace ve vašem řádku nabídek, Thaw vás požádá o potvrzení. Vypněte tuto volbu, pokud chcete, aby se aplikace restartovaly bez vašeho potvrzení."
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bevor eine Bildschirm- oder Abstandsänderung die Menüleisten-Anwendungen neustartet, fragt Thaw nach einer Bestätigung."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Antes de que un cambio de presentación o espaciado reinicie sus apps de la barra de menús, Thaw te pedirá que confirmes. Desactiva esto para aplicar cambios de espaciado y reiniciar apps sin confirmar."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Avant qu’un changement d’affichage ou une modification de l’espacement ne redémarre vos applications de la barre de menus, Thaw vous demande de confirmer. Désactivez cette option pour appliquer les modifications d’espacement et redémarrer les applications sans confirmation."
-          }
-        },
-        "hu" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Before a display change or spacing edit relaunches your menu bar apps, Thaw asks you to confirm. Turn this off to apply spacing changes and relaunch apps without confirmation."
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Thaw akan meminta konfirmasi sebelum perubahan layar atau pengaturan jarak memulai ulang aplikasi pada bar menu. Nonaktifkan opsi ini untuk menerapkan perubahan tanpa konfirmasi."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Prima che una modifica alla visualizzazione o alla spaziatura provochi il riavvio delle app nella barra dei menu, Thaw richiede una conferma. Disattiva questa opzione per applicare le modifiche alla spaziatura e riavviare le app senza conferma."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Before a display change or spacing edit relaunches your menu bar apps, Thaw asks you to confirm. Turn this off to apply spacing changes and relaunch apps without confirmation."
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Before a display change or spacing edit relaunches your menu bar apps, Thaw asks you to confirm. Turn this off to apply spacing changes and relaunch apps without confirmation."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Voordat een wijziging in de weergave of aanpassing van de spatiëring ervoor zorgt dat de apps in je menubalk opnieuw worden gestart, vraagt Thaw je om bevestiging. Schakel deze optie uit om wijzigingen in de spatiëring toe te passen en apps opnieuw te starten zonder bevestiging."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Przed zrestartowaniem aplikacji paska menu w wyniku zmiany wyświetlacza lub odstępów, Thaw wymaga potwierdzenia. Odznacz tę opcję, by wprowadzać zmiany i restartować aplikacje bez dodatkowych komunikatów."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Before a display change or spacing edit relaunches your menu bar apps, Thaw asks you to confirm. Turn this off to apply spacing changes and relaunch apps without confirmation."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Прежде чем изменение дисплея или правка интервалов перезапустит приложения в строке меню, Thaw запрашивает подтверждение. Отключите эту опцию, чтобы применять изменения интервалов, и перезапускать приложения без подтверждения."
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ก่อนที่การเปลี่ยนแปลงจอแสดงผลหรือการแก้ไขระยะห่างจะรีสตาร์ทแอปในแถบเมนูของคุณ Thaw จะขอให้คุณยืนยันก่อน ปิดตัวเลือกนี้เพื่อนำการเปลี่ยนแปลงระยะห่างไปใช้และรีสตาร์ทแอปโดยไม่ต้องยืนยัน"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bir ekran değişikliği veya aralık düzenlemesi menü çubuğu uygulamalarınızı yeniden başlatmadan önce Thaw sizden onay ister. Aralık değişikliklerini uygulamak ve uygulamaları onay istemeden yeniden başlatmak için bu seçeneği kapatın."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Before a display change or spacing edit relaunches your menu bar apps, Thaw asks you to confirm. Turn this off to apply spacing changes and relaunch apps without confirmation."
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Trước khi thay đổi hiển thị hoặc chỉnh sửa khoảng cách khởi chạy lại ứng dụng trên thanh menu của bạn, Thaw sẽ yêu cầu bạn xác nhận. Tắt tính năng này để áp dụng các thay đổi về khoảng cách và khởi chạy lại ứng dụng mà không cần xác nhận."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "在显示设置变更或调整间距导致菜单栏应用重新启动之前，Thaw 会先请求你的确认。关闭此选项后，调整间距时将直接应用更改并重新启动相关应用，无需再次确认。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "在 Thaw 因顯示器變更或間距變更而需要重新啟動選單列圖示對應的應用程式時，Thaw 會與您確認。若您希望套用新間距設定時直接重啟對應應用程式，請關閉此選項。"
-          }
-        }
-      }
-    },
-    "Confirm before relaunching apps" : {
-      "comment" : "Toggle in the Displays pane controlling whether spacing changes ask for confirmation before relaunching menu bar apps.",
-      "localizations" : {
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Potvrzovat před restartováním aplikací"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bestätigen bevor Anwendungen neu gestartet werden"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Confirmar antes de relanzar apps"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Confirmez avant de relancer les applications"
-          }
-        },
-        "hu" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Confirm before relaunching apps"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Konfirmasi sebelum memulai ulang aplikasi"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Confermare prima di riavviare le app"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Confirm before relaunching apps"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Confirm before relaunching apps"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bevestig voordat je apps opnieuw start"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Potwierdź przed ponownym uruchomieniem aplikacji"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Confirm before relaunching apps"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Подтверждать перед перезапуском приложений"
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ยืนยันก่อนรีสตาร์ทแอป"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Confirm before relaunching apps"
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Confirm before relaunching apps"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Xác nhận trước khi khởi chạy ứng dụng"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "在重新启动应用程序之前确认"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "重啟應用程式前先詢問"
-          }
-        }
-      }
-    },
-    "Don't ask again" : {
-      "comment" : "Suppression checkbox on the spacing relaunch confirmation; disables future confirmations.",
-      "localizations" : {
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Příště se neptat"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nicht nochmal fragen"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No preguntar de nuevo"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ne plus demander"
-          }
-        },
-        "hu" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Don't ask again"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Jangan tanya lagi"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Non chiederlo di nuovo"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Don't ask again"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "다시 묻지 않기"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Niet opnieuw vragen"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ne pytaj ponownie"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Don't ask again"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Больше не спрашивать"
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ไม่ต้องถามอีก"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Uygulamaları yeniden başlatmadan önce onay iste"
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Не запитувати знову"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Không hỏi lại"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "不再询问"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "之後不再詢問"
-          }
-        }
-      }
-    },
-    "When a profile is active, choose whether spacing changes save to just the active profile or to every profile." : {
-      "comment" : "Annotation for the profile-target picker shown when relaunch confirmations are disabled.",
-      "localizations" : {
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Když je profil aktivní, vyberte, zda chcete změnu rozestupů uložit pouze do aktivního profilu, nebo do všech."
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wenn ein Profil aktiv ist, auswählen ob die Änderung nur für das dieses oder für alle Profile gespeichert werden soll."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cuando un perfil está activo, elige si los cambios de espaciamiento se guardan al perfil activo o a todos los perfiles."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Quand un profil est actif, choisissez si les modifications d'espacement doivent être enregistrées uniquement dans le profil actif ou dans tous les profils."
-          }
-        },
-        "hu" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "When a profile is active, choose whether spacing changes save to just the active profile or to every profile."
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ketika profil aktif, pilih apakah perubahan jarak akan disimpan hanya untuk profil tersebut atau untuk semua profil."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Quando un profilo è attivo, scegli se salvare le modifiche alla spaziatura solo nel profilo attuale o in tutti i profili."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "When a profile is active, choose whether spacing changes save to just the active profile or to every profile."
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "When a profile is active, choose whether spacing changes save to just the active profile or to every profile."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Als een profiel actief is, kun je kiezen of wijzigingen in de spatiëring alleen in het actieve profiel worden opgeslagen of in alle profielen."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gdy profil jest aktywny, wybierz, czy zmiany odstępów mają być zapisywane tylko dla aktywnego profilu, czy dla wszystkich profili."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "When a profile is active, choose whether spacing changes save to just the active profile or to every profile."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Когда профиль активен, выберите, сохранять изменения интервалов только в активный профиль или во все профили."
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "เมื่อมีโปรไฟล์ที่ใช้งานอยู่ ให้เลือกว่าการเปลี่ยนแปลงระยะห่างจะบันทึกไว้เฉพาะในโปรไฟล์ที่ใช้งานอยู่ หรือบันทึกไว้ในทุกโปรไฟล์"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "When a profile is active, choose whether spacing changes save to just the active profile or to every profile."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "When a profile is active, choose whether spacing changes save to just the active profile or to every profile."
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Khi một cấu hình đang hoạt động, hãy chọn xem các thay đổi về khoảng cách chỉ lưu vào cấu hình đang hoạt động hay vào mọi cấu hình."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "当某个配置文件处于活动状态时，可选择将间距更改仅保存到当前配置文件，还是保存到所有配置文件。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "當有設定檔啟用時，請選擇將間距設定儲存至僅目前啟用的設定檔或所有設定檔。"
-          }
-        }
-      }
-    },
-    "Without confirmation, save spacing to" : {
-      "comment" : "Label for the picker choosing which profiles receive a spacing change when relaunch confirmations are disabled.",
-      "localizations" : {
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bez potvrzení ukládat rozestupy do"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Speichere Abstände ohne Bestätigung in"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sin confirmar, guardar espaciado a"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sans confirmation, sauvegarder les espacements à"
-          }
-        },
-        "hu" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Without confirmation, save spacing to"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tanpa konfirmasi, simpan perubahan jarak ke"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Senza conferma, salva la spaziatura in"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Without confirmation, save spacing to"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Without confirmation, save spacing to"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Zonder bevestiging de spatiëring opslaan in"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bez potwierdzenia zapisz odstępy do"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Without confirmation, save spacing to"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Without confirmation, save spacing to"
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "บันทึกระยะห่างโดยไม่ต้องยืนยันไปยัง"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Without confirmation, save spacing to"
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Without confirmation, save spacing to"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nếu không có xác nhận, hãy lưu khoảng cách vào"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "无需确认，直接将间距保存到"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "在沒有詢問的狀況下，將設定檔儲存至"
-          }
-        }
-      }
-    },
     "(no script selected)" : {
       "comment" : "A placeholder displayed in the \"Path\" column of a hook row when no script is selected.",
       "localizations" : {
@@ -1068,6 +116,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "（未選擇腳本）"
+          }
+        }
+      }
+    },
+    "%@ %@ %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ %2$@ %3$@"
+          }
+        }
+      }
+    },
+    "%@ %@ pt" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ %2$@ pt"
           }
         }
       }
@@ -1310,6 +378,12 @@
         }
       }
     },
+    "%@ Bar off" : {
+      "comment" : "Profile preview summary fragment: the Thaw Bar is disabled. %@ is the app name."
+    },
+    "%@ Bar on" : {
+      "comment" : "Profile preview summary fragment: the Thaw Bar is enabled. %@ is the app name."
+    },
     "%@ can work in a limited mode without Screen Recording." : {
       "localizations" : {
         "cs" : {
@@ -1547,6 +621,19 @@
           }
         }
       }
+    },
+    "%@ can't currently tell which app owns \"%@\", so moving it is disabled. This usually resolves on its own; relaunching the app that owns the item can help." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ can't currently tell which app owns \"%2$@\", so moving it is disabled. This usually resolves on its own; relaunching the app that owns the item can help."
+          }
+        }
+      }
+    },
+    "%@ can't locate its hidden-section divider right now. It is attempting recovery in the background — try again in a few seconds." : {
+
     },
     "%@ cannot arrange menu bar items in automatically hidden menu bars." : {
       "comment" : "A view that shows a message when the menu bar layout can't be arranged in automatically hidden menu bars.",
@@ -2389,6 +1476,9 @@
         }
       }
     },
+    "%@ seconds" : {
+
+    },
     "%@ Settings…" : {
       "comment" : "The title of the menu item that opens the settings window.",
       "localizations" : {
@@ -2510,6 +1600,7 @@
     },
     "%lf seconds" : {
       "comment" : "A localized string key that represents a duration in seconds. The argument is a number of seconds.",
+      "extractionState" : "stale",
       "localizations" : {
         "cs" : {
           "variations" : {
@@ -3000,6 +2091,7 @@
     },
     "%lld seconds" : {
       "comment" : "Text that describes the rehide interval, in seconds. The argument is the number of seconds.",
+      "extractionState" : "stale",
       "localizations" : {
         "cs" : {
           "variations" : {
@@ -3368,6 +2460,9 @@
           }
         }
       }
+    },
+    "+%lld" : {
+
     },
     "A new update is available" : {
       "comment" : "Title of a notification when a new update is available.",
@@ -3965,6 +3060,128 @@
         }
       }
     },
+    "Active display: %@" : {
+
+    },
+    "Active profile" : {
+      "comment" : "Picker option: save spacing changes to the active profile only when relaunch confirmations are disabled.",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktivní profil"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktives Profil"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Perfil activo"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Profil actif"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Active profile"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Profil aktif"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Profilo Attivo"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Active profile"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "활성 프로파일"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actief profiel"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktywny profil"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Active profile"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Активный профиль"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "โปรไฟล์ที่ใช้งานอยู่"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktif profil"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Активний профіль"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hồ sơ hoạt động"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "当前配置文件"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目前設定檔"
+          }
+        }
+      }
+    },
     "Adaptive" : {
       "comment" : "Text for the adaptive background option in the menu bar.",
       "localizations" : {
@@ -4322,8 +3539,12 @@
         }
       }
     },
+    "Add Application" : {
+
+    },
     "Add Application Manually" : {
       "comment" : "A heading for the section where users can add apps manually.",
+      "extractionState" : "stale",
       "localizations" : {
         "cs" : {
           "stringUnit" : {
@@ -4556,6 +3777,131 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "進階設定"
+          }
+        }
+      }
+    },
+    "Advanced layout controls" : {
+
+    },
+    "After revealing" : {
+
+    },
+    "All profiles" : {
+      "comment" : "Picker option: save spacing changes to every profile when relaunch confirmations are disabled.",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Všechny profily"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alle Profile"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todos los perfiles"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tous les profils"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "All profiles"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Semua profil"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tutti i profili"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "All profiles"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "모든 프로필"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alle profielen"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wszystkie profile"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "All profiles"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Все профили"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "โปรไฟล์ทั้งหมด"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tüm Profiller"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Всі профілі"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tất cả hồ sơ"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "所有配置"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "所有設定檔"
           }
         }
       }
@@ -5041,6 +4387,9 @@
           }
         }
       }
+    },
+    "Always Hidden" : {
+
     },
     "Always show hidden items" : {
       "comment" : "A toggle that allows users to configure whether hidden menu bar items should always be visible in the native menu bar on a particular display.",
@@ -5633,6 +4982,125 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "一律隱藏"
+          }
+        }
+      }
+    },
+    "Always-hidden items only" : {
+      "comment" : "Toggle that opens only the always-hidden section in the Thaw Bar, leaving the hidden section to expand in the menu bar.",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Pouze trvale skryté položky"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Nur immer versteckte Einträge"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Solo elementos siempre ocultos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Éléments toujours cachés uniquement"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Csak a mindig rejtett elemek"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Hanya item selalu-tersembunyi"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Solo elementi sempre nascosti"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "常に非表示の項目のみ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "항상 숨김 항목만"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Alleen altijd verborgen items"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Tylko zawsze ukryte elementy"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Apenas itens sempre ocultos"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Только всегда скрытые элементы"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "เฉพาะรายการที่ซ่อนอยู่เสมอ"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Yalnızca her zaman gizli öğeler"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Лише завжди приховані об'єкти"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Chỉ các mục luôn ẩn"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "仅永久隐藏的项目"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "僅一律隱藏的項目"
           }
         }
       }
@@ -6347,6 +5815,125 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "確定套用全域設定至所有顯示器？"
+          }
+        }
+      }
+    },
+    "Apply menu bar spacing change?" : {
+      "comment" : "Title of the just-in-time confirmation shown before a display transition relaunches menu bar apps to apply new spacing.",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Použít změnu nastavení rozestupů?"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Änderung der Menüleisten-Abstände anwenden?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Aplicar cambios a la barra de menús?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appliquer les changements d'espacement de barre de menu ?"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Apply menu bar spacing change?"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terapkan perubahan jarak pada bar menu?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Applicare la modifica alla spaziatura della barra dei menu?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Apply menu bar spacing change?"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "메뉴 바 간격 변경을 적용하시겠습니까?"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De wijziging in de afstand tussen de menubalken toepassen?"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zastosować zmianę odstępów?"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Apply menu bar spacing change?"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Применить изменение интервалов в строке меню?"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ปรับเปลี่ยนระยะห่างแถบเมนู?"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Menü çubuğundaki boşluk ayarını uygulamak ister misiniz?"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Apply menu bar spacing change?"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Áp dụng thay đổi khoảng cách thanh menu?"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "确定应用菜单栏间隔变动吗？"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "確定套用選單列間距變更？"
           }
         }
       }
@@ -7555,6 +7142,9 @@
         }
       }
     },
+    "Apps may relaunch" : {
+
+    },
     "Apps that request settings access will appear here after you approve them." : {
       "comment" : "A description of the whitelisted apps section.",
       "localizations" : {
@@ -7795,7 +7385,6 @@
     },
     "Arrange menu bar items." : {
       "comment" : "A detail about the \"Accessibility\" permission, describing the app's ability to rearrange menu bar items.",
-      "extractionState" : "stale",
       "localizations" : {
         "cs" : {
           "stringUnit" : {
@@ -7912,6 +7501,9 @@
           }
         }
       }
+    },
+    "Arrangement" : {
+
     },
     "Arrow" : {
       "comment" : "Localized string key for each case in the `Name` enum.",
@@ -8150,6 +7742,12 @@
           }
         }
       }
+    },
+    "Auto-rehide off" : {
+      "comment" : "Profile preview summary fragment: automatic rehiding is disabled in the profile."
+    },
+    "Auto-rehide on" : {
+      "comment" : "Profile preview summary fragment: automatic rehiding is enabled in the profile."
     },
     "Auto-Switch" : {
       "comment" : "Section header for the \"Auto-Switch\" settings in the profile settings pane.",
@@ -9337,6 +8935,125 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "背景 - 淺色外觀"
+          }
+        }
+      }
+    },
+    "Before a display change or spacing edit relaunches your menu bar apps, Thaw asks you to confirm. Turn this off to apply spacing changes and relaunch apps without confirmation." : {
+      "comment" : "Annotation for the Confirm before relaunching apps toggle in the Displays pane.",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Předtím, než přepnutí monitorů nebo změna rozestupů restartuje aplikace ve vašem řádku nabídek, Thaw vás požádá o potvrzení. Vypněte tuto volbu, pokud chcete, aby se aplikace restartovaly bez vašeho potvrzení."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bevor eine Bildschirm- oder Abstandsänderung die Menüleisten-Anwendungen neustartet, fragt Thaw nach einer Bestätigung."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Antes de que un cambio de presentación o espaciado reinicie sus apps de la barra de menús, Thaw te pedirá que confirmes. Desactiva esto para aplicar cambios de espaciado y reiniciar apps sin confirmar."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avant qu’un changement d’affichage ou une modification de l’espacement ne redémarre vos applications de la barre de menus, Thaw vous demande de confirmer. Désactivez cette option pour appliquer les modifications d’espacement et redémarrer les applications sans confirmation."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Before a display change or spacing edit relaunches your menu bar apps, Thaw asks you to confirm. Turn this off to apply spacing changes and relaunch apps without confirmation."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thaw akan meminta konfirmasi sebelum perubahan layar atau pengaturan jarak memulai ulang aplikasi pada bar menu. Nonaktifkan opsi ini untuk menerapkan perubahan tanpa konfirmasi."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prima che una modifica alla visualizzazione o alla spaziatura provochi il riavvio delle app nella barra dei menu, Thaw richiede una conferma. Disattiva questa opzione per applicare le modifiche alla spaziatura e riavviare le app senza conferma."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Before a display change or spacing edit relaunches your menu bar apps, Thaw asks you to confirm. Turn this off to apply spacing changes and relaunch apps without confirmation."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Before a display change or spacing edit relaunches your menu bar apps, Thaw asks you to confirm. Turn this off to apply spacing changes and relaunch apps without confirmation."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voordat een wijziging in de weergave of aanpassing van de spatiëring ervoor zorgt dat de apps in je menubalk opnieuw worden gestart, vraagt Thaw je om bevestiging. Schakel deze optie uit om wijzigingen in de spatiëring toe te passen en apps opnieuw te starten zonder bevestiging."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przed zrestartowaniem aplikacji paska menu w wyniku zmiany wyświetlacza lub odstępów, Thaw wymaga potwierdzenia. Odznacz tę opcję, by wprowadzać zmiany i restartować aplikacje bez dodatkowych komunikatów."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Before a display change or spacing edit relaunches your menu bar apps, Thaw asks you to confirm. Turn this off to apply spacing changes and relaunch apps without confirmation."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Прежде чем изменение дисплея или правка интервалов перезапустит приложения в строке меню, Thaw запрашивает подтверждение. Отключите эту опцию, чтобы применять изменения интервалов, и перезапускать приложения без подтверждения."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ก่อนที่การเปลี่ยนแปลงจอแสดงผลหรือการแก้ไขระยะห่างจะรีสตาร์ทแอปในแถบเมนูของคุณ Thaw จะขอให้คุณยืนยันก่อน ปิดตัวเลือกนี้เพื่อนำการเปลี่ยนแปลงระยะห่างไปใช้และรีสตาร์ทแอปโดยไม่ต้องยืนยัน"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bir ekran değişikliği veya aralık düzenlemesi menü çubuğu uygulamalarınızı yeniden başlatmadan önce Thaw sizden onay ister. Aralık değişikliklerini uygulamak ve uygulamaları onay istemeden yeniden başlatmak için bu seçeneği kapatın."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Before a display change or spacing edit relaunches your menu bar apps, Thaw asks you to confirm. Turn this off to apply spacing changes and relaunch apps without confirmation."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trước khi thay đổi hiển thị hoặc chỉnh sửa khoảng cách khởi chạy lại ứng dụng trên thanh menu của bạn, Thaw sẽ yêu cầu bạn xác nhận. Tắt tính năng này để áp dụng các thay đổi về khoảng cách và khởi chạy lại ứng dụng mà không cần xác nhận."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在显示设置变更或调整间距导致菜单栏应用重新启动之前，Thaw 会先请求你的确认。关闭此选项后，调整间距时将直接应用更改并重新启动相关应用，无需再次确认。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在 Thaw 因顯示器變更或間距變更而需要重新啟動選單列圖示對應的應用程式時，Thaw 會與您確認。若您希望套用新間距設定時直接重啟對應應用程式，請關閉此選項。"
           }
         }
       }
@@ -10531,6 +10248,9 @@
           }
         }
       }
+    },
+    "Changing menu bar spacing for a display can relaunch apps with menu bar items. Unsaved input, progress, or transient app state may be lost." : {
+
     },
     "Check Automatically" : {
       "comment" : "A button that enables automatic update checking.",
@@ -11960,6 +11680,9 @@
         }
       }
     },
+    "Choose where to move the menu bar items:" : {
+
+    },
     "Choose which menu bar sections appear in the search panel, and in what order. Use the up and down buttons to reorder, and turn off a section to exclude its items from search results." : {
       "comment" : "Description for the Search section in the Advanced settings pane that controls which menu bar sections appear in the menu bar search panel and in what order.",
       "localizations" : {
@@ -12316,6 +12039,9 @@
           }
         }
       }
+    },
+    "Clear search" : {
+
     },
     "Click an empty area of the menu bar to show hidden menu bar items." : {
       "comment" : "Toggle that allows the user to enable or disable the feature of showing hidden menu bar items by clicking on an empty area of the menu bar.",
@@ -12911,6 +12637,125 @@
         }
       }
     },
+    "Confirm before relaunching apps" : {
+      "comment" : "Toggle in the Displays pane controlling whether spacing changes ask for confirmation before relaunching menu bar apps.",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Potvrzovat před restartováním aplikací"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bestätigen bevor Anwendungen neu gestartet werden"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confirmar antes de relanzar apps"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confirmez avant de relancer les applications"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Confirm before relaunching apps"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Konfirmasi sebelum memulai ulang aplikasi"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confermare prima di riavviare le app"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Confirm before relaunching apps"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Confirm before relaunching apps"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bevestig voordat je apps opnieuw start"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Potwierdź przed ponownym uruchomieniem aplikacji"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Confirm before relaunching apps"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Подтверждать перед перезапуском приложений"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ยืนยันก่อนรีสตาร์ทแอป"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Confirm before relaunching apps"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Confirm before relaunching apps"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xác nhận trước khi khởi chạy ứng dụng"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在重新启动应用程序之前确认"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重啟應用程式前先詢問"
+          }
+        }
+      }
+    },
     "Conflicting Menu Bar Manager Detected" : {
       "comment" : "Title of an alert that appears when a conflicting menu bar manager is detected.",
       "localizations" : {
@@ -13026,131 +12871,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "檢測到選單列管理工具衝突"
-          }
-        }
-      }
-    },
-    "When a display transition requires Thaw to apply a different menu bar spacing, Thaw relaunches apps with menu bar items. Relaunching apps may cause unsaved input, progress, or transient app state to be lost." : {
-      "comment" : "A warning that a display transition requiring a different menu bar spacing relaunches menu bar apps, which can lose unsaved state.",
-      "localizations" : {
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Když změna monitorů zapříčiní aktivaci jiného nastavení rozestupů, Thaw restartuje aplikace s položkami v řádku nabídek. Restartování aplikací může zapříčinit ztrátu neuložených dat, postupu nebo dočasného stavu."
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wenn eine Bildschirmänderung Thaw zur Anwendung anderer Menüleisten-Abstände zwingt, startet Thaw Anwendungen mit Menüleisten-Einträgen neu. Der Neustart von Anwendungen kann zu ungespeicherten Eingaben führen, der Fortschritt oder Zustand von Anwendungen kann verloren gehen."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "When a display transition requires Thaw to apply a different menu bar spacing, Thaw relaunches apps with menu bar items. Relaunching apps may cause unsaved input, progress, or transient app state to be lost."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cuando una transición de presentación requiere que Thaw aplique un espaciado de barra de menús distinto, Thaw reinicia apps con iconos en la barra de menús. Reiniciar apps puede causar que se pierda información, progreso o estado no guardado."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Lorsqu'une transition d'affichage nécessite que Thaw applique un espacement différent pour la barre de menus, Thaw relance les applications comportant des éléments dans la barre de menus. Le redémarrage des applications peut entraîner la perte des données non enregistrées, de la progression ou de l'état temporaire de l'application."
-          }
-        },
-        "hu" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "When a display transition requires Thaw to apply a different menu bar spacing, Thaw relaunches apps with menu bar items. Relaunching apps may cause unsaved input, progress, or transient app state to be lost."
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Saat perpindahan layar mengharuskan Thaw menerapkan jarak bar menu yang berbeda, Thaw akan memulai ulang aplikasi yang memiliki item di bar menu. Tindakan ini dapat menyebabkan input yang belum disimpan, progres yang sedang berjalan atau status sementara aplikasi hilang."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "When a display transition requires Thaw to apply a different menu bar spacing, Thaw relaunches apps with menu bar items. Relaunching apps may cause unsaved input, progress, or transient app state to be lost."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "When a display transition requires Thaw to apply a different menu bar spacing, Thaw relaunches apps with menu bar items. Relaunching apps may cause unsaved input, progress, or transient app state to be lost."
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "When a display transition requires Thaw to apply a different menu bar spacing, Thaw relaunches apps with menu bar items. Relaunching apps may cause unsaved input, progress, or transient app state to be lost."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wanneer een schermovergang vereist dat Thaw een andere spatiëring voor de menubalk toepast, start Thaw apps met menubalkitems opnieuw op. Door het opnieuw opstarten van apps kunnen niet-opgeslagen invoer, voortgang of tijdelijke app-statussen verloren gaan."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Jeśli zmiana wyświetlacza wymusza na programie Thaw zmianę odstępów na pasku menu, Thaw restartuje aplikacje posiadające tam swoje ikony. Restart aplikacji grozi utratą niezapisanych danych, postępów pracy lub tymczasowego stanu programu."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "When a display transition requires Thaw to apply a different menu bar spacing, Thaw relaunches apps with menu bar items. Relaunching apps may cause unsaved input, progress, or transient app state to be lost."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "При изменении настроек разделителя Thaw перезапустит приложения, размещающие иконки в строке меню, что может привести к потере не сохраненного результата."
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "เมื่อการเปลี่ยนแปลงจอแสดงผลต้องให้ Thaw ใช้ระยะห่างแถบเมนูที่แตกต่างออกไป Thaw จะรีสตาร์ทแอปที่มีรายการในแถบเมนู การรีสตาร์ทแอปอาจทำให้ข้อมูลที่ยังไม่ได้บันทึก ความคืบหน้า หรือสถานะชั่วคราวของแอปสูญหายได้"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "When a display transition requires Thaw to apply a different menu bar spacing, Thaw relaunches apps with menu bar items. Relaunching apps may cause unsaved input, progress, or transient app state to be lost."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "When a display transition requires Thaw to apply a different menu bar spacing, Thaw relaunches apps with menu bar items. Relaunching apps may cause unsaved input, progress, or transient app state to be lost."
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Khi quá trình chuyển đổi hiển thị yêu cầu Thaw áp dụng khoảng cách thanh menu khác, Thaw sẽ khởi chạy lại các ứng dụng có mục trên thanh menu. Việc khởi chạy lại ứng dụng có thể khiến dữ liệu đầu vào, tiến trình hoặc trạng thái ứng dụng tạm thời chưa được lưu bị mất."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "当显示状态切换需要 Thaw 应用不同的菜单栏间距时，Thaw 会重新启动带有菜单栏项目的应用。重新启动应用可能会导致尚未保存的输入、进行中的进度或应用的临时状态丢失。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "當顯示器切換需要 Thaw 套用不同的選單列間距時,Thaw 會重新啟動具有選單列項目的應用程式。重新啟動應用程式可能導致尚未儲存的輸入、進度或暫存狀態遺失。"
           }
         }
       }
@@ -13631,6 +13351,9 @@
         }
       }
     },
+    "Copied" : {
+
+    },
     "Copy" : {
       "comment" : "Suffix to be appended to a profile name to indicate that it is a copy of another profile.",
       "localizations" : {
@@ -13868,6 +13591,15 @@
           }
         }
       }
+    },
+    "Couldn't move %@ to the always-hidden section." : {
+
+    },
+    "Couldn't move %@ to the hidden section." : {
+
+    },
+    "Couldn't move the item right now." : {
+
     },
     "Created: %@" : {
       "comment" : "A sublabel within the profile list showing when a profile was created.",
@@ -15773,6 +15505,125 @@
         }
       }
     },
+    "Don't ask again" : {
+      "comment" : "Suppression checkbox on the spacing relaunch confirmation; disables future confirmations.",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Příště se neptat"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nicht nochmal fragen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No preguntar de nuevo"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ne plus demander"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Don't ask again"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jangan tanya lagi"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non chiederlo di nuovo"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Don't ask again"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "다시 묻지 않기"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Niet opnieuw vragen"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ne pytaj ponownie"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Don't ask again"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Больше не спрашивать"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ไม่ต้องถามอีก"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uygulamaları yeniden başlatmadan önce onay iste"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не запитувати знову"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không hỏi lại"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不再询问"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "之後不再詢問"
+          }
+        }
+      }
+    },
     "Don't Check" : {
       "comment" : "A button that disables automatic update checking.",
       "localizations" : {
@@ -16727,6 +16578,7 @@
     },
     "Due to a bug in a previous version of the app, the data for %@'s menu bar sections was corrupted and had to be reset." : {
       "comment" : "Text in an alert that informs the user that the preferred positions of some menu bar controls have been reset because they were corrupted.",
+      "extractionState" : "stale",
       "localizations" : {
         "cs" : {
           "stringUnit" : {
@@ -17676,6 +17528,9 @@
           }
         }
       }
+    },
+    "Empty menu bar area" : {
+
     },
     "Enable diagnostic logging" : {
       "comment" : "A toggle that enables or disables diagnostic logging.",
@@ -18629,6 +18484,9 @@
         }
       }
     },
+    "Enable the always-hidden section in Layout to configure icon gestures for that section." : {
+
+    },
     "Enabled" : {
       "comment" : "A checkbox that enables or disables a hook.",
       "localizations" : {
@@ -19462,6 +19320,9 @@
         }
       }
     },
+    "External apps cannot read or modify %@ settings." : {
+
+    },
     "Failed to encode profiles for export." : {
       "comment" : "A message displayed when the user fails to export all profiles.",
       "localizations" : {
@@ -19583,6 +19444,7 @@
     },
     "Failed to update configuration on %lld profile(s)." : {
       "comment" : "A message that indicates that the configuration update failed for some profiles.",
+      "extractionState" : "stale",
       "localizations" : {
         "cs" : {
           "stringUnit" : {
@@ -19699,6 +19561,9 @@
           }
         }
       }
+    },
+    "Failed to update configuration on ^[%lld profiles](inflect: true)." : {
+
     },
     "File does not exist." : {
       "comment" : "Error message when the file specified in the hook does not exist.",
@@ -20055,6 +19920,9 @@
           }
         }
       }
+    },
+    "Focus Filters" : {
+
     },
     "Forward" : {
       "comment" : "A button that navigates to the next settings pane.",
@@ -21127,6 +20995,9 @@
         }
       }
     },
+    "Global %@ pt" : {
+
+    },
     "Global Hooks" : {
       "comment" : "A heading for the global hooks section.",
       "localizations" : {
@@ -22198,6 +22069,9 @@
         }
       }
     },
+    "Hide menu bar items" : {
+
+    },
     "Hide or show menu bar items on demand. Drag items between sections, keep your favorites always visible, and tuck the rest away in the always-hidden section." : {
       "comment" : "Description of the menu bar management onboarding slide.",
       "localizations" : {
@@ -22438,6 +22312,7 @@
     },
     "Hooks" : {
       "comment" : "A heading for the hooks section.",
+      "extractionState" : "stale",
       "localizations" : {
         "cs" : {
           "stringUnit" : {
@@ -23626,6 +23501,9 @@
           }
         }
       }
+    },
+    "Icon previews" : {
+
     },
     "Icon refresh rate" : {
       "comment" : "A label displayed above a slider that controls how often animated menu bar icons are refreshed in panels. Higher values are smoother but use more CPU.",
@@ -24942,6 +24820,18 @@
         }
       }
     },
+    "Include always-hidden section in search" : {
+
+    },
+    "Include hidden section in search" : {
+
+    },
+    "Include visible section in search" : {
+
+    },
+    "Inset on notched displays" : {
+
+    },
     "Items are arranged in a grid with multiple columns." : {
       "comment" : "A description of the grid layout.",
       "localizations" : {
@@ -25418,6 +25308,9 @@
         }
       }
     },
+    "Items were moved to the Visible section." : {
+
+    },
     "Keep search" : {
       "comment" : "A toggle to keep a search query open.",
       "localizations" : {
@@ -25893,6 +25786,9 @@
           }
         }
       }
+    },
+    "Layout reset. Items were moved to the Always Hidden section." : {
+
     },
     "Layout reset. Items were moved to the Hidden section." : {
       "comment" : "A message displayed after successfully resetting the menu bar layout.",
@@ -26846,6 +26742,12 @@
         }
       }
     },
+    "macOS 27 Is Not Yet Supported" : {
+
+    },
+    "macOS draws a solid menu bar while Reduce Transparency is on, so %@ cannot tint or reshape it. Turn the setting off to see these effects." : {
+
+    },
     "macOS prohibits \"%@\" from being moved." : {
       "comment" : "The text that appears below the main message text in the alert displayed when a menu bar item is not movable.",
       "localizations" : {
@@ -27203,8 +27105,12 @@
         }
       }
     },
+    "Maximum number of items per row in the grid arrangement." : {
+
+    },
     "Maximum number of items per row in the grid layout." : {
       "comment" : "Label for the maximum number of items per row in the grid layout.",
+      "extractionState" : "stale",
       "localizations" : {
         "cs" : {
           "stringUnit" : {
@@ -27318,6 +27224,125 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "網格佈局中每列項目的最大數量。"
+          }
+        }
+      }
+    },
+    "Menu Bar" : {
+      "comment" : "Checkbox that draws the shape border around the menu bar.",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Řádek nabídek"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Menüleiste"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Barra de menús"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Barre des menus"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Menüsor"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Bar Menu"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Barra dei menu"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "メニューバー"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "메뉴 막대"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Menubalk"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Pasek menu"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Barra de Menus"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Строка меню"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "แถบเมนู"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Menü Çubuğu"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Рядок меню"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Thanh menu"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "菜单栏"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "選單列"
           }
         }
       }
@@ -27440,6 +27465,12 @@
           }
         }
       }
+    },
+    "Menu bar behavior" : {
+
+    },
+    "Menu bar effects are hidden by Reduce Transparency" : {
+
     },
     "Menu bar item is not movable." : {
       "comment" : "Message text in an alert that appears when a menu bar item is not movable.",
@@ -28631,6 +28662,9 @@
         }
       }
     },
+    "Menu Bar Search" : {
+
+    },
     "Menu Bar Sections" : {
       "comment" : "Section header for advanced settings related to menu bar sections.",
       "localizations" : {
@@ -28988,6 +29022,15 @@
         }
       }
     },
+    "More" : {
+
+    },
+    "More profile actions" : {
+
+    },
+    "More project links" : {
+
+    },
     "Mouse pointer" : {
       "comment" : "Localized string key for the \"Mouse pointer\" option in the Ice Bar location picker.",
       "localizations" : {
@@ -29225,6 +29268,9 @@
           }
         }
       }
+    },
+    "Move items that don't fit into Hidden" : {
+
     },
     "Move menu bar items from the visible section into the hidden section when they don't fit beside the notch on a notched display. Disable to keep the saved profile layout exactly as authored even when items would otherwise be pushed under the notch." : {
       "comment" : "A tooltip that describes the effect of enabling or disabling the overflow.",
@@ -29578,6 +29624,125 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "移動「新項目」標記，以選擇新偵測到的項目出現位置。"
+          }
+        }
+      }
+    },
+    "Move the pointer to revealed items" : {
+      "comment" : "Toggle in the Search section of the Advanced pane. Warps the mouse pointer to a menu bar item opened from the search panel.",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Přesunout ukazatel na zobrazené ikony"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Mauszeiger zum eingeblendeten Eintrag bewegen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Mover el cursor a los elementos mostrados"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Déplacer le pointeur vers les éléments affichés"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Egérmutató a megjelenített elemhez"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Pindahkan penunjuk ke item yang ditampilkan"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Sposta il puntatore sugli elementi mostrati"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "表示した項目にポインターを移動"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "표시된 항목으로 포인터 이동"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Muisaanwijzer naar getoonde items verplaatsen"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Przesuwaj kursor do pokazanych elementów"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Mover o ponteiro para os itens exibidos"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Перемещать указатель к показанным элементам"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "ย้ายตัวชี้ไปยังรายการที่แสดง"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "İmleci gösterilen ögeye taşı"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Переміщати курсор до показаних об'єктів"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Di chuyển con trỏ đến mục được hiện"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "将指针移动到显示的项目"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "將游標移至顯示的項目"
           }
         }
       }
@@ -30653,6 +30818,9 @@
         }
       }
     },
+    "No settings found" : {
+
+    },
     "No shape kind selected" : {
       "comment" : "A message displayed when the user hasn't selected a shape kind for the menu bar.",
       "localizations" : {
@@ -31125,6 +31293,125 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "無"
+          }
+        }
+      }
+    },
+    "Not available because every section already opens in the %@ Bar." : {
+      "comment" : "Annotation shown when the Always-hidden-items-only toggle is disabled because Use Thaw Bar is already on. %@ is the Thaw display name.",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Není k dispozici, protože všechny sekce se již otevírají v liště %@."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Nicht verfügbar, weil bereits alle Bereiche in der %@-Leiste geöffnet werden."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "No disponible porque todas las secciones ya se abren en la barra de %@."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Non disponible, car toutes les sections s'ouvrent déjà dans la barre %@."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Nem érhető el, mert már minden szakasz a(z) %@ sávban nyílik meg."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Tidak tersedia karena semua bagian sudah dibuka di Bar %@."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Non disponibile perché tutte le sezioni si aprono già nella barra %@."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "すべてのセクションがすでに %@ バーで開くため、利用できません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "모든 섹션이 이미 %@ 바에서 열리므로 사용할 수 없습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Niet beschikbaar omdat alle secties al in de %@-balk worden geopend."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Opcja niedostępna, ponieważ wszystkie sekcje otwierają się już na pasku %@."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Não disponível porque todas as seções já abrem na barra %@."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Недоступно, так как все разделы уже открываются на панели %@."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "ไม่พร้อมใช้งาน เนื่องจากทุกส่วนเปิดใน %@ Bar อยู่แล้ว"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Tüm bölümler zaten %@ Çubuğu'nda açıldığı için kullanılamıyor."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Недоступно, оскільки всі розділи вже відкриваються на панелі %@."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Không khả dụng vì mọi phần đã mở trong Thanh %@."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "由于所有分区已在 %@ 栏中打开，因此该功能不可用。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "所有區段已在 %@ 選單列中開啟，此選項不可用。"
           }
         }
       }
@@ -33676,6 +33963,9 @@
         }
       }
     },
+    "Open Settings" : {
+
+    },
     "Other" : {
       "comment" : "Section title for advanced settings related to other functionality.",
       "localizations" : {
@@ -34633,6 +34923,12 @@
         }
       }
     },
+    "Press ⌃ Space" : {
+
+    },
+    "Preview this profile's saved layout and settings" : {
+      "comment" : "Help tooltip on the profile preview button."
+    },
     "Profile" : {
       "comment" : "Title of the parameter in the \"Set Menu Bar Profile\" focus filter.",
       "localizations" : {
@@ -35584,6 +35880,9 @@
           }
         }
       }
+    },
+    "Rehide interval" : {
+
     },
     "Remove %@ from whitelist" : {
       "comment" : "A label for a button that removes an app from the whitelist. The argument is the name of the app.",
@@ -36656,6 +36955,9 @@
         }
       }
     },
+    "Reset Appearance" : {
+
+    },
     "Reset completed with %lld item(s) that could not be moved. Check the menu bar and try again if needed." : {
       "comment" : "A message describing the result of a menu bar layout reset, including the number of items that could not be moved.",
       "localizations" : {
@@ -36896,6 +37198,7 @@
     },
     "Reset Layout" : {
       "comment" : "A button label that resets the menu bar layout.",
+      "extractionState" : "stale",
       "localizations" : {
         "cs" : {
           "stringUnit" : {
@@ -37012,6 +37315,9 @@
           }
         }
       }
+    },
+    "Reset Layout…" : {
+
     },
     "Reset Menu Bar Appearance" : {
       "comment" : "The title of an alert that appears when the user chooses to reset the appearance of the menu bar.",
@@ -37253,6 +37559,7 @@
     },
     "Reset menu bar layout?" : {
       "comment" : "An alert title that asks the user to confirm resetting the menu bar layout.",
+      "extractionState" : "stale",
       "localizations" : {
         "cs" : {
           "stringUnit" : {
@@ -37491,6 +37798,7 @@
     },
     "Resets dividers and moves every movable item except the %@ icon to hidden — just like a fresh install." : {
       "comment" : "A description of what resetting the menu bar layout does.",
+      "extractionState" : "stale",
       "localizations" : {
         "cs" : {
           "stringUnit" : {
@@ -37607,6 +37915,9 @@
           }
         }
       }
+    },
+    "Resets dividers and moves every movable item except the %@ icon to the selected section." : {
+
     },
     "Restart %@" : {
       "comment" : "A button that restarts the app.",
@@ -37729,6 +38040,7 @@
     },
     "Restores divider defaults and moves every movable item except the %@ icon to Hidden. Use this if the layout looks broken or items won’t load." : {
       "comment" : "A message displayed in an alert when the user confirms resetting the menu bar layout.",
+      "extractionState" : "stale",
       "localizations" : {
         "cs" : {
           "stringUnit" : {
@@ -37845,6 +38157,9 @@
           }
         }
       }
+    },
+    "Reveal hidden items through the Thaw Bar while overflow has items ejected. The visible row has no room left beside the notch at that point, so expanding the hidden section inline cannot show them. Disable to always follow the per-display Thaw Bar setting." : {
+
     },
     "Right aligned" : {
       "comment" : "Localized string key for the right-aligned Thaw Bar location.",
@@ -39630,6 +39945,9 @@
         }
       }
     },
+    "Script Environment" : {
+
+    },
     "Scroll or swipe in the menu bar to show hidden menu bar items." : {
       "comment" : "Label for a toggle that enables or disables showing hidden menu bar items when scrolling or swiping in the menu bar.",
       "localizations" : {
@@ -40225,6 +40543,9 @@
         }
       }
     },
+    "Search section ordering" : {
+
+    },
     "Section divider style" : {
       "comment" : "Label for a picker that lets the user choose the style of divider to use between menu bar sections.",
       "localizations" : {
@@ -40343,6 +40664,9 @@
           }
         }
       }
+    },
+    "Sections" : {
+
     },
     "Set Menu Bar Profile" : {
       "comment" : "Title and description of the Focus Filter.",
@@ -40463,8 +40787,12 @@
         }
       }
     },
+    "Settings URI disabled" : {
+
+    },
     "Settings URI is disabled. External apps cannot read or modify %@ settings." : {
       "comment" : "A callout box that describes the security implications of disabling the Settings URI scheme.",
+      "extractionState" : "stale",
       "localizations" : {
         "cs" : {
           "stringUnit" : {
@@ -40700,6 +41028,12 @@
           }
         }
       }
+    },
+    "Shape" : {
+
+    },
+    "Shape fill" : {
+
     },
     "Shape Kind" : {
       "comment" : "Label for the picker that lets the user select the shape kind for the menu bar.",
@@ -41302,6 +41636,125 @@
         }
       }
     },
+    "Show always-hidden menu bar items in the %@ Bar, while hidden items keep expanding in the menu bar." : {
+      "comment" : "Annotation for the Always-hidden-items-only toggle in the Displays pane. %@ is the Thaw display name.",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Zobrazovat trvale skryté položky řádku nabídek v liště %@, zatímco skryté položky se nadále rozbalují v řádku nabídek."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Immer versteckte Menüleisteneinträge in der %@-Leiste anzeigen, während versteckte Einträge weiterhin in der Menüleiste ausgeklappt werden."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Mostrar los elementos siempre ocultos de la barra de menús en la barra de %@, mientras que los elementos ocultos siguen expandiéndose en la barra de menús."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Afficher les éléments toujours cachés de la barre de menu dans la barre %@, tandis que les éléments cachés continuent de se déplier dans la barre de menu."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "A mindig rejtett menüsorelemek megjelenítése a(z) %@ sávban, míg a rejtett elemek továbbra is a menüsorban nyílnak ki."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Tampilkan item bar menu yang selalu tersembunyi di Bar %@, sementara item tersembunyi tetap terbentang di bar menu."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Mostra gli elementi sempre nascosti della barra dei menu nella barra %@, mentre gli elementi nascosti continuano a espandersi nella barra dei menu."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "常に非表示の項目を %@ バーに表示し、非表示項目はメニューバー内で展開したままにします。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "항상 숨김 항목은 %@ 바에 표시하고, 숨겨진 항목은 메뉴 막대에서 계속 펼칩니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Toon altijd verborgen menubalk-items in de %@-balk, terwijl verborgen items in de menubalk blijven uitklappen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Pokazuj zawsze ukryte elementy paska menu na pasku %@, podczas gdy ukryte elementy nadal rozwijają się na pasku menu."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Mostrar os itens sempre ocultos da barra de menus na barra %@, enquanto os itens ocultos continuam expandindo na barra de menus."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Показывать всегда скрытые элементы строки меню на панели %@, а скрытые элементы по-прежнему раскрывать в строке меню."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "แสดงรายการแถบเมนูที่ซ่อนอยู่เสมอใน %@ Bar ขณะที่รายการที่ซ่อนไว้ยังคงขยายในแถบเมนู"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Her zaman gizli menü çubuğu ögelerini %@ Çubuğu'nda göster, gizli ögeler menü çubuğunda açılmaya devam etsin."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Показувати завжди приховані об'єкти рядка меню на панелі %@, а приховані об'єкти й надалі розгортати в рядку меню."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Hiển thị các mục thanh menu luôn ẩn trong Thanh %@, trong khi các mục ẩn vẫn mở rộng trong thanh menu."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "在 %@ 栏中显示永久隐藏的菜单栏项目，而隐藏的项目仍在菜单栏中展开。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "在 %@ 選單列中顯示一律隱藏的選單列項目，隱藏項目則仍在選單列中展開。"
+          }
+        }
+      }
+    },
     "Show Always-Hidden Section" : {
       "comment" : "Title of a menu item that shows an always-hidden section in the menu bar.",
       "localizations" : {
@@ -41542,6 +41995,7 @@
     },
     "Show hidden menu bar items in a separate bar below the menu bar on this display." : {
       "comment" : "Label for a toggle that allows the user to enable or disable the display bar on a specific display.",
+      "extractionState" : "stale",
       "localizations" : {
         "cs" : {
           "stringUnit" : {
@@ -42252,6 +42706,9 @@
           }
         }
       }
+    },
+    "Show menu bar items" : {
+
     },
     "Show on click" : {
       "comment" : "A toggle that enables or disables showing hidden menu bar items when the menu bar is clicked.",
@@ -43088,6 +43545,7 @@
     },
     "Skip" : {
       "comment" : "Label for the button that skips ahead to the final onboarding slide.",
+      "extractionState" : "stale",
       "localizations" : {
         "cs" : {
           "stringUnit" : {
@@ -43442,6 +43900,9 @@
           }
         }
       }
+    },
+    "Spacing: %@" : {
+
     },
     "Split" : {
       "comment" : "Localized string key for a menu bar shape kind that splits the menu bar between its leading and trailing sides.",
@@ -44397,6 +44858,7 @@
     },
     "Supported Settings" : {
       "comment" : "A label displayed under the list of whitelisted apps.",
+      "extractionState" : "stale",
       "localizations" : {
         "cs" : {
           "stringUnit" : {
@@ -44635,6 +45097,7 @@
     },
     "Thaw needs a couple of permissions to manage your menu bar. You can grant them now, or skip and grant them later from Settings." : {
       "comment" : "Description of the permissions onboarding slide.",
+      "extractionState" : "stale",
       "localizations" : {
         "cs" : {
           "stringUnit" : {
@@ -45823,6 +46286,9 @@
         }
       }
     },
+    "The item was left in the visible section so it isn't stuck offscreen. Try dragging it again in a moment." : {
+
+    },
     "These hooks run only when this profile is applied, after the global pre-hook and before the global post-hook." : {
       "comment" : "A description of the hooks that run only when a profile is applied.",
       "localizations" : {
@@ -46061,8 +46527,12 @@
         }
       }
     },
+    "This version of Thaw is not yet compatible with macOS 27. Preview builds are available on GitHub Releases, and macOS 27 support will be delivered through the alpha update channel." : {
+
+    },
     "This will overwrite the settings of %lld display with the global template. If the active display's spacing changes, Thaw will relaunch each app with a menu bar item. Relaunching apps may cause unsaved input, progress, or transient app state to be lost." : {
       "comment" : "A confirmation message that appears when the user is prompted to apply a global template. The argument is the number of displays that will be affected.",
+      "extractionState" : "stale",
       "localizations" : {
         "cs" : {
           "variations" : {
@@ -46431,6 +46901,9 @@
           }
         }
       }
+    },
+    "This will overwrite the settings of ^[%lld displays](inflect: true) with the global template. If the active display's spacing changes, Thaw will relaunch each app with a menu bar item. Relaunching apps may cause unsaved input, progress, or transient app state to be lost." : {
+
     },
     "This will reset all settings to their default values. This action cannot be undone." : {
       "comment" : "A message displayed in an alert when the user confirms resetting all settings.",
@@ -49532,6 +50005,9 @@
         }
       }
     },
+    "Updates" : {
+
+    },
     "Use %@ Bar" : {
       "comment" : "A toggle that lets the user enable or disable the use of the \\(Constants.displayName) Bar. The argument is the name of the \\(Constants.displayName) Bar.",
       "localizations" : {
@@ -49650,6 +50126,9 @@
           }
         }
       }
+    },
+    "Use different settings for Light and Dark Mode" : {
+
     },
     "Use dynamic appearance" : {
       "comment" : "A toggle that lets the user choose whether to use different appearance settings based on the current system appearance.",
@@ -49889,125 +50368,6 @@
         }
       }
     },
-    "Use LCS sorting on notched displays" : {
-      "comment" : "A toggle that lets the user choose whether to use the LCS sorting algorithm for profile sorting on notched displays.",
-      "localizations" : {
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Na displejích s výřezem řadit metodou LCS"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "LCS-Sortierung auf Bildschirmen mit Notch verwenden"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Usar ordenación LCS en pantallas con notch"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Utiliser le tri LCS sur les écrans à notch"
-          }
-        },
-        "hu" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "LCS-rendezés használata képernyőkivágásos kijelzőkön"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gunakan algoritma LCS di layar notch"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Usa ordinamento LCS sugli schermi con notch"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ノッチ付きディスプレイで LCS ソートを使用"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "노치 디스플레이에서 LCS 정렬 사용"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gebruik LCS-sortering op displays met een notch"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Używaj sortowania LCS na wyświetlaczach z notchem"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Use a organização LCS em displays com notch"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Использовать сортировку LCS на дисплеях с вырезом"
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ใช้การเรียงลำดับ LCS บนหน้าจอที่มี notch"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Çentikli ekranlarda LCS sıralamasını kullan"
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Use LCS sorting on notched displays"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sử dụng tính năng sắp xếp LCS trên màn hình có khía"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "在刘海屏上使用 LCS 排序"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "在帶有瀏海的顯示器上使用 LCS 排序"
-          }
-        }
-      }
-    },
     "Use Option-click to open always-hidden section" : {
       "comment" : "A toggle that lets the user choose whether to use option-click to open the always-hidden section.",
       "localizations" : {
@@ -50127,124 +50487,8 @@
         }
       }
     },
-    "Use the faster LCS (Longest Common Subsequence) algorithm for profile sorting on notched displays instead of the full sort. LCS minimises the number of moves but may be less reliable on notched displays with smaller resolutions." : {
-      "comment" : "A tooltip that explains the purpose of a setting.",
-      "localizations" : {
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Po přepnutí profilů se ikony v řádku nabídek na displejích s výřezem seřadí pomocí rychlejší metody LCS („nejdelší společná posloupnost“) namísto úplného přeřazení. Metoda LCS sníží počet přesunů, ale na displejích s výřezem a nižším rozlišením může být méně spolehlivá."
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Den schnelleren LCS-Algoritmus (Longest Common Subsequence) für die Profilsortierung anstatt der vollständigen Sortierung auf Bildschirmen mit Notch nutzen. LCS minimiert die Anzahl der Bewegungen kann aber auf Bildschirmen mit Notch mit geringeren Auflösungen weniger zuverlässig sein."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Utilice el algoritmo LCS más rápido (una secuencia común más larga) para ordenar perfiles en pantallas marcadas en lugar del tipo completo. LCS minimiza el número de movimientos, pero puede ser menos fiable en pantallas con resoluciones más pequeñas."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Utilisez l'algorithme LCS (plus longue sous-séquence commune) plus rapide pour le tri des profils sur les écrans à notch, plutôt que le tri complet. LCS réduit au minimum le nombre de déplacements, mais peut être moins fiable sur les écrans à notch de faible résolution."
-          }
-        },
-        "hu" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "A gyorsabb LCS (Longest Common Subsequence) algoritmus használata profilrendezéshez képernyőkivágásos kijelzőkön a teljes rendezés helyett. Az LCS minimalizálja az áthelyezések számát, de kisebb felbontású, képernyőkivágásos kijelzőkön kevésbé lehet megbízható."
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gunakan algoritma LCS (Longest Common Subsequence) yang lebih cepat untuk mengurutkan profil pada layar notch sebagai pengganti algoritma bawaan. LCS mengurangi jumlah perpindahan, tetapi mungkin kurang optimal di layar notch beresolusi kecil."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Per l'ordinamento dei profili sui display con notch, utilizzare il più veloce algoritmo LCS (Longest Common Subsequence), anziché l'ordinamento completo. LCS riduce al minimo il numero di spostamenti, ma potrebbe risultare meno affidabile sui display con notch con risoluzioni inferiori."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ノッチ付きディスプレイでのプロファイル並び替えにおいて、完全ソートの代わりに高速な LCS（最長共通部分列）アルゴリズムを使用します。LCS は移動回数を最小限に抑えますが、解像度の低いノッチ付きディスプレイでは精度が低下する場合があります。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "노치 디스플레이에서 프로필을 정렬할 때 전체 정렬 대신 더 빠른 LCS(최장 공통 부분 수열) 알고리즘을 사용합니다. LCS는 항목 이동 횟수를 최소화하지만, 해상도가 낮은 노치 디스플레이에서는 안정성이 떨어질 수 있습니다."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gebruik het snellere LCS-algoritme (Longest Common Subsequence) voor het sorteren van profielen op schermen met een inkeping, in plaats van de volledige sorteerprocedure. LCS beperkt het aantal verplaatsingen tot een minimum, maar is mogelijk minder betrouwbaar op schermen met een notch en een lagere resolutie."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Używaj szybszego algorytmu LCS (Longest Common Subsequence) do sortowania profili na wyświetlaczach z notchem zamiast pełnego sortowania. LCS minimalizuje liczbę przesunięć, ale może być mniej niezawodny na ekranach z notchem o niższej rozdzielczości."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Use o algoritmo LCS (Longest Common Subsequence), mais rápido, para a ordenação de perfis em telas com entalhe, em vez da ordenação completa. O LCS minimiza o número de movimentos, mas pode ser menos confiável em telas com notch que tenham resoluções mais baixas."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Используйте более быстрый алгоритм LCS (Наибольшей общей подпоследовательности) для сортировки профилей на дисплеях с вырезом. LCS минимизирует кол-во перемещений, но может быть менее надежным на экранах с вырезом и низким разрешением."
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ใช้อัลกอริทึม LCS (Longest Common Subsequence) ที่เร็วกว่าสำหรับการเรียงลำดับโปรไฟล์บนหน้าจอที่มี notch แทนการเรียงลำดับแบบสมบูรณ์ LCS ช่วยลดจำนวนการเคลื่อนที่ แต่อาจไม่น่าเชื่อถือบนหน้าจอที่มี notch ที่มีความละเอียดต่ำกว่า"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Çentikli ekranlarda profil sıralaması için tam sıralama yerine daha hızlı olan LCS (En Uzun Ortak Alt Dizi) algoritmasını kullanın. LCS, taşıma sayısını en aza indirir ancak daha düşük çözünürlüklü çentikli ekranlarda daha az güvenilir olabilir."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Use the faster LCS (Longest Common Subsequence) algorithm for profile sorting on notched displays instead of the full sort. LCS minimises the number of moves but may be less reliable on notched displays with smaller resolutions."
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sử dụng thuật toán LCS (Chuỗi tiếp theo chung dài nhất) nhanh hơn để sắp xếp cấu hình trên màn hình có khía thay vì sắp xếp đầy đủ. LCS giảm thiểu số lần di chuyển nhưng có thể kém tin cậy hơn trên màn hình có khía có độ phân giải nhỏ hơn."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "在刘海屏设备上，对配置排序时使用更快的 LCS（最长公共子序列）算法，而不是完整排序。LCS 可减少元素移动次数，但在分辨率较低的刘海屏设备上可能稳定性较差。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "針對帶有瀏海的顯示器，使用更快速的 LCS（最長共同子序列）演算法進行設定檔排序，而非全量排序。LCS 可將移動次數降至最低，但在解析度較小的瀏海顯示器上可能較不穩定。"
-          }
-        }
-      }
+    "Use the Thaw Bar while items are overflowed" : {
+
     },
     "Version %@ (%@)" : {
       "comment" : "A label displaying the current version and build number of the app. The first argument is the version string. The second argument is the build string.",
@@ -50602,6 +50846,9 @@
           }
         }
       }
+    },
+    "View Preview Builds" : {
+
     },
     "Visible" : {
       "comment" : "Localized string key for the display string of a menu bar section.",
@@ -51080,6 +51327,250 @@
         }
       }
     },
+    "When a display transition requires Thaw to apply a different menu bar spacing, Thaw relaunches apps with menu bar items. Relaunching apps may cause unsaved input, progress, or transient app state to be lost." : {
+      "comment" : "A warning that a display transition requiring a different menu bar spacing relaunches menu bar apps, which can lose unsaved state.",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Když změna monitorů zapříčiní aktivaci jiného nastavení rozestupů, Thaw restartuje aplikace s položkami v řádku nabídek. Restartování aplikací může zapříčinit ztrátu neuložených dat, postupu nebo dočasného stavu."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wenn eine Bildschirmänderung Thaw zur Anwendung anderer Menüleisten-Abstände zwingt, startet Thaw Anwendungen mit Menüleisten-Einträgen neu. Der Neustart von Anwendungen kann zu ungespeicherten Eingaben führen, der Fortschritt oder Zustand von Anwendungen kann verloren gehen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "When a display transition requires Thaw to apply a different menu bar spacing, Thaw relaunches apps with menu bar items. Relaunching apps may cause unsaved input, progress, or transient app state to be lost."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuando una transición de presentación requiere que Thaw aplique un espaciado de barra de menús distinto, Thaw reinicia apps con iconos en la barra de menús. Reiniciar apps puede causar que se pierda información, progreso o estado no guardado."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lorsqu'une transition d'affichage nécessite que Thaw applique un espacement différent pour la barre de menus, Thaw relance les applications comportant des éléments dans la barre de menus. Le redémarrage des applications peut entraîner la perte des données non enregistrées, de la progression ou de l'état temporaire de l'application."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "When a display transition requires Thaw to apply a different menu bar spacing, Thaw relaunches apps with menu bar items. Relaunching apps may cause unsaved input, progress, or transient app state to be lost."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saat perpindahan layar mengharuskan Thaw menerapkan jarak bar menu yang berbeda, Thaw akan memulai ulang aplikasi yang memiliki item di bar menu. Tindakan ini dapat menyebabkan input yang belum disimpan, progres yang sedang berjalan atau status sementara aplikasi hilang."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "When a display transition requires Thaw to apply a different menu bar spacing, Thaw relaunches apps with menu bar items. Relaunching apps may cause unsaved input, progress, or transient app state to be lost."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "When a display transition requires Thaw to apply a different menu bar spacing, Thaw relaunches apps with menu bar items. Relaunching apps may cause unsaved input, progress, or transient app state to be lost."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "When a display transition requires Thaw to apply a different menu bar spacing, Thaw relaunches apps with menu bar items. Relaunching apps may cause unsaved input, progress, or transient app state to be lost."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wanneer een schermovergang vereist dat Thaw een andere spatiëring voor de menubalk toepast, start Thaw apps met menubalkitems opnieuw op. Door het opnieuw opstarten van apps kunnen niet-opgeslagen invoer, voortgang of tijdelijke app-statussen verloren gaan."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jeśli zmiana wyświetlacza wymusza na programie Thaw zmianę odstępów na pasku menu, Thaw restartuje aplikacje posiadające tam swoje ikony. Restart aplikacji grozi utratą niezapisanych danych, postępów pracy lub tymczasowego stanu programu."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "When a display transition requires Thaw to apply a different menu bar spacing, Thaw relaunches apps with menu bar items. Relaunching apps may cause unsaved input, progress, or transient app state to be lost."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "При изменении настроек разделителя Thaw перезапустит приложения, размещающие иконки в строке меню, что может привести к потере не сохраненного результата."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เมื่อการเปลี่ยนแปลงจอแสดงผลต้องให้ Thaw ใช้ระยะห่างแถบเมนูที่แตกต่างออกไป Thaw จะรีสตาร์ทแอปที่มีรายการในแถบเมนู การรีสตาร์ทแอปอาจทำให้ข้อมูลที่ยังไม่ได้บันทึก ความคืบหน้า หรือสถานะชั่วคราวของแอปสูญหายได้"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "When a display transition requires Thaw to apply a different menu bar spacing, Thaw relaunches apps with menu bar items. Relaunching apps may cause unsaved input, progress, or transient app state to be lost."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "When a display transition requires Thaw to apply a different menu bar spacing, Thaw relaunches apps with menu bar items. Relaunching apps may cause unsaved input, progress, or transient app state to be lost."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Khi quá trình chuyển đổi hiển thị yêu cầu Thaw áp dụng khoảng cách thanh menu khác, Thaw sẽ khởi chạy lại các ứng dụng có mục trên thanh menu. Việc khởi chạy lại ứng dụng có thể khiến dữ liệu đầu vào, tiến trình hoặc trạng thái ứng dụng tạm thời chưa được lưu bị mất."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "当显示状态切换需要 Thaw 应用不同的菜单栏间距时，Thaw 会重新启动带有菜单栏项目的应用。重新启动应用可能会导致尚未保存的输入、进行中的进度或应用的临时状态丢失。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "當顯示器切換需要 Thaw 套用不同的選單列間距時,Thaw 會重新啟動具有選單列項目的應用程式。重新啟動應用程式可能導致尚未儲存的輸入、進度或暫存狀態遺失。"
+          }
+        }
+      }
+    },
+    "When a profile is active, choose whether spacing changes save to just the active profile or to every profile." : {
+      "comment" : "Annotation for the profile-target picker shown when relaunch confirmations are disabled.",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Když je profil aktivní, vyberte, zda chcete změnu rozestupů uložit pouze do aktivního profilu, nebo do všech."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wenn ein Profil aktiv ist, auswählen ob die Änderung nur für das dieses oder für alle Profile gespeichert werden soll."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuando un perfil está activo, elige si los cambios de espaciamiento se guardan al perfil activo o a todos los perfiles."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quand un profil est actif, choisissez si les modifications d'espacement doivent être enregistrées uniquement dans le profil actif ou dans tous les profils."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "When a profile is active, choose whether spacing changes save to just the active profile or to every profile."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ketika profil aktif, pilih apakah perubahan jarak akan disimpan hanya untuk profil tersebut atau untuk semua profil."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quando un profilo è attivo, scegli se salvare le modifiche alla spaziatura solo nel profilo attuale o in tutti i profili."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "When a profile is active, choose whether spacing changes save to just the active profile or to every profile."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "When a profile is active, choose whether spacing changes save to just the active profile or to every profile."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Als een profiel actief is, kun je kiezen of wijzigingen in de spatiëring alleen in het actieve profiel worden opgeslagen of in alle profielen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gdy profil jest aktywny, wybierz, czy zmiany odstępów mają być zapisywane tylko dla aktywnego profilu, czy dla wszystkich profili."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "When a profile is active, choose whether spacing changes save to just the active profile or to every profile."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Когда профиль активен, выберите, сохранять изменения интервалов только в активный профиль или во все профили."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เมื่อมีโปรไฟล์ที่ใช้งานอยู่ ให้เลือกว่าการเปลี่ยนแปลงระยะห่างจะบันทึกไว้เฉพาะในโปรไฟล์ที่ใช้งานอยู่ หรือบันทึกไว้ในทุกโปรไฟล์"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "When a profile is active, choose whether spacing changes save to just the active profile or to every profile."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "When a profile is active, choose whether spacing changes save to just the active profile or to every profile."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Khi một cấu hình đang hoạt động, hãy chọn xem các thay đổi về khoảng cách chỉ lưu vào cấu hình đang hoạt động hay vào mọi cấu hình."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "当某个配置文件处于活动状态时，可选择将间距更改仅保存到当前配置文件，还是保存到所有配置文件。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "當有設定檔啟用時，請選擇將間距設定儲存至僅目前啟用的設定檔或所有設定檔。"
+          }
+        }
+      }
+    },
     "When an app sends a thaw:// URL to change settings, Thaw checks if that app is whitelisted." : {
       "comment" : "A step in the process of how to use Thaw.",
       "localizations" : {
@@ -51198,6 +51689,128 @@
           }
         }
       }
+    },
+    "When you open a menu bar item from the search panel, move the mouse pointer next to it, so its menu appears under the pointer." : {
+      "comment" : "Annotation for the Move-the-pointer-to-revealed-items toggle.",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Když otevřete ikonu řádku nabídek z vyhledávacího panelu, přesune se ukazatel myši k ní, takže se její nabídka objeví pod ukazatelem."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Wenn du einen Menüleisten-Eintrag über die Suchleiste öffnest, wird der Mauszeiger daneben bewegt, sodass sein Menü unter dem Zeiger erscheint."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Cuando abras un elemento de la barra de menús desde el panel de búsqueda, el cursor se moverá junto a él, de modo que su menú aparezca debajo del cursor."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Lorsque vous ouvrez un élément de la barre des menus depuis le panneau de recherche, le pointeur de la souris se place à côté de celui-ci, afin que son menu apparaisse sous le pointeur."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Amikor egy menüsor elemet a keresőpanelről nyitsz meg, az egérmutató mellé kerül, így a menüje a mutató alatt jelenik meg."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Saat kamu membuka item bar menu dari panel pencarian, penunjuk dipindahkan ke sebelahnya sehingga menunya muncul di bawah penunjuk."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Quando apri un elemento della barra dei menu dal pannello di ricerca, il puntatore del mouse viene spostato accanto a esso, così il suo menu compare sotto il puntatore."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "検索パネルからメニューバー項目を開くと、マウスポインターがその項目の隣に移動し、メニューがポインターの下に表示されます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "검색 패널에서 메뉴 막대 항목을 열면 마우스 포인터가 그 옆으로 이동해 메뉴가 포인터 아래에 나타납니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Wanneer je een menubalkitem opent via het zoekvenster, verplaatst de muisaanwijzer zich ernaartoe, zodat het menu onder de aanwijzer verschijnt."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Gdy otworzysz element paska menu z panelu wyszukiwania, kursor myszy przesunie się obok niego, dzięki czemu jego menu pojawi się pod kursorem."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Quando você abre um item da barra de menus pelo painel de busca, o ponteiro do mouse é movido para perto dele, de modo que o menu apareça sob o ponteiro."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Когда вы открываете элемент строки меню с панели поиска, указатель мыши перемещается к нему, и его меню появляется под указателем."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "เมื่อคุณเปิดรายการในแถบเมนูจากแผงค้นหา ตัวชี้เมาส์จะย้ายไปอยู่ข้าง ๆ รายการนั้น เมนูจึงปรากฏใต้ตัวชี้"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Bir menü çubuğu ögesini arama panelinden açtığınızda, fare imleci ögenin yanına taşınır ve menüsü imlecin altında görünür."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Коли ви відкриваєте об'єкт рядка меню з панелі пошуку, курсор миші переміщується до нього, тож його меню з'являється під курсором."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Khi bạn mở một mục trên thanh menu từ bảng tìm kiếm, con trỏ chuột sẽ di chuyển đến bên cạnh mục đó, để menu của nó xuất hiện ngay dưới con trỏ."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "从搜索面板打开菜单栏项目时，鼠标指针会移动到该项目旁边，使其菜单显示在指针下方。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "從搜尋面板開啟選單列項目時，滑鼠游標會移到該項目旁邊，使其選單顯示在游標下方。"
+          }
+        }
+      }
+    },
+    "While rearranging" : {
+
     },
     "Whitelisted Applications" : {
       "comment" : "A heading for the list of whitelisted apps.",
@@ -51439,6 +52052,125 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "白名單應用程式可以讀取設定、切換布林值選項、設定數值（計時器、延遲）、更改列舉設定（重新隱藏策略、%1$@ 列位置），並修改個別顯示器的配置。這包括自動重新隱藏、透過點擊/懸停/捲動/雙擊顯示、%2$@ 列、隱藏應用程式選單、啟用「始終隱藏」區塊、顯示工具提示以及診斷記錄。"
+          }
+        }
+      }
+    },
+    "Without confirmation, save spacing to" : {
+      "comment" : "Label for the picker choosing which profiles receive a spacing change when relaunch confirmations are disabled.",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bez potvrzení ukládat rozestupy do"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Speichere Abstände ohne Bestätigung in"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin confirmar, guardar espaciado a"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sans confirmation, sauvegarder les espacements à"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Without confirmation, save spacing to"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tanpa konfirmasi, simpan perubahan jarak ke"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Senza conferma, salva la spaziatura in"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Without confirmation, save spacing to"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Without confirmation, save spacing to"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zonder bevestiging de spatiëring opslaan in"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bez potwierdzenia zapisz odstępy do"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Without confirmation, save spacing to"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Without confirmation, save spacing to"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "บันทึกระยะห่างโดยไม่ต้องยืนยันไปยัง"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Without confirmation, save spacing to"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Without confirmation, save spacing to"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nếu không có xác nhận, hãy lưu khoảng cách vào"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无需确认，直接将间距保存到"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在沒有詢問的狀況下，將設定檔儲存至"
           }
         }
       }

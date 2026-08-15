@@ -244,6 +244,124 @@ final class ProfileManager {
         return try decoder.decode(Profile.self, from: data)
     }
 
+    // MARK: - Persisted layout repair
+
+    /// Rewrites every profile on disk with its layout pruned.
+    ///
+    /// ``MenuBarItemManager`` repairs the saved section order it loads and
+    /// writes the result straight back, so a fix for a class of unmatchable
+    /// identifier reaches that store on the next launch. Profiles have only
+    /// ever been pruned on the way *out*, through
+    /// ``MenuBarLayoutSnapshot/resolvedItemOrder``, which leaves the damage on
+    /// disk and lets `armProfileState` seed the in-memory saved order from it
+    /// again at every startup. A profile is also the one copy the user can
+    /// re-apply by hand, so an unrepaired one reintroduces the entries a
+    /// repaired saved order just dropped.
+    ///
+    /// ``MenuBarLayoutSnapshot/itemSectionMap`` is filtered by the same
+    /// verdict rather than pruned independently: it is a second spelling of
+    /// the same layout, and `resolvedItemSectionMap` returns it verbatim when
+    /// present, so an entry pruned from the order but left in the map would
+    /// still be planned against.
+    ///
+    /// Files that fail to decode are left untouched and logged. A profile we
+    /// cannot read is not a profile we should overwrite.
+    ///
+    /// Runs ``repairPersistedLayouts()`` once per app build.
+    ///
+    /// The stamp is the build rather than a one-shot flag: a later build that
+    /// recognizes a new class of unmatchable identifier has to get another
+    /// pass over files an earlier build already declared clean.
+    func repairPersistedLayoutsIfNeeded() {
+        let currentBuild = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "unknown"
+        guard Defaults.string(forKey: .profileLayoutRepairBuild) != currentBuild else {
+            return
+        }
+        repairPersistedLayouts()
+        Defaults.set(currentBuild, forKey: .profileLayoutRepairBuild)
+    }
+
+    /// - Returns: The number of profiles rewritten.
+    @discardableResult
+    func repairPersistedLayouts() -> Int {
+        var repaired = 0
+
+        for metadata in profiles {
+            let url = profileURL(for: metadata.id)
+            let profile: Profile
+            do {
+                profile = try decoder.decode(Profile.self, from: Data(contentsOf: url))
+            } catch {
+                diagLog.error("repairPersistedLayouts: skipping \(metadata.id), cannot decode: \(error)")
+                continue
+            }
+
+            var layout = profile.menuBarLayout
+            let originalOrder = layout.itemOrder
+            let originalSavedOrder = layout.savedSectionOrder
+            let originalMap = layout.itemSectionMap
+
+            layout.savedSectionOrder = LayoutSolver.prunedSectionOrder(
+                LayoutSolver.canonicalizedSectionOrder(layout.savedSectionOrder)
+            )
+            if let itemOrder = layout.itemOrder {
+                layout.itemOrder = LayoutSolver.prunedSectionOrder(
+                    LayoutSolver.canonicalizedSectionOrder(itemOrder)
+                )
+            }
+
+            if let map = layout.itemSectionMap {
+                // Same empty-means-absent rule as `resolvedItemOrder`: a
+                // present-but-empty itemOrder is a mistimed capture, not a
+                // layout, and filtering against it would empty the map and
+                // permanently shadow the savedSectionOrder fallback.
+                let survivingOrder: [String: [String]] = {
+                    guard let itemOrder = layout.itemOrder, !itemOrder.isEmpty else {
+                        return layout.savedSectionOrder
+                    }
+                    return itemOrder
+                }()
+                let surviving = Set(survivingOrder.values.joined())
+                // The orders above were canonicalized; map keys must be
+                // compared (and stored) in the same form or a pre-canonical
+                // entry is dropped even though its item survived.
+                var filteredMap = [String: String]()
+                for (key, section) in map {
+                    let canonicalKey = LayoutSolver.canonicalIdentifier(key)
+                    guard surviving.contains(canonicalKey) else { continue }
+                    if filteredMap[canonicalKey] == nil || key == canonicalKey {
+                        filteredMap[canonicalKey] = section
+                    }
+                }
+                layout.itemSectionMap = filteredMap
+            }
+
+            guard
+                layout.savedSectionOrder != originalSavedOrder ||
+                layout.itemOrder != originalOrder ||
+                layout.itemSectionMap != originalMap
+            else {
+                continue
+            }
+
+            var updated = profile
+            updated.menuBarLayout = layout
+            do {
+                let data = try encoder.encode(updated)
+                try data.write(to: url, options: .atomic)
+                repaired += 1
+                diagLog.info("repairPersistedLayouts: rewrote profile \(metadata.name)")
+            } catch {
+                diagLog.error("repairPersistedLayouts: failed to write \(metadata.id): \(error)")
+            }
+        }
+
+        if repaired > 0 {
+            diagLog.info("repairPersistedLayouts: repaired \(repaired) profile(s)")
+        }
+        return repaired
+    }
+
     /// Deletes a profile by its identifier.
     ///
     /// A profile file that is already absent is treated as success: the
@@ -373,6 +491,14 @@ final class ProfileManager {
         }
         saveManifest()
 
+        // The profile's content was just captured from the running state, so
+        // it now IS the configuration in effect — mark it active. Without
+        // this the checkmark stays wherever it was and an updated profile
+        // reads as "not applied" even though applying it would change
+        // nothing (#904). Set before the re-arm below so its active-profile
+        // gate sees the freshly-updated profile as the one to re-arm for.
+        activeProfileID = id
+
         // The live arrangement is unchanged by this save, so re-capturing it
         // yields the same layout that was just persisted. Re-arm the cache from
         // it when this is the active profile so a later late-arrival re-sort
@@ -392,13 +518,13 @@ final class ProfileManager {
     /// paths can be exercised in tests without standing up an AppState.
     private func captureCurrentLayout(from itemManager: MenuBarItemManager) -> MenuBarLayoutSnapshot {
         let savedSectionOrder = Defaults.store.dictionary(
-            forKey: "MenuBarItemManager.savedSectionOrder"
+            forKey: MenuBarItemManager.LayoutStateKey.savedSectionOrder
         ) as? [String: [String]] ?? [:]
         let pinnedHiddenBundleIDs = Defaults.store.array(
-            forKey: "MenuBarItemManager.pinnedHiddenBundleIDs"
+            forKey: MenuBarItemManager.LayoutStateKey.pinnedHiddenBundleIDs
         ) as? [String] ?? []
         let pinnedAlwaysHiddenBundleIDs = Defaults.store.array(
-            forKey: "MenuBarItemManager.pinnedAlwaysHiddenBundleIDs"
+            forKey: MenuBarItemManager.LayoutStateKey.pinnedAlwaysHiddenBundleIDs
         ) as? [String] ?? []
         let customNames = Defaults.dictionary(
             forKey: .menuBarItemCustomNames
