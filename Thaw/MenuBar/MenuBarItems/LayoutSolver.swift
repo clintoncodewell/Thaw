@@ -1407,6 +1407,26 @@ nonisolated enum LayoutSolver {
     /// an empty title the way ``MenuBarItemTag/description`` does. An item
     /// whose title could not be read therefore persists as
     /// `com.apple.controlcenter:` or `com.apple.controlcenter::1`.
+    /// Whether the identifier's namespace is a localized display name
+    /// rather than a stable identifier.
+    ///
+    /// The namespace fallback mints one when an owning app's bundle ID
+    /// reads nil mid-launch: the window's owner name is the process
+    /// display name, which macOS localizes for system processes — an
+    /// en-GB machine writes `Control Centre:Battery` next to the
+    /// canonical `com.apple.controlcenter:Battery` (#949). Bundle IDs and
+    /// executable names never contain whitespace; display names usually
+    /// do, and `aliases` carries the ones that do not — the caller passes
+    /// Control Center's current localized name (Kontrollzentrum), which
+    /// no heuristic can recognize locale-independently.
+    private static nonisolated func isDisplayNameNamespace(
+        identifier: String,
+        aliases: Set<String>
+    ) -> Bool {
+        let namespace = namespace(forIdentifier: identifier)
+        return namespace.contains(where: \.isWhitespace) || aliases.contains(namespace)
+    }
+
     private static nonisolated func hasEmptyTitle(identifier: String) -> Bool {
         let title = titlePortion(forIdentifier: identifier)
         if title.isEmpty {
@@ -1591,7 +1611,8 @@ nonisolated enum LayoutSolver {
     ///
     /// Pure over its inputs.
     static nonisolated func prunedSectionOrder(
-        _ savedSectionOrder: [String: [String]]
+        _ savedSectionOrder: [String: [String]],
+        displayNameAliases: Set<String> = []
     ) -> [String: [String]] {
         let controlCenter = MenuBarItemTag.Namespace.controlCenter.description
 
@@ -1604,11 +1625,23 @@ nonisolated enum LayoutSolver {
         // and kept `com.stonerl.Thaw:WiFi`, so the live WiFi item was planned
         // as unmanaged on every apply.
         var titlesWithRealOwner = Set<String>()
+        var controlCenterTitles = Set<String>()
         for identifiers in savedSectionOrder.values {
-            for identifier in identifiers where namespace(forIdentifier: identifier) != controlCenter {
+            for identifier in identifiers {
+                if namespace(forIdentifier: identifier) == controlCenter {
+                    controlCenterTitles.insert(titlePortion(forIdentifier: identifier))
+                    continue
+                }
                 guard
                     !isForeignEntryUnderOwnNamespace(identifier: identifier),
-                    !isSelfTitledEntry(identifier: identifier)
+                    !isSelfTitledEntry(identifier: identifier),
+                    // A localized display name is not a real owner either.
+                    // Counting `Control Centre:WiFi` as one deletes the
+                    // genuine `com.apple.controlcenter:WiFi` below, and the
+                    // live WiFi item then plans as unmanaged on every apply —
+                    // the same failure #927 documents, through a vector its
+                    // guards did not cover (#949).
+                    !isDisplayNameNamespace(identifier: identifier, aliases: displayNameAliases)
                 else {
                     continue
                 }
@@ -1657,6 +1690,32 @@ nonisolated enum LayoutSolver {
                     && titlesWithRealOwner.contains(titlePortion(forIdentifier: identifier))
                 if isProvisionalDuplicate {
                     return false
+                }
+                // A display-name-namespaced ghost is pruned only when its
+                // canonical twin exists: the Control Center entry sharing
+                // its title, Thaw's own control items by their reserved
+                // titles, or a real owner claiming the same non-generic
+                // title (`Control Centre:Alcove` next to
+                // `com.henrikruscon.Alcove:Alcove`). Generic `Item-N`
+                // titles are excluded from the claimed-title rule — every
+                // owner has an Item-0 — and a display-name entry with no
+                // twin is left alone entirely: it may be the only identity
+                // a bundle-ID-less app ever got, and deleting it would
+                // lose the user's placement (#949).
+                if isDisplayNameNamespace(identifier: identifier, aliases: displayNameAliases) {
+                    let title = titlePortion(forIdentifier: identifier)
+                    if controlCenterTitles.contains(title) {
+                        return false
+                    }
+                    if title.hasPrefix("Thaw.ControlItem.") || title.contains(".Spacer.") {
+                        return false
+                    }
+                    let baseTitle = title.replacing(/:\d+$/, with: "")
+                    if !MarkerPairResolver.isGenericControlCenterTitle(baseTitle),
+                       titlesWithRealOwner.contains(title)
+                    {
+                        return false
+                    }
                 }
                 // A Control-Center-hosted entry with no title identifies
                 // nothing: the only live item it could match is one whose
