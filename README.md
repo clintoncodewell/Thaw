@@ -216,7 +216,9 @@ This project exists thanks to the awesome people who contribute code and documen
 
 Want to contribute? Start with [Ways to contribute](https://github.com/thaw-app/Thaw/issues/316). Pull requests are welcome against the `development` branch (see [Contributing](.github/CONTRIBUTING.md)).
 
-<a href="https://github.com/thaw-app/Thaw/graphs/contributors"><img alt="Gallery of all contributors' profile photos" src="https://contrib.rocks/image?repo=thaw-app/Thaw&columns=16" width="100%" /></a>
+<p align="center">
+  <a href="https://github.com/thaw-app/Thaw/graphs/contributors"><img alt="contributors" src="https://shieldcn.dev/contributors/thaw-app/Thaw.svg?title=false&amp;size=40&amp;names=true&amp;titleAlign=center&amp;limit=100&amp;mode=light&amp;font=space-grotesk&amp;watermark=true&amp;border=false" /></a>
+</p>
 
 ## Project documentation
 
