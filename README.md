@@ -33,6 +33,10 @@
 </p>
 
 <p align="center">
+  <b>We are open to partnerships and integrations, contact us.</b>
+</p>
+
+<p align="center">
   <a href="https://www.raycast.com/diazdesandi/thaw"><img alt="Works with Raycast" src="https://raw.githubusercontent.com/thaw-app/brand-assets/main/badges/works-with-raycast.svg" height="36" /></a>
   <a href="https://getdroppy.app/"><img alt="Works with Droppy" src="https://raw.githubusercontent.com/thaw-app/brand-assets/main/badges/works-with-droppy.svg" height="36" /></a>
 </p>
