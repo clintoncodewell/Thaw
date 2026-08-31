@@ -221,14 +221,91 @@ final class LayoutBarPaddingView: NSView {
                 return
             }
 
-            let watchdogTask = Task { [weak self, weak appState] in
+            // A drop into a section resolves to that section's divider when
+            // the section has no other anchor. A concealed section parks its
+            // divider offscreen, so the drag must not hand it to move() (#923):
+            // the synthetic drag would target a click point far offscreen,
+            // yank the item offscreen, and macOS would snap it straight back
+            // until the retry budget ran out. When the destination section is
+            // also EMPTY, though, refusing deadlocks the user (#988): the
+            // parked divider is the only anchor the drop can ever resolve to,
+            // and the refusal's "open the section and try dragging again"
+            // advice has nothing to open. In that one state, reveal the
+            // section to bring its divider back onscreen, retarget the move
+            // onto the fresh divider, and re-conceal the section once the
+            // item has settled.
+            var destination = destination
+            var revealedSection: MenuBarSection?
+            let targetItem = destination.targetItem
+            if targetItem.isControlItem {
+                let screenFrames = NSScreen.screens.map { CGDisplayBounds($0.displayID) }
+                // The destination comes from the frozen arranged views, whose
+                // bounds were captured before the drag began. A divider that
+                // parked in between would still read as on screen, so the
+                // gate asks the window server where it is now. A window the
+                // server cannot answer for counts as unreachable too: this
+                // gate exists to keep a stranded divider away from move(),
+                // and a stale snapshot is no evidence that the divider is
+                // reachable.
+                let targetBounds = Bridging.getWindowBounds(for: targetItem.windowID)
+                let isReachable = targetBounds.map {
+                    LayoutSolver.isOnScreen(bounds: $0, screenFrames: screenFrames)
+                } ?? false
+                if !isReachable {
+                    if let (section, freshDivider) = await revealEmptySectionDivider(
+                        for: targetItem,
+                        appState: appState
+                    ) {
+                        revealedSection = section
+                        destination = switch destination {
+                        case .leftOfItem: .leftOfItem(freshDivider)
+                        case .rightOfItem: .rightOfItem(freshDivider)
+                        }
+                    } else {
+                        Self.diagLog.warning(
+                            "Skipping drag of \(item.logString): destination divider \(targetItem.logString) is parked offscreen (\(targetBounds.map { "minX=\($0.minX)" } ?? "no window bounds")); section is collapsed"
+                        )
+                        await appState.itemManager.cacheItemsRegardless(skipRecentMoveCheck: true)
+                        await MainActor.run {
+                            self.isStabilizing = false
+                            self.showOverlay(false)
+                            self.container.canSetArrangedViews = true
+                            if sourceContainer !== self.container {
+                                sourceContainer?.canSetArrangedViews = true
+                            }
+                            let alert = NSAlert()
+                            alert.alertStyle = .warning
+                            alert.messageText = String(localized: "Couldn't move \(item.displayName) right now.")
+                            alert.informativeText = String(localized: "The \(container.section.displayString) section is collapsed, so its divider is offscreen. Open the section and try dragging the item again.")
+                            alert.runModal()
+                        }
+                        return
+                    }
+                }
+            }
+
+            let watchdogTask = Task { [weak self, weak appState, revealedSection] in
                 try? await Task.sleep(for: MenuBarItemManager.layoutWatchdogTimeout + .seconds(1))
                 guard let self, !Task.isCancelled else { return }
                 await self.resetStabilizingStateIfNeeded()
+                if let revealedSection {
+                    // The move never returned, so the completion path that
+                    // re-conceals the section revealed for the drag (#988)
+                    // has not run and may never run. Restore it here, the
+                    // same way, and give the spacer a beat to re-park the
+                    // divider before the closing cache pass records the
+                    // settled bar. Idempotent with a late completion: the
+                    // restore recomputes the persisted presentation.
+                    await MainActor.run {
+                        revealedSection.updateControlItemState(for: nil)
+                    }
+                    try? await Task.sleep(for: .milliseconds(250))
+                }
                 guard let appState else { return }
                 await appState.itemManager.cacheItemsRegardless(skipRecentMoveCheck: true)
                 await appState.imageCache.updateCacheWithoutChecks(sections: MenuBarSection.Name.allCases)
             }
+
             do {
                 try await appState.itemManager.move(
                     item: item,
@@ -236,15 +313,25 @@ final class LayoutBarPaddingView: NSView {
                     skipInputPause: true,
                     watchdogTimeout: MenuBarItemManager.layoutWatchdogTimeout
                 )
+                // Record the user move before stabilization so the save
+                // gate's cooldown exemption is armed when stabilizePlacement's
+                // own cache pass reaches it. Recording it only after stabilize
+                // returned meant the first cache pass inside stabilize hit
+                // the 5s move cooldown with no user-move exemption, so the
+                // save was skipped; by the time the exemption armed, the
+                // mid-transition cache gate had re-armed and no accepting
+                // pass coincided with the cooldown window. The drag never
+                // saved (#983). move() threw no error, so the user's drag
+                // did land; the rescue-and-retry catch block below still
+                // owns the case where macOS didn't settle it.
+                appState.itemManager.recordExternalMoveOperation()
                 appState.itemManager.removeTemporarilyShownItemFromCache(with: item.tag)
-                if await stabilizePlacement(
+                _ = await stabilizePlacement(
                     of: item,
                     to: destination,
                     expectedSection: container.section,
                     appState: appState
-                ) {
-                    appState.itemManager.recordExternalMoveOperation()
-                }
+                )
             } catch MenuBarItemManager.EventError.menuTrackingActive {
                 // A menu bar item's menu (Wi-Fi picker, input method panel,
                 // etc.) was open and the move was deferred to avoid tearing
@@ -301,15 +388,17 @@ final class LayoutBarPaddingView: NSView {
                             skipInputPause: true,
                             watchdogTimeout: MenuBarItemManager.layoutWatchdogTimeout
                         )
+                        // Same #983 reorder as the primary path: arm the
+                        // save-gate user-move exemption before stabilize so
+                        // its cache pass can persist the retry.
+                        appState.itemManager.recordExternalMoveOperation()
                         appState.itemManager.removeTemporarilyShownItemFromCache(with: item.tag)
-                        if await stabilizePlacement(
+                        _ = await stabilizePlacement(
                             of: item,
                             to: destination,
                             expectedSection: container.section,
                             appState: appState
-                        ) {
-                            appState.itemManager.recordExternalMoveOperation()
-                        }
+                        )
                     } catch MenuBarItemManager.EventError.menuTrackingActive {
                         // Same deferral the outer catch handles: the user
                         // opened a menu bar item's menu while the retry was
@@ -335,6 +424,20 @@ final class LayoutBarPaddingView: NSView {
                     let alert = NSAlert(error: error)
                     alert.runModal()
                 }
+            }
+            if let revealedSection {
+                // Re-conceal the section that was revealed for the drag
+                // (#988). desiredState was never modified, so
+                // updateControlItemState restores whatever presentation the
+                // user configured — including the ice-bar overrides that
+                // force these sections collapsed — and parks the divider
+                // with the newly moved item back offscreen.
+                await MainActor.run {
+                    revealedSection.updateControlItemState(for: nil)
+                }
+                // Give the spacer a beat to re-park the divider before the
+                // closing cache pass records the settled bar.
+                try? await Task.sleep(for: .milliseconds(250))
             }
             watchdogTask.cancel()
             if let appState = container.appState {
@@ -449,6 +552,130 @@ final class LayoutBarPaddingView: NSView {
             items.first(matching: .hiddenControlItem).map { .leftOfItem($0) }
         case .alwaysHidden:
             items.first(matching: .alwaysHiddenControlItem).map { .leftOfItem($0) }
+        }
+    }
+
+    /// Maps a section-divider tag to the name of the section it bounds.
+    private nonisolated static func sectionName(forDividerTag tag: MenuBarItemTag) -> MenuBarSection.Name? {
+        switch tag {
+        case .hiddenControlItem: .hidden
+        case .alwaysHiddenControlItem: .alwaysHidden
+        default: nil
+        }
+    }
+
+    /// Whether an editor drag onto a parked divider should reveal the
+    /// destination section instead of refusing (#988).
+    ///
+    /// Only the empty-section deadlock qualifies. With items in the section,
+    /// the drop anchors on those items and the existing clamp-and-retry move
+    /// path owns the case; a divider whose section is already showing is on
+    /// screen and passes the reachability gate; a disabled section is never
+    /// revealed; and a non-divider tag (the visible chevron, a regular item)
+    /// never routes through this decision.
+    static nonisolated func shouldRevealSectionForEditorDrag(
+        dividerTag: MenuBarItemTag,
+        isSectionConcealed: Bool,
+        isEnabled: Bool,
+        sectionItemCount: Int
+    ) -> Bool {
+        guard sectionItemCount == 0 else { return false }
+        guard sectionName(forDividerTag: dividerTag) != nil else { return false }
+        return isSectionConcealed && isEnabled
+    }
+
+    /// Reveals an empty, concealed destination section so its parked divider
+    /// returns onscreen, and returns the section together with the divider's
+    /// fresh live item (#988).
+    ///
+    /// Returns nil — leaving the bar untouched — when the state does not
+    /// qualify per `shouldRevealSectionForEditorDrag`, or the divider did
+    /// not come back onscreen; the caller then refuses the
+    /// drag exactly as it did before (#923).
+    private func revealEmptySectionDivider(
+        for divider: MenuBarItem,
+        appState: AppState
+    ) async -> (section: MenuBarSection, divider: MenuBarItem)? {
+        guard let sectionName = Self.sectionName(forDividerTag: divider.tag) else {
+            return nil
+        }
+        guard let section = await MainActor.run(body: {
+            appState.menuBarManager.section(withName: sectionName)
+        }) else {
+            return nil
+        }
+        let (isConcealed, isEnabled) = await MainActor.run {
+            // Compare inside the actor: HidingState's Equatable conformance
+            // is MainActor-isolated.
+            (section.controlItem.state == .hideSection, section.isEnabled)
+        }
+        let itemCount = appState.itemManager.itemCache[sectionName].count
+        guard Self.shouldRevealSectionForEditorDrag(
+            dividerTag: divider.tag,
+            isSectionConcealed: isConcealed,
+            isEnabled: isEnabled,
+            sectionItemCount: itemCount
+        ) else {
+            return nil
+        }
+
+        Self.diagLog.info(
+            "Revealing the empty \(sectionName.logString) to bring its divider onscreen for the editor drag (#988)"
+        )
+        await MainActor.run {
+            section.controlItem.state = .showSection
+        }
+
+        // A cancelled drag must not leave the empty section showing: the
+        // reveal is a Thaw-internal detour, so every cancellation exit
+        // restores the section's persisted state, the same way the timeout
+        // path below does.
+        if Task.isCancelled {
+            await revertRevealedSection(section)
+            return nil
+        }
+
+        // The divider slides back beside the visible section once the
+        // control item's spacer collapses. Poll for its live window to come
+        // back within a display before trusting it as a move anchor; the
+        // captured item's windowID survives the state change, but its
+        // bounds snapshot does not, so resolve a fresh item.
+        let screenFrames = NSScreen.screens.map { CGDisplayBounds($0.displayID) }
+        for _ in 0..<40 {
+            try? await Task.sleep(for: .milliseconds(50))
+            // A cancelled sleep returns immediately, so without this check a
+            // cancelled task would burn through the remaining iterations and
+            // fall into the revert below, which owns the timeout path — not
+            // cancellation. Exit the reveal outright.
+            if Task.isCancelled {
+                await revertRevealedSection(section)
+                return nil
+            }
+            let items = await MenuBarItem.getMenuBarItems(option: .activeSpace)
+            if let fresh = items.first(matching: divider.tag),
+               let bounds = Bridging.getWindowBounds(for: fresh.windowID),
+               LayoutSolver.isOnScreen(bounds: bounds, screenFrames: screenFrames)
+            {
+                return (section, fresh)
+            }
+        }
+
+        // The divider never came back. Undo the reveal so an empty section
+        // is not left showing, and let the caller refuse as before.
+        Self.diagLog.warning(
+            "The \(sectionName.logString) divider did not come onscreen after revealing; refusing the drag"
+        )
+        await revertRevealedSection(section)
+        return nil
+    }
+
+    /// Returns a section's control item to its persisted state after a
+    /// temporary reveal, on the main actor. Shared by the cancellation and
+    /// timeout exits so a cancelled or failed reveal cannot leave an empty
+    /// section showing.
+    private func revertRevealedSection(_ section: MenuBarSection) async {
+        await MainActor.run {
+            section.updateControlItemState(for: nil)
         }
     }
 
