@@ -7,6 +7,78 @@ The `release.yml` workflow reads the section matching the release tag
 (`## [tag]`) and uses it as the release notes for both the GitHub Release
 and the Sparkle appcast, unless overridden with the `release_notes` input.
 
+## [2.0.1-rc.2]
+
+Please report issues at
+[github.com/thaw-app/Thaw/issues](https://github.com/thaw-app/Thaw/issues).
+
+Three fixes from rc.1 field reports, nothing new. The one most people
+will notice: option-click and double-click on the menu bar toggled the
+always-hidden section in every 1.x build, and both went dead the moment
+you upgraded to 2.x. The other two are narrower. A drag into an empty
+always-hidden section still timed out when the hidden section happened to
+be collapsed as well, and the space-switch re-homing that landed in rc.1
+did nothing at all on the macOS 26 setups where the per-display space
+query stops answering.
+
+---
+
+### Upgrade from 2.0.1-rc.1
+
+1. Update in place through Sparkle.
+2. If you came from 1.x and never touched the two click-gesture toggles
+   in Settings, General, both come up on after this update, the way they
+   behaved in 1.x. Turn either one off there and Thaw keeps that choice.
+   Anyone who already set them explicitly, on or off, is left alone.
+3. No schema or `defaults` changes. Profiles and saved layouts carry over
+   untouched.
+
+---
+
+### Main fixes
+
+1. The 1.x click gestures survive the upgrade to 2.x (#1012).
+   Option-click and double-click on the menu bar toggled the
+   always-hidden section unconditionally in 1.x. 2.0 turned both into
+   opt-in settings that default to off, and the keys behind them did not
+   exist for anyone upgrading, so both gestures silently stopped working
+   with no setting visibly changed. Both now come up on when they have
+   never been explicitly set, and an explicit choice, including off, is
+   never overwritten. Separately, the control items' phantom-click
+   suppression sat in front of the whole event switch and swallowed
+   right-click along with it, so the context menu was unreachable
+   whenever the menu bar transiently had no item windows on the active
+   space. That guard is now scoped to the left mouse-down it was written
+   for.
+2. A drag into an empty, collapsed always-hidden section completes even
+   when the hidden section is collapsed too (#1010). The reveal added in
+   #988 expanded only the destination section, but the always-hidden
+   divider parks to the left of the hidden section's content: with the
+   hidden section collapsed behind its 10000-point spacer, the revealed
+   divider was re-placed just left of that still-parked content and never
+   came onscreen. Every such drag timed out into the "open the section
+   first" refusal, advice that could not help, since only expanding the
+   hidden section puts the always-hidden boundary onscreen. The reveal
+   now expands the hidden section alongside the always-hidden section and
+   restores both once the item settles.
+3. Menu bar appearance re-homes after a space switch even where the
+   per-display space query goes quiet (#794). On the macOS 26 setups
+   behind the reports still open against rc.1, that query stops
+   answering, and the old code read the silence as "the overlay panel is
+   already in place", so the tint, shape, and background stayed stuck on
+   the launch space for every recovery path. The panel on the display
+   that owns the active menu bar now falls back to the global active
+   space, which coincides with that display's current space by
+   definition. The decision logs its inputs, so any report that survives
+   this can be pinned to a branch.
+
+---
+
+### Dependencies & localization
+
+- Crowdin sync for `Localizable.xcstrings` (#992).
+- github-actions group bumped with four updates (#1011).
+
 ## [2.0.1-rc.1]
 
 Please report issues at
