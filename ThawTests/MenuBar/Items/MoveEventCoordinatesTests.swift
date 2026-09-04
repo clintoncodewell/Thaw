@@ -14,10 +14,12 @@ import Testing
 /// Regression tests for the synthetic event coordinates used to move menu bar items.
 @Suite("Move event coordinates")
 struct MoveEventCoordinatesTests {
-    /// Off-screen destinations preserve their horizontal edge while keeping the
-    /// event away from the top-left Hot Corner.
-    @Test("An off-screen destination keeps its horizontal edge and uses the bounds midpoint")
-    func offscreenTargetPointsUseBoundsMidpoint() {
+    /// The target point is used unchanged for both halves of a teleport. In
+    /// particular, an off-screen press must stay off-screen rather than being
+    /// rewritten to a visible notch midpoint, which would flash the real item
+    /// in the center of the display before the release.
+    @Test("An off-screen teleport keeps its parked destination coordinate")
+    func offscreenTeleportKeepsParkedCoordinate() {
         let displayBounds = CGRect(x: 0, y: 0, width: 1470, height: 956)
         let bounds = CGRect(x: -4193, y: 0, width: 22, height: 33)
         let target = MenuBarItem.fixture(
@@ -39,6 +41,14 @@ struct MoveEventCoordinatesTests {
                 on: displayBounds
             ) == CGPoint(x: bounds.maxX, y: bounds.midY)
         )
+
+        let parkedPoint = CGPoint(x: bounds.minX, y: bounds.midY)
+        let eventLocations = MenuBarItemManager.moveEventLocations(
+            targetPoints: (start: parkedPoint, end: parkedPoint),
+            faithfulDragStart: nil
+        )
+        #expect(eventLocations.press == parkedPoint)
+        #expect(eventLocations.release == parkedPoint)
     }
 
     /// #923: dropping onto the exact coordinate of a section divider leaves
@@ -101,6 +111,59 @@ struct MoveEventCoordinatesTests {
         )
     }
 
+    /// #1035: the chevron is the anchor TemporaryShow reveals against, and
+    /// it was left unbiased because it divides no sections. The reporter's
+    /// log shows what that costs — attempt 2 planned `targetMinX=837.0` and
+    /// then measured `itemMinX=863.0`, i.e. the item landed to the right of
+    /// a 26pt chevron it was supposed to land left of.
+    @Test("A chevron destination is biased into the requested side")
+    func chevronTargetPointIsBiased() {
+        let displayBounds = CGRect(x: 0, y: 0, width: 1470, height: 956)
+        // The geometry from the reporter's attempt 2.
+        let bounds = CGRect(x: 837, y: 0, width: 26, height: 33)
+        let target = MenuBarItem.fixture(
+            tag: .visibleControlItem,
+            windowID: 104,
+            bounds: bounds
+        )
+
+        let left = MenuBarItemManager.MoveDestination.leftOfItem(target).targetPoint(
+            in: bounds,
+            on: displayBounds
+        )
+
+        #expect(left == CGPoint(x: bounds.minX - 1, y: bounds.minY))
+        // The unbiased point was the chevron's own edge, which is the side
+        // AppKit got to choose from.
+        #expect(left.x != bounds.minX)
+        #expect(
+            MenuBarItemManager.MoveDestination.rightOfItem(target).targetPoint(
+                in: bounds,
+                on: displayBounds
+            ) == CGPoint(x: bounds.maxX + 1, y: bounds.minY)
+        )
+    }
+
+    /// A parked chevron gets the same treatment as a parked section divider.
+    @Test("An off-screen chevron destination is biased too")
+    func offscreenChevronTargetPointIsBiased() {
+        let displayBounds = CGRect(x: 0, y: 0, width: 1470, height: 956)
+        let bounds = CGRect(x: -4193, y: 0, width: 26, height: 33)
+        let target = MenuBarItem.fixture(
+            tag: .visibleControlItem,
+            windowID: 105,
+            bounds: bounds,
+            isOnScreen: false
+        )
+
+        #expect(
+            MenuBarItemManager.MoveDestination.leftOfItem(target).targetPoint(
+                in: bounds,
+                on: displayBounds
+            ) == CGPoint(x: bounds.minX - 1, y: bounds.midY)
+        )
+    }
+
     /// An ordinary item is not a section boundary, so its edge is a real drop
     /// coordinate and must be left alone.
     @Test("A regular item destination gets no section bias")
@@ -160,21 +223,5 @@ struct MoveEventCoordinatesTests {
         )
 
         #expect(point == CGPoint(x: bounds.minX, y: bounds.minY))
-    }
-
-    /// The notch frame comes from AppKit, so only its horizontal position is
-    /// safe to reuse in a Core Graphics event.
-    @Test("A notch mouse-down keeps the Core Graphics menu bar Y coordinate")
-    func notchMouseDownKeepsCoreGraphicsMenuBarYCoordinate() {
-        let notchFrameAppKit = CGRect(x: 646, y: 924, width: 179, height: 32)
-        let targetPointCoreGraphics = CGPoint(x: -4193, y: 16.5)
-
-        let point = MenuBarItemManager.notchMouseDownPoint(
-            notchFrameAppKit: notchFrameAppKit,
-            targetPointCoreGraphics: targetPointCoreGraphics
-        )
-
-        #expect(point == CGPoint(x: notchFrameAppKit.midX, y: targetPointCoreGraphics.y))
-        #expect(point.y != notchFrameAppKit.midY)
     }
 }

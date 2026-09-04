@@ -342,9 +342,11 @@ final class MenuBarOverlayPanel: NSPanel, @unchecked Sendable {
             }
 
             // `appearanceManager` is now `@Observable` (wave 3), so it no
-            // longer has a `$configuration` publisher.
+            // longer has a `$configuration` publisher. The panels track the
+            // effective configuration so a per-Space override switches the
+            // window level instantly on Space change.
             appearanceConfigurationObservationTask = Task { [weak self, weak appState] in
-                let changes = Observations { appState?.appearanceManager.configuration }
+                let changes = Observations { appState?.appearanceManager.effectiveConfiguration }
                 for await _ in changes {
                     guard let self else { return }
                     self.updateWindowLevel()
@@ -461,6 +463,9 @@ final class MenuBarOverlayPanel: NSPanel, @unchecked Sendable {
         // joins the display's current space. A stranded panel is invisible
         // by definition, so this cannot flicker. (#794)
         if isStrandedOnInactiveSpace() {
+            diagLog.info(
+                "Re-homing the overlay panel onto display \(owningScreen.displayID)'s current space (#794)"
+            )
             orderOut(nil)
         }
 
@@ -494,25 +499,62 @@ final class MenuBarOverlayPanel: NSPanel, @unchecked Sendable {
             // Never ordered — the fresh order in `show()` will place it.
             return true
         }
-        guard let currentSpace = SpaceInfo.currentSpace(for: owningScreen.displayID) else {
-            // No per-display space info — assume the panel is where it is.
-            return false
+        let panelSpaces = Bridging.getSpaceList(for: windowID)
+        let currentSpace = SpaceInfo.currentSpace(for: owningScreen.displayID)
+        let ownsActiveMenuBar = owningScreen.displayID == NSScreen.screenWithActiveMenuBar?.displayID
+        // Diagnostics for the remaining #794 reports: on macOS 26 setups
+        // where the re-home still misses (still reproducing in 2.0.1-rc.1),
+        // the per-display space query is the prime suspect — the nil branch
+        // used to silently assume the panel was fine. Log which leg of the
+        // decision produced the verdict so field reports pin the failure.
+        if currentSpace == nil {
+            diagLog.warning(
+                "Per-display space query returned nil for display \(owningScreen.displayID) (ownsActiveMenuBar: \(ownsActiveMenuBar)); panel spaces: \(panelSpaces)"
+            )
         }
-        return Self.isStranded(
-            panelSpaces: Bridging.getSpaceList(for: windowID),
-            currentSpace: currentSpace.spaceID
+        let stranded = Self.isStranded(
+            panelSpaces: panelSpaces,
+            currentSpace: currentSpace?.spaceID,
+            globalActiveSpace: Bridging.getActiveSpaceID(),
+            ownsActiveMenuBar: ownsActiveMenuBar
         )
+        if stranded {
+            diagLog.info(
+                "Overlay panel is stranded: display \(owningScreen.displayID), windowID \(windowID), panel spaces \(panelSpaces), current space \(String(describing: currentSpace?.spaceID)), active space \(Bridging.getActiveSpaceID())"
+            )
+        }
+        return stranded
     }
 
     /// The pure decision behind `isStrandedOnInactiveSpace`, so it can be
     /// exercised without a live window server connection. The panel is
     /// stranded when it does not sit on the current space of its owning
     /// display, which is also the case for a panel that was never ordered.
-    static func isStranded(panelSpaces: [CGSSpaceID], currentSpace: CGSSpaceID?) -> Bool {
-        guard let currentSpace else {
+    ///
+    /// When the per-display current space is unknown, the panel on the
+    /// display that owns the active menu bar falls back to the global
+    /// active space: the two coincide there by definition. The pre-fallback
+    /// "assume fine" branch could strand a panel permanently when macOS
+    /// stopped answering the per-display query, because every recovery path
+    /// (space switch, post-switch confirmation, housekeeping timer) funnels
+    /// through this one decision (#794). For any other display the decision
+    /// stays conservative: a wrong order-out would flicker the bar on every
+    /// housekeeping pass, and unlike the old `.moveToActiveSpace` the
+    /// explicit order-out + order-front in `show()` cannot drift the panel
+    /// onto another display.
+    static func isStranded(
+        panelSpaces: [CGSSpaceID],
+        currentSpace: CGSSpaceID?,
+        globalActiveSpace: CGSSpaceID,
+        ownsActiveMenuBar: Bool
+    ) -> Bool {
+        if let currentSpace {
+            return !panelSpaces.contains(currentSpace)
+        }
+        guard ownsActiveMenuBar else {
             return false
         }
-        return !panelSpaces.contains(currentSpace)
+        return !panelSpaces.contains(globalActiveSpace)
     }
 
     /// Schedules one delayed re-check of the stranded-panel migration after
@@ -592,7 +634,7 @@ final class MenuBarOverlayPanel: NSPanel, @unchecked Sendable {
     /// the tint became visible, and the items disappeared underneath it.
     private func updateWindowLevel() {
         guard let appState else { return }
-        let config = appState.appearanceManager.configuration
+        let config = appState.appearanceManager.effectiveConfiguration
         if config.current.tintKind != .noTint || config.shapeKind != .noShape || config.current.backgroundKind != .none {
             level = NSWindow.Level(rawValue: Int(CGWindowLevelForKey(.statusWindow)) - 1)
         } else {
@@ -616,11 +658,17 @@ private final class MenuBarOverlayPanelContentView: NSView {
 
     @Published private var averageColorInfo: MenuBarAverageColorInfo?
 
+    @Published private var wallpaperPalette: WallpaperPalette?
+
     private var cancellables = Set<AnyCancellable>()
 
     /// Task observing `menuBarManager.averageColors` (wave 3), replacing the
     /// old `$averageColors` sink.
     private var averageColorsObservationTask: Task<Void, Never>?
+
+    /// Task observing `menuBarManager.wallpaperPalettes` for the adaptive
+    /// gradient tint.
+    private var wallpaperPalettesObservationTask: Task<Void, Never>?
 
     /// Task observing `appearanceManager.configuration` (wave 3), replacing
     /// the old `$configuration` sink and `objectWillChange` debounce sink.
@@ -637,6 +685,7 @@ private final class MenuBarOverlayPanelContentView: NSView {
 
     deinit {
         averageColorsObservationTask?.cancel()
+        wallpaperPalettesObservationTask?.cancel()
         appearanceConfigurationObservationTask?.cancel()
         previewConfigurationObservationTask?.cancel()
         isDraggingMenuBarItemObservationTask?.cancel()
@@ -726,7 +775,7 @@ private final class MenuBarOverlayPanelContentView: NSView {
                 // visible through this one sequence.
                 appearanceConfigurationObservationTask?.cancel()
                 appearanceConfigurationObservationTask = Task { [weak self, weak appState] in
-                    let changes = Observations { appState?.appearanceManager.configuration }
+                    let changes = Observations { appState?.appearanceManager.effectiveConfiguration }
                     for await config in changes {
                         guard let self else { return }
                         guard let config else { continue }
@@ -757,6 +806,16 @@ private final class MenuBarOverlayPanelContentView: NSView {
                         guard let self else { return }
                         guard let displayID = self.overlayPanel?.owningScreen.displayID else { continue }
                         self.averageColorInfo = colors[displayID]
+                    }
+                }
+
+                wallpaperPalettesObservationTask?.cancel()
+                wallpaperPalettesObservationTask = Task { [weak self, weak appState] in
+                    let changes = Observations { appState?.menuBarManager.wallpaperPalettes ?? [:] }
+                    for await palettes in changes {
+                        guard let self else { return }
+                        guard let displayID = self.overlayPanel?.owningScreen.displayID else { continue }
+                        self.wallpaperPalette = palettes[displayID]
                     }
                 }
 
@@ -820,6 +879,7 @@ private final class MenuBarOverlayPanelContentView: NSView {
         $fullConfiguration.replace(with: ())
             .merge(with: $previewConfiguration.replace(with: ()))
             .merge(with: $averageColorInfo.replace(with: ()))
+            .merge(with: $wallpaperPalette.replace(with: ()))
             .sink { [weak self] _ in
                 self?.updateBackgroundGlass()
                 self?.needsDisplay = true
@@ -1256,7 +1316,46 @@ private final class MenuBarOverlayPanelContentView: NSView {
                 color.setFill()
                 rect.fill()
             }
+        case .adaptiveGradient:
+            if let gradient = adaptiveGradient(opacity: configuration.tintOpacity) {
+                gradient.draw(in: rect, angle: 0)
+            } else if let colorInfo = averageColorInfo,
+                      let color = NSColor(cgColor: colorInfo.color)?
+                      .withAlphaComponent(configuration.tintOpacity)
+            {
+                // No palette yet — first launch, or a capture that has not
+                // landed. Falling back to the average keeps the bar tinted
+                // instead of flashing untinted while the palette arrives.
+                color.setFill()
+                rect.fill()
+            }
         }
+    }
+
+    /// Builds the tint gradient from the wallpaper palette, or returns `nil`
+    /// when no palette has been captured yet.
+    ///
+    /// Uses the two most-covering swatches. On a single-colour wallpaper the
+    /// palette hands back the same swatch twice, which draws as a flat tint —
+    /// the honest result for a flat wallpaper.
+    private func adaptiveGradient(opacity: CGFloat) -> NSGradient? {
+        guard
+            let palette = wallpaperPalette,
+            let primary = palette.primary,
+            let secondary = palette.secondary
+        else {
+            return nil
+        }
+        let colorSpace = CGColorSpace(name: CGColorSpace.displayP3) ?? CGColorSpaceCreateDeviceRGB()
+        guard
+            let start = primary.cgColor(in: colorSpace),
+            let end = secondary.cgColor(in: colorSpace),
+            let startColor = NSColor(cgColor: start)?.withAlphaComponent(opacity),
+            let endColor = NSColor(cgColor: end)?.withAlphaComponent(opacity)
+        else {
+            return nil
+        }
+        return NSGradient(starting: startColor, ending: endColor)
     }
 
     private var isBackgroundGlassActive = false

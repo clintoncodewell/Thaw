@@ -7,84 +7,276 @@ The `release.yml` workflow reads the section matching the release tag
 (`## [tag]`) and uses it as the release notes for both the GitHub Release
 and the Sparkle appcast, unless overridden with the `release_notes` input.
 
-## [2.0.1-rc.1]
+## [3.0.0-alpha.1] - 2026-09-03
 
-Please report issues at
-[github.com/thaw-app/Thaw/issues](https://github.com/thaw-app/Thaw/issues).
+Thaw 3 is Thaw rebuilt and redesigned for macOS 27. A new engine on the platform's own model, a new settings window, new glass everywhere, and Swift 6.4 underneath. It is de-iced: the code and names inherited from Ice are gone, and what is left is more Thaw than anything before it.
 
-Four fixes from field reports, nothing new. The largest: after a restart,
-the menu bar could sit wherever macOS had dropped the items, and
-re-applying the profile in Settings refused to run at all (#991). The
-always-hidden divider's window had dropped out of the item list while
-parked offscreen, so every layout apply that needed it either skipped
-itself or quit partway through. Thaw now recovers that divider from its
-own window record instead of searching the list. The rest: item previews
-work again in the layout editor on mixed Retina and non-Retina setups
-(#990), a drag into an empty collapsed section completes instead of
-deadlocking (#988), and overlay panels follow space switches on
-multi-display systems (#794).
+Hey, we have a Discord! Come say hi: [discord.gg/KDfWjWDnR4](https://discord.gg/KDfWjWDnR4).
+
+<a href="https://www.producthunt.com/products/thaw-2?embed=true&amp;utm_source=badge-featured&amp;utm_medium=badge&amp;utm_campaign=badge-thaw-3" target="_blank" rel="noopener noreferrer"><img alt="Thaw - The only app that owns your whole menu bar, in and out | Product Hunt" width="250" height="54" src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1239794&amp;theme=light&amp;t=1788423441056"></a>
+
+Thank you to the more than 80 people who ran the preview builds, sent logs, and told us what broke. Every one of the areas below was shaped by those reports.
+
+---
+
+### Upgrade from 2.x
+
+1. macOS 27 is required. There is no 2.x compatibility layer.
+2. Update channel is Nightly for now.
+3. The Ice-era settings migrations have been removed. They could never run against the new defaults domain, so nothing is lost by dropping them.
+
+---
+
+### Not here yet
+
+Three things from the 2.1 preview line are still on their way to macOS 27.
+
+- **Scripts.** Script-driven bar modules are being tested by macOS 26 users on the 2.1.0 beta and will be added in a later 3.0 build. The Scripts pane is here as a preview of where they will live.
+- **Item triggers.** The full condition engine from 2.1, where an item moves on battery level, the frontmost app, a network, a Focus, and the rest, is not ported yet. What is here is the reveal-on-icon-change rule.
+- **Rotating diagnostic logs.**
+
+---
+
+### Menu bar
+
+- **Zen mode** seals the whole bar with one hotkey. Reveals and hover tricks stand down until you toggle it back.
+- **Item groups** bundle items so they move as one, including across sections. Same-app clusters group on their own and dissolve on request.
+- **Spacer items** create gaps on purpose: pick a width and drag them like any item.
+- **Items that ask for attention can surface themselves.** A blinking icon briefly shows the section holding it, with a cooldown so a chatty icon cannot keep the bar open. Off by default.
+- **App icons where captures cannot go.** Items nobody can capture draw their owning app's icon, so the Thaw Bar, the layout pane, and search work with Accessibility alone.
+- **Presenter mode.** With the camera and microphone watch on, the bar collapses to zen mode while either is in use and restores after. It works alongside zen mode while presenting.
+- **Confirmations.** A small capsule under the bar confirms the verbs that otherwise succeed invisibly: zen on, hidden items shown, profile applied.
+
+### Thaw Bar and appearance
+
+- **A Thaw Bar of its own.** Shape, tint, and border for the bar, independent of the menu bar it mirrors, and one per-display section instead of repeated blocks.
+- **Adaptive Gradient tint.** A gradient from the wallpaper's two dominant colours instead of one average. Wallpaper changes re-tint the bar at once; the poll stays only for dynamic and aerial wallpapers.
+- **Per-Space appearance overrides**, so the bar can dress differently on each Space.
+
+### Layout
+
+- **A standalone layout editor** opens on its own from a hotkey or a `thaw://` action, with glass chrome and last-pane restore. Items can be activated straight from it.
+- **Hover spotlighting.** Resting on a tile in the layout pane lights the matching item in the real bar. Clicking it opens the inspector.
+- **Displays as a spatial picker**, arranged the way they sit on your desk, with per-display spacing applied inline.
+
+### Search and launchers
+
+- **Search remembers.** Recently activated items sit at the top of an empty query, and selecting a result spotlights the item in the real bar.
+- **Item palette (Lab).** A centred launcher for your menu bar items, hidden ones included. Type part of a name or the owning app and press Return.
+- **Assisted item palette (Lab).** A large list of every item right where the pointer is, with big rows to read and click.
+- **Menu bar magnifier (Lab).** Rest the pointer on the bar and a blown-up slice appears below it. Each icon gets a large outline you can click, and the one you point at is named. Works without Screen Recording; the pixels need it.
+
+### Settings
+
+- **Simple Mode** collapses Settings to one page, ordered by what you touch. Everything it hides is still there when you switch it off.
+- **Sidebar by topic.** Menu Bar, App, Automation, and More. Rows carry a plain glyph, groups fold, arrow keys move through rows and Return selects, and a profile strip pinned to the foot switches profiles without opening the Profiles pane.
+- **Search in the toolbar.** Results take over the detail column with a result count and an empty state that names the query.
+- **What's New and Acknowledgements as reading pages.** A path of releases along the top, one large title with the release date under it, and the notes at reading size on the app's own glass.
+- **Tools pane** gathers the troubleshooting helpers in one place, with the destructive ones last.
+- **Onboarding** restyled in the same language as the rest of the app.
+
+### Privacy
+
+- **A Privacy pane.** Permissions, the capture inspector that shows exactly what the app reads from the screen, and every network call the app makes, each with a switch and one button to turn them all off. A test fails the build if a network client appears anywhere the list does not account for.
+- **Camera and microphone watch (Lab).** A banner names the app that took the microphone, and another says when a camera turns on. While either is in use, Thaw's menu lists what is using it. Banners can be pinned to a display, or follow the pointer, and placed left, centre, or right.
+- **Menu bar history (Lab).** When items appeared in and disappeared from the bar, stored in Thaw's own settings and cleared when the experiment is turned off.
+
+### Profiles and Spaces
+
+- **Per-Space profiles.** Bind a profile to a Space the way it binds to a display. Precedence is Focus Filter, then Space, then display.
+- **Per-Space presentation.** Show or hide the bar per Space, and see which Space each rule belongs to.
+
+### Automation, Shortcuts, and the command line
+
+- **Rules.** Reveal on icon change with a cooldown, global and per-profile hooks that run a script when a profile applies, a script environment with its own variables and timeout, and a whitelist of apps allowed to change settings over `thaw://`.
+- **Shortcuts and Spotlight.** An action opens a chosen item's menu, revealing it first if hidden, alongside actions to reveal hidden items, toggle zen mode, and apply a profile.
+- **Control Center widgets** toggle hidden items and zen mode from Control Center.
+- **A command-line client.** `thawctl` drives the `thaw://` control plane from a terminal.
+
+### The Lab
+
+- **A home for experiments** you can opt into early. Turning any experiment off returns the app to normal, and each one says exactly what it does.
+- **Menu bar overlay.** Your items drawn in a Thaw strip that appears when you point at the space they left, while the system bar keeps its app menus, clock, and modules.
+- **Show item details on hover (beta).** A small readout under an item while the pointer rests on it, showing what the item already reports.
+- **Hide Finder menus on the desktop.** Clicking the desktop puts Finder's menus in the bar; this covers them until you switch away.
+- **Transport bar.** A floating capsule at the bottom of the display your pointer is on, with the active profile, the hidden and always-hidden toggles, zen mode, and a close button. It never takes focus.
+
+### Under the hood
+
+- **Rebuilt from the ground up on a new architecture.** Thaw 3 is a new codebase, not a patched fork. The item manager cluster, AppState, MenuBarManager, the image cache, the layout bar, ControlItem, appearance, and search were written anew; the Ice-branded identifier vocabulary is Thaw's own, with persisted keys pinned so nothing you saved is lost; and the migrations that could never run are gone. The rewrite paid down years of technical debt at the same time: dead machinery and one-case abstractions are deleted, the engine sits behind explicit seams that can be tested in isolation, and the hot paths were rebuilt with performance in mind.
+- **Swift 6.4 and strict concurrency.** The `@Observable` migration is complete, with zero `ObservableObject` conformances left. Detached tasks moved onto `@concurrent` callees, workspace notifications are debounced through swift-async-algorithms, and the engine reads its settings through a configuration protocol instead of reaching into AppState.
+- **Every ScreenCaptureKit call has a watchdog**, so a capture that never answers cannot hang the refresh loop. An XPC capture helper is built in and off by default until it has been verified on macOS 27.
+- **Less idle work.** The polls that used to ask the window server questions whose answers had not changed now latch, memoize, or rate-limit, and the glyph cache publishes only when a glyph actually changed.
+
+## [2.1.0-beta.2]
+
+Hey, we have a Discord! Come say hi: [discord.gg/KDfWjWDnR4](https://discord.gg/KDfWjWDnR4).
+
+Please report issues at [github.com/thaw-app/Thaw/issues](https://github.com/thaw-app/Thaw/issues).
+
+Four fixes, nothing new. The worst of them is not a beta bug at all: changing menu bar spacing could kill Spotlight outright, and it stayed gone until the machine was rebooted (#720, found and fixed by @commanderk33n). Because spacing is re-applied whenever a display connects or disconnects, it fired again on every dock and undock. From the beta.1 reports: revealing a hidden item could drop it on the wrong side of the chevron, so the reveal failed and the item stayed put (#1035); the "Thaw took too long to respond" report turned out to be a Control Center window left behind by an exited Thaw process, freezing the item cache for as long as it stuck around (#1032); and the Capture Inspector was showing people the bottom of their screen instead of their menu bar (#1033).
+
+---
+
+### Upgrade from 2.1.0-beta.1
+
+1. Update in place through Sparkle on the beta channel. Stable stays on 2.0.1 until 2.1.0 leaves beta.
+2. No schema or `defaults` changes. Profiles, saved layouts, and hotkeys carry over untouched.
+3. If you have been clearing a stuck menu bar with `killall ControlCenter`, you should not need to after this update.
+4. Menu bar items that launchd owns, Spotlight and Dock and WindowManager among them, are now restarted through `launchctl` when a spacing change is applied. That is a hard restart rather than the graceful quit they used to get, which is the operation launchd is built for but is still a change in behavior.
+
+---
+
+### Main fixes
+
+1. Changing menu bar spacing no longer kills Spotlight until the next reboot (#720, thanks @commanderk33n). Thaw terminated each menu bar item and relaunched it with `NSWorkspace.openApplication(at:)`, which makes Thaw the launching parent. A system LaunchAgent can carry a launch constraint that permits launchd as its only launching parent, so the kernel killed the new process at exec: every `Spotlight-*.ips` report ends in a CODESIGNING termination, "Launch Constraint Violation", with no frames on the faulting thread and a process that lived about ten milliseconds. Two things then made it permanent. The fallback relaunch retried the same illegal launch and produced a second crash report about eight seconds later, and `com.apple.Spotlight` sets `KeepAlive.SuccessfulExit=false`, so launchd would not respawn it either: `terminate()` is a successful exit. Spacing is re-applied on display connect and disconnect, which is why this landed on every dock and undock. Items owned by a system LaunchAgent are now restarted with `launchctl kickstart -k gui/<uid>/<label>` at both relaunch sites. The label comes from the agent's own plist rather than from the bundle identifier, because the two diverge on exactly the items that matter: `com.apple.dock` is labelled `com.apple.Dock.agent`, `com.apple.systemuiserver` is `com.apple.SystemUIServer.agent`, and nine of the twenty-six LaunchAgent-backed processes on a stock system differ this way, so a bundle-identifier rule would have rescued Spotlight and quietly missed the rest. `launchctl` is declared in `Info.plist` the way the existing `defaults` path is, so it is never resolved through `PATH`.
+2. A Control Center window left behind by an exited Thaw no longer freezes the item cache (#1032). Control Center can outlive the Thaw process whose status item it hosted and go on serving the window. The reporter carried one across three relaunches until `killall ControlCenter` cleared it: window 639, tagged under Thaw's own bundle identifier, capturing no image and answering to no owner. Thaw took it for one of its own twice over. It was planned against as an unmanaged item, so live items were moved relative to a window with nothing behind it, and the log has Battery moved to the right of it. It is also self-titled under Thaw's own namespace, which makes it the first signal read as a bar-wide window-name degradation, so every reading that contained it was thrown away as a failed observation: 436 of them across the reporter's three logs, each one holding a cache that had been stale since the orphan appeared. A reorder planned against a frozen cache is the "took too long to respond" the report is titled after. These windows are now dropped alongside the duplicate control items, before the degradation check, which already expects ghost windows to be gone by the time it runs. Ownership is decided by window number rather than by title, so a control item of Thaw's own whose title really has degraded stays in the reading and still reaches that check.
+3. Revealing a hidden item lands it on the side of the chevron it was aimed at (#1035). A temporary show drops the item left of the chevron at exactly the chevron's own minX. That coordinate is the boundary itself, so AppKit is free to place the item on either side of it, and here it picked the wrong side: attempt 2 in the reporter's log planned a target of 837.0 and then measured the item at 863.0, past the trailing edge of a 26pt chevron. The ordinal check rejected that landing, correctly. The one-point bias added for #923 already solves this, but it skipped the chevron on the grounds that the chevron divides no sections and so resolves no ambiguity. What makes a drop point ambiguous is that it is an item's own edge; whether the item divides two sections has nothing to do with it. The chevron is biased now too. The retry budget behind that move is also restored: the fast path cut it to 2 in 2.0.0-beta.2 so that a failing retry loop would not show as jitter, which left a reveal one wrong guess away from giving up, and that is where the reporter's bisect lands, since 1.2.0 gave the move all 8 attempts. The second half of the report stays open. A move that exhausts its attempts still delivers a real click to whatever sits under the cursor.
+4. The Capture Inspector shows the menu bar rather than the bottom of the screen (#1033). It built its band from `NSScreen.frame`, which puts the origin at the bottom left, and then handed that band to a capture path that assigns it to `SCStreamConfiguration.sourceRect`, where the origin is at the top left and y increases downward. Read the second way, `frame.maxY - menuBarHeight` is a distance measured down from the top of the display, so on a display of height H the inspector selected the strip at H minus the menu bar height: the bottom edge of the screen, and whatever window happened to be sitting there. Nothing downstream could catch it. Both readings produce a band of identical size, so the pixel dimensions in the log looked right, and the rect stayed inside the display so the bounds guard passed. The band now comes from `CGDisplayBounds`, which is already in the coordinate space the capture expects, and the screen bounds, display frame, and computed source rect are all logged, so a future misplacement is legible from a log instead of only from a screenshot.
+
+---
+
+### Dependencies & localization
+
+- Source strings repaired, including the automatic grammar agreement that two of them had lost (#1036).
+- Crowdin sync for `Localizable.xcstrings` (#1030, #1037). Russian is the big mover, from 69.3% of the catalogue to 82.6%.
+- The build and release workflows run on macOS 27 runners (#1034).
+- Copyright headers updated across the project (#1026).
+- Two triple-nested closures unnested, which clears both open SonarCloud maintainability issues.
+
+## [2.1.0-beta.1]
+
+Hey, we have a Discord! Come say hi: [discord.gg/KDfWjWDnR4](https://discord.gg/KDfWjWDnR4).
+
+First beta of the 2.1.0 line. This is the wave the 2.0.0 notes pointed at: triggers, groups, zen mode, Simple Mode, spacers, and a Thaw Bar that dresses itself. Anything that changes behavior ships switched off; flip it on when you want it.
+
+---
+
+### Upgrade from 2.0.1
+
+1. Pick the beta channel in Settings → Updates. Stable stays on 2.0.1 until 2.1.0 leaves beta.
+2. No schema or `defaults` changes. Profiles, saved layouts, and hotkeys carry over untouched.
+3. Trigger conditions are gated per feature under Settings → Developer. Battery and power work out of the box; everything else is a switch you flip deliberately.
+
+---
+
+### Added
+
+- **Item triggers** move a menu bar item when something happens: battery level, power source, frontmost or running app, network, VPN, Wi-Fi, Bluetooth, audio device, displays, a time window, a Focus, a place, Energy Mode, thermal pressure, camera or mic use, a script's exit, or another icon changing. Conditions combine with all/any/none, actions invert, and a wrong verdict costs a brief reveal instead of a rearranged bar. Designed and implemented by @alvst (#735, #965).
+- **Item groups** bundle items so they move as one, including across sections, matching the macOS 27 semantics. Same-bundle clusters group automatically and dissolve on request.
+- **Zen mode** seals the whole bar with one hotkey. Auto-reveals and hover tricks stand down, and a blinking icon does not get to reopen what you closed. Toggle it again to hand the bar back.
+- **Simple Mode** collapses Settings to one page, ordered by what you actually touch. Everything it hides is still there when you switch it off.
+- **Tools pane** gathers the destructive troubleshooting helpers in one place, plus announcements and Sparkle feed pinning.
+- **Spacer items** create gaps on purpose: pick a width and an optional fill, then drag them like any item.
+- **Per-Space profiles** bind a profile to a Space the way it already binds to a display. Bindings use the window server's per-Space `uuid`, since the ID is renumbered at logout. Precedence is Focus Filter, then Space, then display.
+- **Wallpaper changes re-tint the bar immediately.** Thaw now watches the wallpaper store instead of polling for it. The poll stays for dynamic wallpapers, which change their pixels without ever rewriting that file.
+- **Adaptive Gradient tint** builds the gradient from the wallpaper's dominant colours instead of one averaged brown. Colours are bucketed and taken most-covering first, skipping any too close to one already taken.
+- **Items that ask for attention can surface themselves.** A blinking status icon briefly shows the section holding it. A blink is told apart from a clock or a battery percentage by whether the icon keeps returning to a state it already showed. Off by default under Advanced.
+- **A Thaw Bar of its own**: shape, tint, and border for the bar, independent of the menu bar it mirrors (#248, thanks @kn666).
+- **Hidden icons that refresh at the slider rate.** Captures run through a recyclable XPC helper, so the per-call dictionary leak stays out of the app (#942, thanks @CamilleGuillory).
+- **One Per display section**: the repeated per-display blocks collapse into a single picker-driven section.
+- **A standalone layout editor** opens on its own, with per-Space appearance overrides and last-pane restore; items can be activated straight from the editor (#985, thanks @alvst).
+- **App icons where captures can't go.** Items nobody can capture draw their owning app's icon, so the Thaw Bar, the layout pane, and Search work with Accessibility alone.
+- **A hotkey for automatic rehiding** (#665, thanks @nightah).
+- **Diagnostic logs that rotate** by size and time (#974) and diagnostics rows you can edit (#976), both by @nk-tedo-001.
+
+---
+
+### Fixed
+
+- **A profile apply no longer walks the visible section into the hidden one** (#1027, thanks @nk-tedo-001). On a three-display Mac after a restart, the reporter's bar went from twelve visible items to one in six seconds. The hidden divider was parked off-screen with two visible-bound items already stranded behind it, and Phase 1 had just declined to rescue them — a parked divider cannot be dragged onto (#899), so it hands off to the per-item pass. That pass then anchored its moves on the stranded items. A drop point derives from its anchor's leading edge, so each move pressed at a point off the display, AppKit dropped the item beside the parked anchor, and the next move anchored on the item just stranded: six desired-visible items followed each other out of the bar. Moves bound for the visible section now require an anchor that is actually on screen, and skip when it is not. Moves into the hidden and always-hidden sections are untouched — parking is how concealment works, and gating those would refuse every move into a collapsed section. A skipped move counts as unenacted, so the arrangement is not written back to the saved order as though it had been achieved.
+- **Control Center modules no longer persist under another app's name, and profiles that already carry one heal on load** (#1027). The reporter's `main.json` held `com.techsmith.snagit.capturehelper:Battery`. On a three-display setup, the source-PID resolution matched Control Center's Battery window to Snagit's helper process, the resolved PID became the identifier's namespace, and the wrong spelling persisted. The live item reads `com.apple.controlcenter:Battery`, so it never matched the saved entry again: every apply planned Battery as an unmanaged arrival into the hidden section, and the reporter could not reorder it. No existing guard catches this. The PID did resolve, so the identity is not provisional. The title is not a generic slot, so the item is not transient. And one wrong PID is not a majority, so the #784 gate stayed quiet as designed. What does identify the item is the title: only Control Center names an item "Battery", "WiFi", or "FocusModes". Those titles under any other namespace are now treated as misattributed. The persistence path excludes them the way it excludes an unresolved item, and the load-time prune drops the ghost from saved orders and profiles outright, since the title alone is proof enough and no live twin is needed to confirm it; the module then re-persists under its real name on the next cycle that resolves it properly. The cost of a wrong verdict is small: an app that genuinely titles its item "Battery" or "Clock" keeps its movability and only loses its persisted position. Generic `Item-N` slots are never touched, since a third-party app's own slot is indistinguishable from a misattributed one by title alone.
+- **A bulk apply no longer dispatches while the section dividers sit out of order** (#1027). In the same log, both of the reporter's other control items were classified into the hidden section before any apply ran. The dividers were scattered rather than collapsed onto one coordinate, so the zero-width gate from #868 passed while every section assignment derived from that reading was wrong. Both apply paths, the saved-order dispatch and the profile pass's fresh re-read, now refuse a reading that places the visible control item or the always-hidden divider outside its own section. The refusal also attempts recovery: it un-parks a stranded hidden divider and re-seats the visible chevron, so a scrambled bar returns to a state the gate accepts instead of staying stuck. A divider that is absent still passes. A disabled always-hidden section has no divider by design, and a missing divider is what the #849 gate already handles.
+
+---
+
+### Dependencies
+
+- `swift-system` is declared directly; Collections and AsyncChannel joined the lockfile. The last XCTest suites moved to Swift Testing.
+
+## [2.0.1]
+
+Help us translate Thaw at [crowdin.com/project/thaw](https://crowdin.com/project/thaw).
+
+Please report issues at [github.com/thaw-app/Thaw/issues](https://github.com/thaw-app/Thaw/issues).
+
+Five fixes from field reports against 2.0.0, nothing new. The one most people will notice: option-click and double-click on the menu bar toggled the always-hidden section in every 1.x build, and both went dead the moment you upgraded to 2.x (#1012). The largest under the hood: after a restart, the menu bar could sit wherever macOS had dropped the items, and re-applying the profile in Settings refused to run at all (#991). The rest: item previews work again in the layout editor on mixed Retina and non-Retina setups (#990), a drag into an empty collapsed section completes instead of deadlocking or timing out (#988, #1010), and the menu bar appearance follows space switches on multi-display systems, including the macOS 26 setups where the per-display space query stops answering (#794). Two release candidates carried the work; their entries below keep the per-fix detail.
 
 ---
 
 ### Upgrade from 2.0.0
 
 1. Update in place through Sparkle.
-2. No settings, schema, or `defaults` changes in this release. Profiles
-   and saved layouts carry over untouched.
+2. If you came from 1.x and never touched the two click-gesture toggles in Settings, General, both come up on after this update, the way they behaved in 1.x. Turn either one off there and Thaw keeps that choice. Anyone who already set them explicitly, on or off, is left alone.
+3. No schema or `defaults` changes. Profiles and saved layouts carry over untouched.
 
 ---
 
 ### Main fixes
 
-1. Profile applies survive a missing always-hidden divider (#991). After
-   a restart the divider rests parked offscreen, and on macOS 26 that
-   parked window intermittently drops out of the item list Thaw
-   enumerates. Lookup then returned nil for the divider while downstream
-   steps still treated the pair as fully resolved: applies skipped
-   wholesale ("always-hidden divider unresolved while its section is
-   enabled") or abandoned after the hidden-boundary moves had already
-   run ("control items degraded before moving AH_ctrl" in the attached
-   log, four milliseconds after a clean tag resolution). The reporter's
-   bar never matched the saved profile, and manual re-applies failed the
-   same way. The control-item pair now recovers the divider from its own
-   window record, the authoritative channel the hidden divider has had
-   since #754, and refuses to adopt a lookalike window from a duplicate
-   Thaw instance. A divider the window server no longer knows is still
-   refused, now under an accurate message instead of "control items
-   degraded".
-2. Layout editor previews render on mixed-scale display setups (#990).
-   Composite captures compared pixel width against bounds times the
-   display scale and rejected any mismatch, but on a 1.0x external
-   beside a Retina display the capture backend picks its own scale: the
-   log recorded 70 rejections, an empty image cache, and gray
-   placeholders for every item. Both composite paths now derive the
-   scale from the capture itself, the same check single-item captures
-   have used since #851, and degenerate zero-width windows are filtered
-   from the bounds union so one orphaned window cannot reject a whole
-   batch.
-3. A drag into an empty collapsed section completes instead of refusing
-   forever (#988). The #923 guard refuses an editor drag whose
-   destination divider is parked offscreen and suggests opening the
-   section first; with every item in always-hidden there was nothing to
-   open and nowhere to drop, which is exactly the reporter's bar. Thaw
-   now reveals the empty destination, retargets the drag onto the
-   freshly revealed divider, and re-conceals the section once the item
-   settles. If the divider does not return within two seconds the old
-   refusal stands. A drag cancelled mid-reveal, or one the move watchdog
-   gives up on, restores the section's previous state instead of leaving
-   it showing. Disabled sections never reveal.
-4. Overlay panels stay on the space you are looking at (#794). A panel
-   kept whatever space was current when it was last shown; with
-   "displays have separate spaces" enabled, every ctrl-arrow switch
-   revealed a vanilla menu bar on both displays, and the tint, shape,
-   and background appeared only on the space that was current at
-   launch. Panels now check per display whether they sit on that
-   display's current space and re-home only when actually stranded.
-   Because the check compares each panel against its own display, the
-   fullscreen drift that forced the old flag's removal cannot return.
-   A re-check shortly after each switch re-shows a panel that a raced
-   space read leaves behind, so the old 60-second housekeeping timer
-   stays a backstop rather than the recovery path.
+1. The 1.x click gestures survive the upgrade to 2.x (#1012). Option- click and double-click on the menu bar toggled the always-hidden section unconditionally in 1.x. 2.0 turned both into opt-in settings that default to off, and the keys behind them did not exist for anyone upgrading, so both gestures silently stopped working with no setting visibly changed. Both now come up on when they have never been explicitly set, and an explicit choice, including off, is never overwritten. Separately, the control items' phantom-click suppression sat in front of the whole event switch and swallowed right-click along with it, so the context menu was unreachable whenever the menu bar transiently had no item windows on the active space. That guard is now scoped to the left mouse-down it was written for.
+2. Profile applies survive a missing always-hidden divider (#991). After a restart the divider rests parked offscreen, and on macOS 26 that parked window intermittently drops out of the item list Thaw enumerates. Lookup then returned nil for the divider while downstream steps still treated the pair as fully resolved: applies skipped wholesale ("always-hidden divider unresolved while its section is enabled") or abandoned after the hidden-boundary moves had already run ("control items degraded before moving AH_ctrl" in the attached log, four milliseconds after a clean tag resolution). The reporter's bar never matched the saved profile, and manual re-applies failed the same way. The control-item pair now recovers the divider from its own window record, the authoritative channel the hidden divider has had since #754, and refuses to adopt a lookalike window from a duplicate Thaw instance. A divider the window server no longer knows is still refused, now under an accurate message instead of "control items degraded".
+3. Layout editor previews render on mixed-scale display setups (#990). Composite captures compared pixel width against bounds times the display scale and rejected any mismatch, but on a 1.0x external beside a Retina display the capture backend picks its own scale: the log recorded 70 rejections, an empty image cache, and gray placeholders for every item. Both composite paths now derive the scale from the capture itself, the same check single-item captures have used since #851, and degenerate zero-width windows are filtered from the bounds union so one orphaned window cannot reject a whole batch.
+4. A drag into an empty collapsed section completes instead of refusing forever (#988, #1010). The #923 guard refuses an editor drag whose destination divider is parked offscreen and suggests opening the section first; with every item in always-hidden there was nothing to open and nowhere to drop, which is exactly the reporter's bar. Thaw now reveals the empty destination, retargets the drag onto the freshly revealed divider, and re-conceals the section once the item settles. The first cut of that reveal expanded only the destination section, and the always-hidden divider parks to the left of the hidden section's content: with the hidden section collapsed behind its 10000-point spacer, the revealed divider was re-placed just left of that still-parked content and never came onscreen, so the drag still timed out into the same refusal. The reveal now expands the hidden section alongside the always-hidden section and restores both once the item settles. If the divider does not return within two seconds the old refusal stands. A drag cancelled mid-reveal, or one the move watchdog gives up on, restores the sections' previous state instead of leaving them showing. Disabled sections never reveal.
+5. Overlay panels stay on the space you are looking at (#794). A panel kept whatever space was current when it was last shown; with "displays have separate spaces" enabled, every ctrl-arrow switch revealed a vanilla menu bar on both displays, and the tint, shape, and background appeared only on the space that was current at launch. Panels now check per display whether they sit on that display's current space and re-home only when actually stranded. Because the check compares each panel against its own display, the fullscreen drift that forced the old flag's removal cannot return. A re-check shortly after each switch re-shows a panel that a raced space read leaves behind, so the old 60-second housekeeping timer stays a backstop rather than the recovery path. On the macOS 26 setups behind the reports that stayed open after that first cut, the per-display space query stops answering, and the code read the silence as "the overlay panel is already in place", so the tint, shape, and background stayed stuck on the launch space for every recovery path. The panel on the display that owns the active menu bar now falls back to the global active space, which coincides with that display's current space by definition. The decision logs its inputs, so any report that survives this can be pinned to a branch.
+
+---
+
+### Dependencies & localization
+
+- Crowdin sync for `Localizable.xcstrings` (#992, #1019, #1021).
+- github-actions group bumped with four updates (#1011), and `softprops/action-gh-release` bumped on its own (#1018).
+
+## [2.0.1-rc.2]
+
+Please report issues at [github.com/thaw-app/Thaw/issues](https://github.com/thaw-app/Thaw/issues).
+
+Three fixes from rc.1 field reports, nothing new. The one most people will notice: option-click and double-click on the menu bar toggled the always-hidden section in every 1.x build, and both went dead the moment you upgraded to 2.x. The other two are narrower. A drag into an empty always-hidden section still timed out when the hidden section happened to be collapsed as well, and the space-switch re-homing that landed in rc.1 did nothing at all on the macOS 26 setups where the per-display space query stops answering.
+
+---
+
+### Upgrade from 2.0.1-rc.1
+
+1. Update in place through Sparkle.
+2. If you came from 1.x and never touched the two click-gesture toggles in Settings, General, both come up on after this update, the way they behaved in 1.x. Turn either one off there and Thaw keeps that choice. Anyone who already set them explicitly, on or off, is left alone.
+3. No schema or `defaults` changes. Profiles and saved layouts carry over untouched.
+
+---
+
+### Main fixes
+
+1. The 1.x click gestures survive the upgrade to 2.x (#1012). Option-click and double-click on the menu bar toggled the always-hidden section unconditionally in 1.x. 2.0 turned both into opt-in settings that default to off, and the keys behind them did not exist for anyone upgrading, so both gestures silently stopped working with no setting visibly changed. Both now come up on when they have never been explicitly set, and an explicit choice, including off, is never overwritten. Separately, the control items' phantom-click suppression sat in front of the whole event switch and swallowed right-click along with it, so the context menu was unreachable whenever the menu bar transiently had no item windows on the active space. That guard is now scoped to the left mouse-down it was written for.
+2. A drag into an empty, collapsed always-hidden section completes even when the hidden section is collapsed too (#1010). The reveal added in #988 expanded only the destination section, but the always-hidden divider parks to the left of the hidden section's content: with the hidden section collapsed behind its 10000-point spacer, the revealed divider was re-placed just left of that still-parked content and never came onscreen. Every such drag timed out into the "open the section first" refusal, advice that could not help, since only expanding the hidden section puts the always-hidden boundary onscreen. The reveal now expands the hidden section alongside the always-hidden section and restores both once the item settles.
+3. Menu bar appearance re-homes after a space switch even where the per-display space query goes quiet (#794). On the macOS 26 setups behind the reports still open against rc.1, that query stops answering, and the old code read the silence as "the overlay panel is already in place", so the tint, shape, and background stayed stuck on the launch space for every recovery path. The panel on the display that owns the active menu bar now falls back to the global active space, which coincides with that display's current space by definition. The decision logs its inputs, so any report that survives this can be pinned to a branch.
+
+---
+
+### Dependencies & localization
+
+- Crowdin sync for `Localizable.xcstrings` (#992).
+- github-actions group bumped with four updates (#1011).
+
+## [2.0.1-rc.1]
+
+Please report issues at [github.com/thaw-app/Thaw/issues](https://github.com/thaw-app/Thaw/issues).
+
+Four fixes from field reports, nothing new. The largest: after a restart, the menu bar could sit wherever macOS had dropped the items, and re-applying the profile in Settings refused to run at all (#991). The always-hidden divider's window had dropped out of the item list while parked offscreen, so every layout apply that needed it either skipped itself or quit partway through. Thaw now recovers that divider from its own window record instead of searching the list. The rest: item previews work again in the layout editor on mixed Retina and non-Retina setups (#990), a drag into an empty collapsed section completes instead of deadlocking (#988), and overlay panels follow space switches on multi-display systems (#794).
+
+---
+
+### Upgrade from 2.0.0
+
+1. Update in place through Sparkle.
+2. No settings, schema, or `defaults` changes in this release. Profiles and saved layouts carry over untouched.
+
+---
+
+### Main fixes
+
+1. Profile applies survive a missing always-hidden divider (#991). After a restart the divider rests parked offscreen, and on macOS 26 that parked window intermittently drops out of the item list Thaw enumerates. Lookup then returned nil for the divider while downstream steps still treated the pair as fully resolved: applies skipped wholesale ("always-hidden divider unresolved while its section is enabled") or abandoned after the hidden-boundary moves had already run ("control items degraded before moving AH_ctrl" in the attached log, four milliseconds after a clean tag resolution). The reporter's bar never matched the saved profile, and manual re-applies failed the same way. The control-item pair now recovers the divider from its own window record, the authoritative channel the hidden divider has had since #754, and refuses to adopt a lookalike window from a duplicate Thaw instance. A divider the window server no longer knows is still refused, now under an accurate message instead of "control items degraded".
+2. Layout editor previews render on mixed-scale display setups (#990). Composite captures compared pixel width against bounds times the display scale and rejected any mismatch, but on a 1.0x external beside a Retina display the capture backend picks its own scale: the log recorded 70 rejections, an empty image cache, and gray placeholders for every item. Both composite paths now derive the scale from the capture itself, the same check single-item captures have used since #851, and degenerate zero-width windows are filtered from the bounds union so one orphaned window cannot reject a whole batch.
+3. A drag into an empty collapsed section completes instead of refusing forever (#988). The #923 guard refuses an editor drag whose destination divider is parked offscreen and suggests opening the section first; with every item in always-hidden there was nothing to open and nowhere to drop, which is exactly the reporter's bar. Thaw now reveals the empty destination, retargets the drag onto the freshly revealed divider, and re-conceals the section once the item settles. If the divider does not return within two seconds the old refusal stands. A drag cancelled mid-reveal, or one the move watchdog gives up on, restores the section's previous state instead of leaving it showing. Disabled sections never reveal.
+4. Overlay panels stay on the space you are looking at (#794). A panel kept whatever space was current when it was last shown; with "displays have separate spaces" enabled, every ctrl-arrow switch revealed a vanilla menu bar on both displays, and the tint, shape, and background appeared only on the space that was current at launch. Panels now check per display whether they sit on that display's current space and re-home only when actually stranded. Because the check compares each panel against its own display, the fullscreen drift that forced the old flag's removal cannot return. A re-check shortly after each switch re-shows a panel that a raced space read leaves behind, so the old 60-second housekeeping timer stays a backstop rather than the recovery path.
 
 ## [2.0.0]
 
@@ -93,6 +285,7 @@ Please report issues at [github.com/thaw-app/Thaw/issues](https://github.com/tha
 Hey everyone. Thaw 2.0 rebuilds the app around macOS 26 (Tahoe): Liquid Glass throughout, a redesigned settings surface, an automation layer built on `thaw://`, and a menu bar pipeline rewritten around item identity, layout persistence, and knowing when to leave the bar alone. The cycle ran twenty-two releases: `1.3.0-beta.1` shipped Settings Profiles in April, fifteen betas followed, and six release candidates carried the work home. Nearly everything after beta.15 came out of field logs, real menu bars misbehaving in ways no test caught. This entry walks the run by theme. The detailed per-fix notes live in the RC entries in the [full changelog](https://github.com/thaw-app/Thaw/blob/development/CHANGELOG.md).
 
 ---
+
 ### Upgrade notes
 
 1. **From 1.x:** Thaw 2.0 requires macOS 26. On macOS 14 or 15 you stay on
@@ -293,7 +486,7 @@ the 2.0.0 stable build, so they are not repeated in its release notes._
   replaced with one that orders the two chevrons correctly (#978).
 - Thaw no longer places the always-hidden divider beside an anchor that is
   itself parked offscreen. The drop point derives from the anchor's leading
-  edge, so anchoring on a parked item dragged both further out — the path
+  edge, so anchoring on a parked item dragged both further out. That is the path
   behind the mass hidden-to-always-hidden re-sectioning users reported, and
   behind a stranded divider acquiring a second fault (#978, #980).
 - A profile no longer commits its saved section order when the apply that
@@ -373,14 +566,15 @@ Planned as the last release candidate before 2.0 stable. Almost all of it comes 
 - Sparkle bumped in the swift group (#971); github-actions group bumped with four updates (#972).
 - README OpenSSF badges switched to live shieldcn scorecard/openssf endpoints (#920); contributor image source updated; repository notice added.
 - FUNDING.yml gained Ko-fi and PayPal entries.
+
 ## [2.0.0-rc.4]
 
 Please report issues at
 [github.com/thaw-app/Thaw/issues](https://github.com/thaw-app/Thaw/issues).
 
-This release closes the field reports against rc.3 — hidden items dead
+This release closes the field reports against rc.3, hidden items dead
 for the first minute after launch, and a cache stall with no deadline at
-all — and pays down the debt that made them possible: the item manager's 11,500-line file, the hand-rolled identity
+all, and pays down the debt that made them possible: the item manager's 11,500-line file, the hand-rolled identity
 matching that drifted, and a test suite that wrote into the real settings
 of whoever ran it.
 
@@ -388,26 +582,26 @@ of whoever ran it.
 
 ### Highlights
 
-- **Hidden items work from launch, and the cache can no longer stall for good** — on a cold start the item cache froze for a full minute on unresolved identities: every Thaw Bar tooltip read "Menu Bar Item" and every click silently did nothing until the settling deadline expired (#943). In the worse interleaving the settling task deadlocked awaiting itself, past every deadline — one report had the cache rejecting every refresh for 20+ hours, with the Visible row in Settings → Layout permanently empty (#945).
-- **The Thaw icon stops drifting left across restarts** — the stalled early apply executed a minute late with the desired order it had narrowed at launch, when only a handful of identities had resolved. Everything that resolved during the stall was re-inserted as "unmanaged" at saved indices, which changed the chevron's planned neighbors and moved it left of the leftmost item; macOS remembers the new position, so each restart ratcheted it further (#947).
-- **Items stop shuffling mid-session on localized systems** — saved-order ghosts namespaced by a localized app name (`Control Centre:WiFi`, minted while a bundle ID transiently read nil) counted as "real owners" and deleted their genuine `com.apple.controlcenter` twins from the saved order on every load. The live items then planned as unmanaged and were repositioned by every apply, with the cursor contested for each synthetic drag (#949).
-- **Spanish onboarding restored** — two strings shipped as translated-but-empty, so Spanish systems rendered a blank tour slide description and a blank New Items badge hint.
-- **XPC session race closed** — a stale cancellation handler could tear down a healthy, newer session and race the lock every other access went through.
+- **Hidden items work from launch, and the cache can no longer stall for good**: on a cold start the item cache froze for a full minute on unresolved identities: every Thaw Bar tooltip read "Menu Bar Item" and every click silently did nothing until the settling deadline expired (#943). In the worse interleaving the settling task deadlocked awaiting itself, past every deadline. One report had the cache rejecting every refresh for 20+ hours, with the Visible row in Settings → Layout permanently empty (#945).
+- **The Thaw icon stops drifting left across restarts**: the stalled early apply executed a minute late with the desired order it had narrowed at launch, when only a handful of identities had resolved. Everything that resolved during the stall was re-inserted as "unmanaged" at saved indices, which changed the chevron's planned neighbors and moved it left of the leftmost item; macOS remembers the new position, so each restart ratcheted it further (#947).
+- **Items stop shuffling mid-session on localized systems**: saved-order ghosts namespaced by a localized app name (`Control Centre:WiFi`, minted while a bundle ID transiently read nil) counted as "real owners" and deleted their genuine `com.apple.controlcenter` twins from the saved order on every load. The live items then planned as unmanaged and were repositioned by every apply, with the cursor contested for each synthetic drag (#949).
+- **Spanish onboarding restored**: two strings shipped as translated-but-empty, so Spanish systems rendered a blank tour slide description and a blank New Items badge hint.
+- **XPC session race closed**: a stale cancellation handler could tear down a healthy, newer session and race the lock every other access went through.
 
 ---
 
 ### Menu bar & layout
 
-- The settling-period early apply no longer waits for settling to end while holding the serial cache gate. The wait deadlocked the pair both ways: when the launch cache cycle owned the gate, settling's early exit needed a cache cycle the held gate rejects, so it ran the full 60 s deadline with the item cache frozen on fallback tags — generic names in Thaw Bar and Search, and every click aborted with no return destination (#943). When the settling task's own poll owned the gate, the apply awaited the very task it was running on, and the deadline check inside that blocked loop could never fire — the gate stayed held indefinitely and every later recache was rejected (#945).
+- The settling-period early apply no longer waits for settling to end while holding the serial cache gate. The wait deadlocked the pair both ways: when the launch cache cycle owned the gate, settling's early exit needed a cache cycle the held gate rejects, so it ran the full 60 s deadline with the item cache frozen on fallback tags: generic names in Thaw Bar and Search, and every click aborted with no return destination (#943). When the settling task's own poll owned the gate, the apply awaited the very task it was running on, and the deadline check inside that blocked loop could never fire, so the gate stayed held indefinitely and every later recache was rejected (#945).
 - Clicking an item whose cached tag predates source-PID resolution re-maps it onto its freshly fetched counterpart by windowID, so the click survives a stale cache snapshot instead of dying in the return-destination lookup (#943).
 - Because the early apply now runs the moment it is dispatched, it plans against the bar it narrowed itself to. Executed at the deadline instead, its restriction inverted: identities that resolved during the stall were no longer provisional (which excludes them) but "unmanaged" (which re-inserts them at saved indices), and the re-insertion handed the chevron a move to the far left of the bar (#947).
-- Saved-order pruning no longer counts a localized display-name namespace as a real owner, and drops such a ghost when its canonical twin exists — the Control Center entry sharing its title, Thaw's own control items by their reserved titles, or a real owner claiming the same non-generic title. A display-name entry with no twin survives, since it may be the only identity a bundle-ID-less app ever got (#949).
+- Saved-order pruning no longer counts a localized display-name namespace as a real owner, and drops such a ghost when its canonical twin exists: the Control Center entry sharing its title, Thaw's own control items by their reserved titles, or a real owner claiming the same non-generic title. A display-name entry with no twin survives, since it may be the only identity a bundle-ID-less app ever got (#949).
 - The namespace fallback recovers a transiently nil bundle ID through the app's bundle URL before reaching for the window's owner name, so localized ghosts stop being minted in the first place (#949).
 
 ### XPC service
 
 - The session cancellation handler cleared the stored session outside the lock that guarded every other access, and a handler outliving its session could clear a newer one created after it. Storage now synchronizes internally, and invalidation is identity-guarded so only the cancelled session is dropped.
-- The single-window `sourcePID` request was dead wire protocol — the batch request replaced it in production — yet its round-trip tests were the only wire-format coverage at all. The request is gone and the tests now exercise the batch case both sides actually use.
+- The single-window `sourcePID` request was dead wire protocol, since the batch request replaced it in production, yet its round-trip tests were the only wire-format coverage at all. The request is gone and the tests now exercise the batch case both sides actually use.
 
 ### Localization
 
@@ -416,7 +610,7 @@ of whoever ran it.
 ### Internal
 
 - `MenuBarItemManager.swift` (11,526 lines) is now a folder of per-concern files cut along its existing MARK seams, each importing only what it uses; sonar and the SwiftLint input list follow the new paths.
-- Item identity matching (tag plus effective PID), the click-target refetch chain, and live-bounds reads are single-sourced helpers instead of hand-rolled copies across the manager and the IceBar — the same drift that produced #943.
+- Item identity matching (tag plus effective PID), the click-target refetch chain, and live-bounds reads are single-sourced helpers instead of hand-rolled copies across the manager and the IceBar, the same drift that produced #943.
 - The test process points the `Defaults` facade at a scratch suite before any test runs, so no suite can write into the real `com.stonerl.Thaw` domain of whoever runs the tests. The tour-slide test that failed on Spanish-locale machines while passing on English CI is green everywhere.
 - The search panel reads `AppState` from its SwiftUI environment instead of reaching through the item manager's back-pointer, which no external caller uses anymore.
 
@@ -435,11 +629,11 @@ so they land together.
 
 ### Highlights
 
-- **Launch restore actually runs** — the saved layout is applied at cold start instead of losing to a move cooldown that launch itself had stamped ~0.4 s earlier (#881, #900).
-- **Storms are bounded** — a failed or parked-divider move can no longer hijack the cursor indefinitely or write a half-finished order into `savedSectionOrder`.
-- **Control-item pairing repaired** — Thaw's visible chevron is no longer mistaken for the hidden divider, the mispair behind hidden sections reading zero width (#923, #924, #927).
-- **Memory leak closed** — recache backoff stops the CA fence port growth reported at 47 GiB on macOS 26 (#933).
-- **Field repair** — `Thaw --reset-layout` clears persisted order and re-seeds dividers without starting the app.
+- **Launch restore actually runs**: the saved layout is applied at cold start instead of losing to a move cooldown that launch itself had stamped ~0.4 s earlier (#881, #900).
+- **Storms are bounded**: a failed or parked-divider move can no longer hijack the cursor indefinitely or write a half-finished order into `savedSectionOrder`.
+- **Control-item pairing repaired**: Thaw's visible chevron is no longer mistaken for the hidden divider, the mispair behind hidden sections reading zero width (#923, #924, #927).
+- **Memory leak closed**: recache backoff stops the CA fence port growth reported at 47 GiB on macOS 26 (#933).
+- **Field repair**: `Thaw --reset-layout` clears persisted order and re-seeds dividers without starting the app.
 
 ---
 
@@ -592,7 +786,7 @@ Merged PRs behind the above: #889, #892, #897, #901, #906, #910, #911, #914, #91
 
 ### Hotfix
 
-- **Hidden divider boundary and layout-editor drags** — repair the visible/hidden boundary when `H_ctrl` drifts before the per-item reorder pass, so `applyProfileLayout` no longer reports "all items already in correct positions" while the whole hidden section sits misplaced. Drops into an empty hidden section that only contains the new-items badge no longer snap back, and persistent status-level windows (shelf/HUD) no longer defer every move — deferral still applies while the pointer is inside a long-open menu (#880, fixes #879).
+- **Hidden divider boundary and layout-editor drags**: repair the visible/hidden boundary when `H_ctrl` drifts before the per-item reorder pass, so `applyProfileLayout` no longer reports "all items already in correct positions" while the whole hidden section sits misplaced. Drops into an empty hidden section that only contains the new-items badge no longer snap back, and persistent status-level windows (shelf/HUD) no longer defer every move, though deferral still applies while the pointer is inside a long-open menu (#880, fixes #879).
 
 ---
 
@@ -602,10 +796,10 @@ This RC is a large reliability and platform update: menu bar identity/ordering, 
 
 ### Highlights
 
-- **Menu bar reliability overhaul** — safer saved-layout apply/persist, stronger item identity matching, and fewer false “reorder storms,” especially with Control Center items, dynamic titles, and multi-display setups.
-- **Settings & onboarding refresh** — redesigned settings UI, glass tour onboarding, stronger AX identity / click paths.
-- **Swift 6.2 + approachable concurrency** — MainActor default isolation on the app target, AXSwift6, EventTap synchronization, and cleanup of pre–Swift 6 GCD/Timer patterns.
-- **Update distribution** — Sparkle ZIP/deltas/appcast publish to `thaw-app/updates`, with a mirror for legacy `stonerl` Pages installs.
+- **Menu bar reliability overhaul**: safer saved-layout apply/persist, stronger item identity matching, and fewer false “reorder storms,” especially with Control Center items, dynamic titles, and multi-display setups.
+- **Settings & onboarding refresh**: redesigned settings UI, glass tour onboarding, stronger AX identity / click paths.
+- **Swift 6.2 + approachable concurrency**: MainActor default isolation on the app target, AXSwift6, EventTap synchronization, and cleanup of pre–Swift 6 GCD/Timer patterns.
+- **Update distribution**: Sparkle ZIP/deltas/appcast publish to `thaw-app/updates`, with a mirror for legacy `stonerl` Pages installs.
 
 ---
 
@@ -629,7 +823,7 @@ This RC is a large reliability and platform update: menu bar identity/ordering, 
 - Do not persist layouts with an unresolved always-hidden divider (#849).
 - Do not persist notch-overflow ejections as user intent (#790 / #796, thanks @lathe-agent-oa).
 - Skip bulk apply while source PIDs are unresolved (#784 / #785, thanks @lathe-agent-oa).
-- Refuse saved-layout bulk apply while the hidden-section dividers are collapsed / zero-width — same `hiddenSectionHasRoom` gate the save path already uses — so a collapsed reading cannot drag the whole hidden section and then get persisted (#868 / #876, thanks @TheBenMeadows).
+- Refuse saved-layout bulk apply while the hidden-section dividers are collapsed / zero-width, the same `hiddenSectionHasRoom` gate the save path already uses, so a collapsed reading cannot drag the whole hidden section and then get persisted (#868 / #876, thanks @TheBenMeadows).
 - Revalidate hidden-section geometry before the move batch runs so apply does not proceed on a stale collapsed reading (#876).
 - Prefer exact saved identifiers; avoid ambiguous multi-instance divergence matches (#714 / #716, thanks @t4sh).
 - Defer apply/persist on unsettled or cross-display geometry; clear stuck profile flags (#702, #717, #743).
@@ -650,7 +844,7 @@ This RC is a large reliability and platform update: menu bar identity/ordering, 
 - Defer item moves while a menu bar item menu is tracking.
 - Require stable divergence; suppress bulk cursor warps (#705, #723, #736, #750).
 - Stop bulk-apply pointer hijack; release on user input.
-- Keep menu bar move events out of screen corners — stops Hot Corner / Show Desktop false triggers (#625, #766 / #774, thanks @ZeterMordio).
+- Keep menu bar move events out of screen corners, which stops Hot Corner / Show Desktop false triggers (#625, #766 / #774, thanks @ZeterMordio).
 - Recover blocked items before alerting on hidden-section drags (#744).
 - Recover control items after lookup failure.
 - Bail instead of trapping on inverted control-item order.

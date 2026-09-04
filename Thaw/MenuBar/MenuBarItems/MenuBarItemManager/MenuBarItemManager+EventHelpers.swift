@@ -15,6 +15,12 @@ import os.lock
 // MARK: - Event Helpers
 
 extension MenuBarItemManager {
+    enum InputPauseWaitResult {
+        case paused
+        case timedOut
+        case superseded
+    }
+
     /// An error that can occur during menu bar item event operations.
     enum EventError: CustomStringConvertible, LocalizedError {
         /// A generic indication of a failure.
@@ -33,6 +39,9 @@ extension MenuBarItemManager {
         case itemResponseTimeout(MenuBarItem)
         /// A menu bar item's bounds cannot be found.
         case missingItemBounds(MenuBarItem)
+        /// The destination anchor disappeared before the move could use it.
+        /// This is a stale plan, not a failure of the item being moved.
+        case missingDestinationBounds(MenuBarItem)
         /// A menu bar item's menu is tracking (e.g. the Wi-Fi picker or an
         /// input method panel is open) and the move was deferred.
         case menuTrackingActive(MenuBarItem)
@@ -49,6 +58,26 @@ extension MenuBarItemManager {
         /// would drag the item against geometry that has already changed,
         /// which is how a failed batch walks the bar (#900).
         case staleDestination(MenuBarItem)
+        /// The user did not pause input before the caller-specific deadline.
+        /// Trigger moves treat this as a deferral rather than taking the
+        /// cursor away while the user is still interacting with the Mac.
+        case inputPauseTimedOut(MenuBarItem)
+        /// The condition which requested this move changed while the move was
+        /// waiting or retrying. The obsolete drag must stop immediately.
+        case moveSuperseded(MenuBarItem)
+        /// Every release put the item straight back at its starting origin:
+        /// Control Center restored the item's autosaved slot because its
+        /// source app never registered the drop. Observed to hold for
+        /// minutes at a time for one item — every press variant reverted the
+        /// same way — and then clear by itself, so retrying only costs time.
+        case dropReverted(MenuBarItem)
+        /// Another move held the bar for the whole gate wait. Says nothing
+        /// about the item; callers treat it as a deferral.
+        case moveEngineBusy(MenuBarItem)
+        /// A press outlived its deadline and was released by the guard, or
+        /// the move as a whole ran past its deadline. Whatever reply came
+        /// back after that describes a press that was no longer down.
+        case moveTimedOut(MenuBarItem)
 
         var description: String {
             switch self {
@@ -68,6 +97,8 @@ extension MenuBarItemManager {
                 "\(Self.self).itemResponseTimeout(item: \(item.tag))"
             case let .missingItemBounds(item):
                 "\(Self.self).missingItemBounds(item: \(item.tag))"
+            case let .missingDestinationBounds(item):
+                "\(Self.self).missingDestinationBounds(item: \(item.tag))"
             case let .menuTrackingActive(item):
                 "\(Self.self).menuTrackingActive(item: \(item.tag))"
             case let .ownerUnresponsive(item):
@@ -76,6 +107,16 @@ extension MenuBarItemManager {
                 "\(Self.self).eventWindowMismatch(item: \(item.tag))"
             case let .staleDestination(item):
                 "\(Self.self).staleDestination(item: \(item.tag))"
+            case let .inputPauseTimedOut(item):
+                "\(Self.self).inputPauseTimedOut(item: \(item.tag))"
+            case let .moveSuperseded(item):
+                "\(Self.self).moveSuperseded(item: \(item.tag))"
+            case let .dropReverted(item):
+                "\(Self.self).dropReverted(item: \(item.tag))"
+            case let .moveEngineBusy(item):
+                "\(Self.self).moveEngineBusy(item: \(item.tag))"
+            case let .moveTimedOut(item):
+                "\(Self.self).moveTimedOut(item: \(item.tag))"
             }
         }
 
@@ -97,6 +138,8 @@ extension MenuBarItemManager {
                 "\"\(item.displayName)\" took too long to respond"
             case let .missingItemBounds(item):
                 "Missing bounds rectangle for \"\(item.displayName)\""
+            case let .missingDestinationBounds(item):
+                "The destination \"\(item.displayName)\" is no longer available"
             case let .menuTrackingActive(item):
                 "A menu bar item's menu was open while moving \"\(item.displayName)\""
             case let .ownerUnresponsive(item):
@@ -105,14 +148,39 @@ extension MenuBarItemManager {
                 "A move event for \"\(item.displayName)\" was delivered to the wrong window"
             case let .staleDestination(item):
                 "The menu bar rearranged while moving \"\(item.displayName)\""
+            case let .inputPauseTimedOut(item):
+                "Input did not pause before moving \"\(item.displayName)\""
+            case let .moveSuperseded(item):
+                "The requested move for \"\(item.displayName)\" is no longer current"
+            case let .dropReverted(item):
+                "\"\(item.displayName)\" could not be kept in its new position"
+            case let .moveEngineBusy(item):
+                "Another move was still in progress when \"\(item.displayName)\" was to be moved"
+            case let .moveTimedOut(item):
+                "Moving \"\(item.displayName)\" took too long and was stopped"
             }
         }
 
         var recoverySuggestion: String? {
-            if case .itemNotMovable = self {
-                return nil
+            switch self {
+            case .itemNotMovable:
+                nil
+            case let .dropReverted(item):
+                // An app with no bundle identifier — a bare executable such
+                // as a `swift run` build — is keyed by path in Control
+                // Center, which has refused every off-screen drop of such an
+                // item in the field. Say so, or the alert reads as a Thaw
+                // bug the next time around.
+                if let app = item.sourceApplication, app.bundleIdentifier == nil {
+                    "macOS put \"\(item.displayName)\" back after every attempt. Its app has no bundle identifier (it runs as a bare executable), and macOS does not keep such items in a hidden section. Build it as an app bundle to test moving it."
+                } else {
+                    "macOS put \"\(item.displayName)\" back after every attempt. This usually clears on its own within a few minutes; clicking the item, or quitting and reopening its app, resets it sooner. If it keeps happening, please file a bug report."
+                }
+            case .moveEngineBusy:
+                "Wait a moment for the move in progress to finish, then try again."
+            default:
+                "Please try again. If the error persists, please file a bug report."
             }
-            return "Please try again. If the error persists, please file a bug report."
         }
 
         /// How the failure ledger should file this error.
@@ -132,8 +200,9 @@ extension MenuBarItemManager {
             case .ownerUnresponsive, .eventOperationTimeout, .itemResponseTimeout:
                 true
             case .cannotComplete, .invalidEventSource, .missingMouseLocation, .eventCreationFailure,
-                 .itemNotMovable, .missingItemBounds, .menuTrackingActive, .eventWindowMismatch,
-                 .staleDestination:
+                 .itemNotMovable, .missingItemBounds, .missingDestinationBounds, .menuTrackingActive, .eventWindowMismatch,
+                 .staleDestination, .inputPauseTimedOut, .moveSuperseded, .dropReverted,
+                 .moveEngineBusy, .moveTimedOut:
                 false
             }
         }
@@ -152,28 +221,49 @@ extension MenuBarItemManager {
     }
 
     /// Waits asynchronously for the user to pause input.
-    nonisolated func waitForUserToPauseInput() async throws {
+    @discardableResult
+    nonisolated func waitForUserToPauseInput(
+        for requiredPause: Duration? = nil,
+        timeout: Duration? = nil,
+        shouldContinue: (@MainActor () -> Bool)? = nil
+    ) async throws -> InputPauseWaitResult {
         // The pre-move input-pause window is configurable so users hit by repeated cursor
         // "kidnapping" during menu-bar reordering can widen it. Reordering warps the real cursor,
         // and a very short window lets warps slip through the micro-gaps between a user's own mouse
         // moves when a churny app keeps changing its menu-bar items (see #750, #723, #736). The
         // default preserves the previous 50 ms behaviour; override with:
         //   defaults write com.stonerl.Thaw inputPauseThresholdMs -int <milliseconds>
-        let pauseMs = max(
+        let configuredPause = Duration.milliseconds(max(
             0,
             (Defaults.object(forKey: .inputPauseThresholdMs) as? Int) ?? Defaults.DefaultValue.inputPauseThresholdMs
-        )
-        let waitTask = Task {
+        ))
+        let pause = requiredPause ?? configuredPause
+        let startedAt = ContinuousClock.now
+        let waitTask = Task { () -> InputPauseWaitResult in
             while true {
                 try Task.checkCancellation()
-                if hasUserPausedInput(for: .milliseconds(pauseMs)) {
-                    break
+                if let shouldContinue, !(await shouldContinue()) {
+                    return .superseded
+                }
+                if hasUserPausedInput(for: pause) {
+                    return .paused
+                }
+                if let timeout, ContinuousClock.now - startedAt >= timeout {
+                    return .timedOut
                 }
                 try await Task.sleep(for: .milliseconds(50))
             }
         }
         do {
-            try await waitTask.value
+            // `waitTask` is unstructured, so awaiting its value does not carry
+            // the caller's cancellation into it. Without the handler a caller
+            // cancelled while input stays active waits for a `nil` timeout that
+            // never arrives.
+            return try await withTaskCancellationHandler {
+                try await waitTask.value
+            } onCancel: {
+                waitTask.cancel()
+            }
         } catch {
             // Only cancellation reaches here. Named so a log full of bare
             // `cannotComplete` failures (#900) can tell this stage apart.

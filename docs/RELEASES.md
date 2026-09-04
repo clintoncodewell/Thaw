@@ -81,7 +81,7 @@ payloads.
 For the first ~2–3 releases after moving Sparkle hosting to `thaw-app/updates`,
 ZIP and deltas are uploaded to **both** repos. The appcast keeps a single
 enclosure URL per file, pointing at `updates`. The Thaw copies are a safety net
-only — remove the Thaw Sparkle attachments once a couple of updates-hosted
+only. Remove the Thaw Sparkle attachments once a couple of updates-hosted
 releases have shipped cleanly.
 
 The release is drafted in step 5 and published in step 7 so that a failed
@@ -95,7 +95,31 @@ Shared Sparkle action: [`thaw-app/org-ci` `sparkle-release`](https://github.com/
 
 Required **release-environment** secret on Thaw: `UPDATES_GITHUB_TOKEN`
 (`contents: write` on `thaw-app/updates`). The updates softprops step must
-pass it as the action `token` input — softprops v3 ignores `env: GITHUB_TOKEN`.
+pass it as the action `token` input, because softprops v3 ignores `env: GITHUB_TOKEN`.
+
+## Dispatching a release
+
+The workflow is `workflow_dispatch` only, and its **tag** input is free text:
+Actions `choice` inputs are a static list in the YAML, so they cannot be filled
+from the tags that exist. [`scripts/release.sh`](../scripts/release.sh) supplies
+that list locally instead. It reads the remote tags, filters them to the shape
+the workflow accepts, lets you pick one, asks for the other inputs, and
+dispatches the run.
+
+```bash
+scripts/release.sh          # override the target with REPO=owner/repo
+```
+
+Anything the script does can be done by hand from the Actions tab or with
+`gh workflow run release.yml -f tag=2.1.0 ...`; the script only removes the
+chance of dispatching a tag that does not exist.
+
+### Release discussions
+
+**Discussion category** opens a linked discussion in that category. It defaults
+to `none` and only takes effect when **Publish release** is checked, because
+GitHub creates the discussion on the draft-to-published transition, which is
+step 7. Setting it on the draft in step 5 would do nothing.
 
 ## Dry runs
 
@@ -120,7 +144,7 @@ The run's job summary then reports:
 
 The DMG checksum, SBOM (+ checksum), and generated appcast are attached to the
 run as a `dry-run-<tag>` artifact for local inspection. The DMG itself is not
-attached — it is large and is rebuilt by the real release run.
+attached, because it is large and is rebuilt by the real release run.
 
 Dry runs use a separate concurrency group, so they never queue behind or block a
 real release.
@@ -152,7 +176,7 @@ return value keeps stable releases away from a subscriber.
 Alpha is only selectable on the macOS the rewrite targets. The threshold is
 `MacOSCompatibilityWarning.firstUnsupportedMajorVersion`, shared with the
 startup warning whose alert tells the user that support for that macOS arrives
-through this channel — so the release that raises the warning is the release
+through this channel, so the release that raises the warning is the release
 that reveals the channel. On earlier systems alpha is absent from the picker,
 and a stored alpha selection is not honored, which keeps a user who moves back
 to a supported macOS from sitting on a feed that will never offer them
@@ -172,14 +196,14 @@ in parallel rather than one containing the other.
 
 Cross-version safety does not rely on any of that. `generate_appcast` derives
 `sparkle:minimumSystemVersion` from each build's deployment target, so the 3.x
-items carry `27.0` and Sparkle skips them on macOS 26 — including later, when
+items carry `27.0` and Sparkle skips them on macOS 26, including later, when
 3.0 goes final and drops its channel tag to become the default.
 
 Promotion between stable and beta stays cheap, because they share a feed: to
 move a build from beta to stable, drop its `sparkle:channel` rather than
 publishing a second item for the same version. Beta subscribers already have
 that build and are offered nothing; stable subscribers pick it up. Two items
-sharing a version and differing only by channel is the case to avoid — it also
+sharing a version and differing only by channel is the case to avoid. It also
 reaches the mirrored legacy appcast.
 
 Switching *away* from alpha does not roll a user back. The alpha app's version
@@ -202,5 +226,5 @@ Only **new** items point at `thaw-app/updates` releases.
 
 ## Related
 
-- [Verifying releases](VERIFYING_RELEASES.md) — signatures, public key, how to check a build
-- [Assurance case](ASSURANCE_CASE.md) — update authenticity claims
+- [Verifying releases](VERIFYING_RELEASES.md): signatures, public key, how to check a build
+- [Assurance case](ASSURANCE_CASE.md): update authenticity claims

@@ -76,17 +76,16 @@ nonisolated enum ScreenCapture {
     // MARK: Capture Window(s)
 
     // NOTE: The synchronous captureWindows / captureWindow below intentionally
-    // route through the deprecated SkyLight private API
-    // (SLWindowListCreateImageFromArray) for the menu-bar refresh path. On
-    // macOS 26 SCShareableContent.excludingDesktopWindows(_: onScreenWindowsOnly:
-    // false) *does* enumerate offscreen menu-bar overflow items, but SCK
-    // capture rejects them: SCContentFilter(display: including:) returns error
-    // -3812 (sourceRect outside display bounds) and SCContentFilter(
-    // desktopIndependentWindow:) returns -3811 (stream start failure). SkyLight
-    // is the only public API on macOS 26 that can capture status-item windows
-    // positioned at large negative x. It leaks one CFMutableDictionary per
-    // call inside SLSWindowListCreateImageFromArrayProxying; that's a system
-    // bug awaiting an Apple fix.
+    // route through SkyLight's private API (SLWindowListCreateImageFromArray)
+    // for offscreen menu-bar items. On macOS 26 SCShareableContent enumerates
+    // those windows, but SCK capture rejects them: SCContentFilter(display:
+    // including:) returns error -3812 (sourceRect outside display bounds) and
+    // SCContentFilter(desktopIndependentWindow:) returns -3811 (stream start
+    // failure). SkyLight is the only API on macOS 26 that can capture status-item
+    // windows positioned at large negative x. It leaks one CFMutableDictionary
+    // per call inside SLSWindowListCreateImageFromArrayProxying; live Hidden
+    // refresh therefore runs that path in MenuBarCaptureService, which exits
+    // after a capture budget so the leak can be reclaimed.
     //
     // The async captureWindowsAsync / captureWindowAsync below route through
     // ScreenCaptureKit and are leak-free. Use those for any capture whose
@@ -142,7 +141,13 @@ nonisolated enum ScreenCapture {
     ///
     /// - Parameters:
     ///   - windowID: The identifier of the window to exclude (capture everything below it).
-    ///   - screenBounds: The bounds to capture, specified in screen coordinates.
+    ///   - screenBounds: The region to capture, in Core Graphics global
+    ///     display coordinates — top-left origin, y increasing downward, the
+    ///     convention `CGDisplayBounds(_:)` returns and
+    ///     `SCStreamConfiguration.sourceRect` expects. An AppKit rect taken
+    ///     from `NSScreen.frame` uses the opposite vertical origin; passing
+    ///     one here captures the band mirrored to the other edge of the
+    ///     display rather than failing (#1033).
     ///   - displayID: The display to capture from.
     /// - Returns: The captured image, or nil if capture failed.
     static func captureScreenBelowWindow(
@@ -207,6 +212,16 @@ nonisolated enum ScreenCapture {
         configuration.width = Int((screenBounds.width * scale).rounded())
         configuration.height = Int((screenBounds.height * scale).rounded())
         configuration.sourceRect = localSourceRect
+
+        // The captured pixel dimensions come out the same whichever vertical
+        // origin the caller used, so a mirrored band still looks healthy in
+        // every other line this function logs. Record the rects themselves so
+        // a misplaced capture is legible from a log alone (#1033).
+        diagLog.debug(
+            "captureScreenBelowWindow: screenBounds=\(screenBounds.debugDescription) "
+                + "displayFrame=\(displayFrame.debugDescription) "
+                + "sourceRect=\(localSourceRect.debugDescription)"
+        )
 
         // Create stream and capture frame
         // Note: Caller owns the stream and is responsible for stopCapture().

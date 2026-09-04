@@ -815,20 +815,23 @@ final class ControlItem {
         }
         let menuBarManager = appState.menuBarManager
 
-        // Suppress phantom clicks delivered to the status item button while
-        // no menu bar items are rendered on-screen for the active space. This
-        // catches fast top-of-screen clicks during the menu bar reveal
-        // sequence under a fullscreen app, which would otherwise expand the
-        // hidden section offscreen. NSApp.currentSystemPresentationOptions is
-        // per-app and does not reflect another app's fullscreen state, so the
-        // items-list signal is used directly.
-        let screenForCheck = window?.screen ?? NSScreen.main
-        if let screen = screenForCheck, !screen.isSystemMenuBarVisible() {
-            return
-        }
-
         switch event.type {
         case .leftMouseDown:
+            // Suppress phantom left clicks delivered to the status item
+            // button while no menu bar items are rendered on-screen for the
+            // active space. This catches fast top-of-screen clicks during
+            // the menu bar reveal sequence under a fullscreen app, which
+            // would otherwise expand the hidden section offscreen.
+            // NSApp.currentSystemPresentationOptions is per-app and does
+            // not reflect another app's fullscreen state, so the items-list
+            // signal is used directly. Scoped to left clicks so the
+            // right-click menu below keeps working when the menu bar
+            // transiently has no item windows on the active space (#1012).
+            let screenForCheck = window?.screen ?? NSScreen.main
+            if let screen = screenForCheck, !screen.isSystemMenuBarVisible() {
+                return
+            }
+
             // Capture modifier flags from the event to ensure we have the state
             // at the time of the click, not when the Task executes.
             let modifierFlags = event.modifierFlags
@@ -885,6 +888,10 @@ final class ControlItem {
         }
 
         let menu = NSMenu(title: Bundle.main.displayName)
+        // Each item's `isEnabled` is the authority here. Automatic validation
+        // would re-enable "All Trigger Features Off" simply because `self`
+        // responds to its action.
+        menu.autoenablesItems = false
 
         let settingsItem = NSMenuItem(
             title: String(localized: "\(Constants.displayName) Settings…"),
@@ -914,6 +921,23 @@ final class ControlItem {
         menu.addItem(searchItem)
 
         menu.addItem(.separator())
+
+        if appState.settings.triggers.featureFlags.showsAllOffInMenuBarMenu {
+            let allTriggerFeaturesOffItem = NSMenuItem(
+                title: String(localized: "All Trigger Features Off"),
+                action: #selector(disableAllTriggerFeatureFlags),
+                keyEquivalent: ""
+            )
+            allTriggerFeaturesOffItem.image = NSImage(
+                systemSymbolName: "power",
+                accessibilityDescription: "All Trigger Features Off"
+            )
+            allTriggerFeaturesOffItem.target = self
+            allTriggerFeaturesOffItem.isEnabled = appState.settings.triggers.featureFlags.hasEnabledFlags
+            menu.addItem(allTriggerFeaturesOffItem)
+
+            menu.addItem(.separator())
+        }
 
         // Add items to toggle the hidden and always-hidden sections.
         for name: MenuBarSection.Name in [.hidden, .alwaysHidden] {
@@ -1056,6 +1080,11 @@ final class ControlItem {
             return
         }
         section.toggle()
+    }
+
+    /// Disables every trigger feature flag.
+    @objc private func disableAllTriggerFeatureFlags() {
+        appState?.settings.triggers.featureFlags.disableAll()
     }
 
     /// Opens the menu bar search panel.

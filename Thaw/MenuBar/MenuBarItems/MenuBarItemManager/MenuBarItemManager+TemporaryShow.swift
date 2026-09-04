@@ -654,16 +654,17 @@ extension MenuBarItemManager {
         let preMoveOrigin = Bridging.getWindowBounds(for: item.windowID)?.origin
 
         do {
-            if fastPath {
-                // Two-attempt move on the fast path. The first attempt almost always
-                // repositions the item correctly; the second is a cheap safety net for
-                // the rare case where the event cycle is dropped under CPU load.
-                // Keeping retries at 2 (vs. the default 8) avoids the visible jitter
-                // from a long retry loop while still tolerating one bad cycle.
-                try await move(item: item, to: moveDestination, on: resolvedDisplayID, skipInputPause: true, maxMoveAttempts: 2)
-            } else {
-                try await move(item: item, to: moveDestination, on: resolvedDisplayID, skipInputPause: true)
-            }
+            // The fast path used to cap this at 2 attempts to keep a failing
+            // retry loop from being visible as jitter. #1035 is what that
+            // costs: the drop point was the chevron's own edge, AppKit was
+            // free to place the item on either side of it, and two attempts
+            // is one wrong guess away from giving up — which is exactly the
+            // regression the reporter bisected to 2.0.0-beta.2, where the
+            // cap was introduced. 1.2.0 gave this move the full budget and
+            // worked. The bias in ``MoveDestination/targetPoint(in:on:)``
+            // should make the first attempt land; the budget is the net
+            // under it, and it only costs time on the attempts that run.
+            try await move(item: item, to: moveDestination, on: resolvedDisplayID, skipInputPause: true)
         } catch {
             MenuBarItemManager.diagLog.error("Error showing item: \(error)")
 

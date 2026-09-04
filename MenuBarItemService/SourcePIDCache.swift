@@ -374,11 +374,15 @@ actor SourcePIDCache {
                     // is what keeps the first scan of a session off the ~155
                     // of ~170 applications that have never had an extras
                     // menu bar (#956).
-                    let seed = app.bundleIdentifier.flatMap { bundleID in
-                        ExtrasMenuBarProbeMemory.seed(
-                            forRememberedMisses: remembered[bundleID]
-                        )
+                    // Written as a lookup rather than a `flatMap` because
+                    // this line is already two closures deep, and `seed`
+                    // answers nil for a nil count on its own.
+                    let rememberedMisses: Int? = if let bundleID = app.bundleIdentifier {
+                        remembered[bundleID]
+                    } else {
+                        nil
                     }
+                    let seed = ExtrasMenuBarProbeMemory.seed(forRememberedMisses: rememberedMisses)
                     result.apps.append(CachedApplication(app, seed: seed))
                 }
 
