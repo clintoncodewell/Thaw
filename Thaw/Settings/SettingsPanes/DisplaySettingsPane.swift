@@ -145,7 +145,7 @@ struct DisplaySettingsPane: View {
             }
         }
 
-        if selected.hasNotch || !selected.isConnected {
+        if selected.hasNotch || !selected.isConnected || hasCustomConfiguration(selected) {
             displayHeader(for: selected)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
@@ -153,9 +153,28 @@ struct DisplaySettingsPane: View {
         displayRow(for: selected)
     }
 
+    /// Whether the display has its own stored configuration, which takes
+    /// precedence over the global template (#1045): without this marker the
+    /// global toggles look broken, because editing the template does nothing
+    /// for displays that have custom settings.
+    private func hasCustomConfiguration(_ display: DisplaySettingsManager.DisplayInfo) -> Bool {
+        displaySettings.configurationOverride(forUUID: display.id) != nil
+    }
+
     private func displayHeader(for display: DisplaySettingsManager.DisplayInfo) -> some View {
         HStack(spacing: 6) {
             Text(display.name)
+            if hasCustomConfiguration(display) {
+                Text("Custom")
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .background(.tint.opacity(0.15))
+                    .clipShape(Capsule())
+                    .foregroundStyle(.tint)
+                    .help(Text(
+                        "This display has its own settings, which take precedence over the global template above."
+                    ))
+            }
             if display.hasNotch {
                 Text("Notch")
                     .padding(.horizontal, 6)
@@ -248,6 +267,10 @@ struct DisplaySettingsPane: View {
         let savedOffset = displaySettings.configuration(forUUID: display.id).itemSpacingOffset
         let draft = draftSpacing[display.id] ?? CGFloat(savedOffset)
         let canApply = draft != CGFloat(savedOffset)
+        // macOS keeps one spacing for the whole system, and it follows the
+        // display that hosts the menu bar: writing another display's value
+        // would either do nothing or silently restyle every display (#961).
+        let editsActiveDisplay = displaySettings.activeMenuBarDisplayUUID == display.id
 
         let sliderBinding = Binding<CGFloat>(
             get: { draftSpacing[display.id] ?? CGFloat(savedOffset) },
@@ -268,13 +291,14 @@ struct DisplaySettingsPane: View {
                 in: -16 ... 16,
                 step: 2
             )
+            .disabled(!editsActiveDisplay)
         } label: {
             LabeledContent {
                 Button("Apply") {
                     requestSpacingApply(for: display, offset: Double(draft))
                 }
                 .help(Text("Apply the spacing for this display"))
-                .disabled(!canApply)
+                .disabled(!canApply || !editsActiveDisplay)
 
                 Button {
                     requestSpacingApply(for: display, offset: 0)
@@ -284,13 +308,22 @@ struct DisplaySettingsPane: View {
                 .buttonStyle(.borderless)
                 .help(Text("Reset to the default spacing"))
                 .disabled(savedOffset == 0 && draft == 0)
+                .disabled(!editsActiveDisplay)
             } label: {
                 Text("Menu bar item spacing")
             }
         }
-        .annotation(
-            "Apply briefly relaunches apps with menu bar items so they pick up the new spacing. Setting takes effect when this display is the active menu bar display."
-        )
+        .annotation {
+            if editsActiveDisplay {
+                Text(
+                    "Apply briefly relaunches apps with menu bar items so they pick up the new spacing. macOS keeps one spacing for the whole system; it follows the display that hosts the menu bar."
+                )
+            } else {
+                Text(
+                    "macOS keeps one item spacing for the whole system, taken from the display that currently hosts the menu bar. This display's saved value applies while it hosts the menu bar; make it the active menu bar display to change it here."
+                )
+            }
+        }
         .onChange(of: savedOffset) { _, newValue in
             // Sync draft when the saved value changes externally
             // (profile load, URI scheme, etc.).
@@ -387,10 +420,30 @@ struct DisplaySettingsPane: View {
         }
     }
 
+    /// Revalidates a staged spacing request before acting on it. The alert is
+    /// asynchronous: the menu bar can move to another display while it is
+    /// open, and committing then would persist the old display's value while
+    /// the manager applies spacing from the new host. The request is cancelled
+    /// instead, and the slider snaps back to the saved value.
+    private func revalidatePendingSpacing(_ pending: PendingSpacingApply) -> Bool {
+        guard displaySettings.activeMenuBarDisplayUUID == pending.displayID else {
+            draftSpacing[pending.displayID] = CGFloat(
+                displaySettings.configuration(forUUID: pending.displayID).itemSpacingOffset
+            )
+            errorMessage = String(
+                localized: "The menu bar moved to another display while the confirmation was open. The spacing change was cancelled."
+            )
+            showingError = true
+            return false
+        }
+        return true
+    }
+
     @ViewBuilder
     private func spacingConfirmationButtons(for pending: PendingSpacingApply) -> some View {
         if pending.activeProfileID != nil {
             Button(String(localized: "Update Active Profile"), role: .destructive) {
+                guard revalidatePendingSpacing(pending) else { return }
                 if let id = pending.activeProfileID {
                     // updateProfile(scope:.configurationOnly) captures live
                     // state, so the in-memory configuration must hold the new
@@ -418,6 +471,7 @@ struct DisplaySettingsPane: View {
                 }
             }
             Button(String(localized: "Update All Profiles"), role: .destructive) {
+                guard revalidatePendingSpacing(pending) else { return }
                 let previousOffset = displaySettings
                     .configuration(forUUID: pending.displayID)
                     .itemSpacingOffset
@@ -440,6 +494,7 @@ struct DisplaySettingsPane: View {
             }
         } else {
             Button(String(localized: "Apply"), role: .destructive) {
+                guard revalidatePendingSpacing(pending) else { return }
                 commitSpacing(displayID: pending.displayID, offset: pending.offset)
             }
             Button(String(localized: "Cancel"), role: .cancel) {
@@ -787,7 +842,14 @@ private struct IceBarConfigurationControls<ExtraControls: View>: View {
             }
 
         Toggle("Use \(Constants.displayName) Bar", isOn: $useIceBar)
-            .annotation("Show hidden menu bar items in a separate bar below the menu bar.")
+            .annotation {
+                switch context {
+                case .display:
+                    Text("Show hidden menu bar items in a separate bar below the menu bar.")
+                case .globalTemplate:
+                    Text("Show hidden menu bar items in a separate bar below the menu bar. This edits the global template, which displays with no custom settings follow; apply it with \"Apply to All Displays\" below, since displays with custom settings keep theirs until then.")
+                }
+            }
 
         Toggle("Always-hidden items only", isOn: $useThawBarForAlwaysHidden)
             .disabled(useIceBar)
