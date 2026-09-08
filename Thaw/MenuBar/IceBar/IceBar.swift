@@ -483,11 +483,10 @@ private struct IceBarContentView: View {
     }
 
     private var clipShape: some InsettableShape {
-        if appearance.hasRoundedShape {
-            RoundedRectangle(cornerRadius: contentHeight / 2, style: .circular)
-        } else {
-            RoundedRectangle(cornerRadius: contentHeight / 4, style: .continuous)
-        }
+        ThawBarBorderShape.thawBarClip(
+            height: contentHeight,
+            hasRoundedShape: appearance.hasRoundedShape
+        )
     }
 
     var body: some View {
@@ -515,10 +514,13 @@ private struct IceBarContentView: View {
             .clipShape(clipShape)
 
             if appearance.hasBorder {
-                clipShape
-                    .inset(by: appearance.borderWidth / 2)
-                    .stroke(lineWidth: appearance.borderWidth)
-                    .foregroundStyle(Color(cgColor: appearance.borderColor))
+                ThawBarBorderShape.thawBarBorder(
+                    height: contentHeight,
+                    hasRoundedShape: appearance.hasRoundedShape,
+                    borderWidth: appearance.borderWidth
+                )
+                .stroke(lineWidth: appearance.borderWidth)
+                .foregroundStyle(Color(cgColor: appearance.borderColor))
             }
         }
         .padding(5)
