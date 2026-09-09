@@ -7,11 +7,11 @@ The `release.yml` workflow reads the section matching the release tag
 (`## [tag]`) and uses it as the release notes for both the GitHub Release
 and the Sparkle appcast, unless overridden with the `release_notes` input.
 
-## [3.0.0-alpha.1] - 2026-09-03
+## [3.0.0-alpha.1] - 2026-09-09
 
-Thaw 3 is Thaw rebuilt and redesigned for macOS 27. A new engine on the platform's own model, a new settings window, new glass everywhere, and Swift 6.4 underneath. It is de-iced: the code and names inherited from Ice are gone, and what is left is more Thaw than anything before it.
+Thaw 3 is Thaw rebuilt and redesigned for macOS 27. A new engine on the platform's own model, a new settings window, new glass everywhere, and Swift 6.4 underneath.
 
-Hey, we have a Discord! Come say hi: [discord.gg/KDfWjWDnR4](https://discord.gg/KDfWjWDnR4).
+Hey, we have a Discord! Come say hi: [discord.gg/KDfWjWDnR4](https://discord.gg/KDfWjWDnR4). Something broke? [Open an issue](https://github.com/thaw-app/Thaw/issues/new/choose). Something missing? [Tell us here](https://github.com/thaw-app/Thaw/discussions).
 
 <a href="https://www.producthunt.com/products/thaw-2?embed=true&amp;utm_source=badge-featured&amp;utm_medium=badge&amp;utm_campaign=badge-thaw-3" target="_blank" rel="noopener noreferrer"><img alt="Thaw - The only app that owns your whole menu bar, in and out | Product Hunt" width="250" height="54" src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1239794&amp;theme=light&amp;t=1788423441056"></a>
 
@@ -21,7 +21,7 @@ Thank you to the more than 80 people who ran the preview builds, sent logs, and 
 
 ### Upgrade from 2.x
 
-1. macOS 27 is required. There is no 2.x compatibility layer.
+1. macOS 27 Beta 8+ is required. There is no 2.x compatibility layer.
 2. Update channel is Nightly for now.
 3. The Ice-era settings migrations have been removed. They could never run against the new defaults domain, so nothing is lost by dropping them.
 
@@ -29,16 +29,18 @@ Thank you to the more than 80 people who ran the preview builds, sent logs, and 
 
 ### Not here yet
 
-Three things from the 2.1 preview line are still on their way to macOS 27.
+Three things from the 2.1 preview line are still on their way to macOS 27. Another one will be available on a future update.
 
 - **Scripts.** Script-driven bar modules are being tested by macOS 26 users on the 2.1.0 beta and will be added in a later 3.0 build. The Scripts pane is here as a preview of where they will live.
+- **Widgets.** The Widgets pane is a placeholder so the destination is discoverable; it holds no settings yet.
 - **Item triggers.** The full condition engine from 2.1, where an item moves on battery level, the frontmost app, a network, a Focus, and the rest, is not ported yet. What is here is the reveal-on-icon-change rule.
-- **Rotating diagnostic logs.**
+- **Rotating diagnostic logs.** The system for keeping and cycling through diagnostic logs is not yet implemented; it will appear in a future 3.0 build.
 
 ---
 
 ### Menu bar
 
+- **Manual arrangement.** Thaw never moves an item. You arrange the bar yourself with ⌘-drag, Thaw records what it sees and confines itself to hiding. Classic menu bar manager experience.
 - **Zen mode** seals the whole bar with one hotkey. Reveals and hover tricks stand down until you toggle it back.
 - **Item groups** bundle items so they move as one, including across sections. Same-app clusters group on their own and dissolve on request.
 - **Spacer items** create gaps on purpose: pick a width and drag them like any item.
@@ -73,7 +75,9 @@ Three things from the 2.1 preview line are still on their way to macOS 27.
 - **Search in the toolbar.** Results take over the detail column with a result count and an empty state that names the query.
 - **What's New and Acknowledgements as reading pages.** A path of releases along the top, one large title with the release date under it, and the notes at reading size on the app's own glass.
 - **Tools pane** gathers the troubleshooting helpers in one place, with the destructive ones last.
-- **Onboarding** restyled in the same language as the rest of the app.
+- **Onboarding** restyled in the same language as the rest of the app. Welcome to the new Thaw, arrange the real bar with a Tidy for me option, then ask for access. Denying Accessibility no longer strands you, Screen Recording is asked for once and takes no for an answer, a first-run hint teaches hiding in place, and onboarding can be replayed from Settings.
+- **Accessibility.** Reduce Transparency, Increase Contrast, and Reduce Motion are honoured on every glass surface. Icon-only buttons have names, the sidebar rail is reachable by keyboard, selection is marked without relying on colour, and type sizes follow the Dynamic Type scale.
+- **Layout backups can be restored inside Thaw**, from the Tools pane.
 
 ### Privacy
 
@@ -85,6 +89,7 @@ Three things from the 2.1 preview line are still on their way to macOS 27.
 
 - **Per-Space profiles.** Bind a profile to a Space the way it binds to a display. Precedence is Focus Filter, then Space, then display.
 - **Per-Space presentation.** Show or hide the bar per Space, and see which Space each rule belongs to.
+- **A profile shows what applying it would change** before you apply it.
 
 ### Automation, Shortcuts, and the command line
 
@@ -104,9 +109,15 @@ Three things from the 2.1 preview line are still on their way to macOS 27.
 ### Under the hood
 
 - **Rebuilt from the ground up on a new architecture.** Thaw 3 is a new codebase, not a patched fork. The item manager cluster, AppState, MenuBarManager, the image cache, the layout bar, ControlItem, appearance, and search were written anew; the Ice-branded identifier vocabulary is Thaw's own, with persisted keys pinned so nothing you saved is lost; and the migrations that could never run are gone. The rewrite paid down years of technical debt at the same time: dead machinery and one-case abstractions are deleted, the engine sits behind explicit seams that can be tested in isolation, and the hot paths were rebuilt with performance in mind.
+- **Reorders are planned as a diff.** The engine computes the smallest set of moves against the live order instead of walking the bar pair by pair. The seconds of silence before a synthetic drag starts are gone, the native overflow chevron is treated as menu bar chrome rather than an item, and on a notched display concealed items are revealed for capture one at a time.
 - **Swift 6.4 and strict concurrency.** The `@Observable` migration is complete, with zero `ObservableObject` conformances left. Detached tasks moved onto `@concurrent` callees, workspace notifications are debounced through swift-async-algorithms, and the engine reads its settings through a configuration protocol instead of reaching into AppState.
 - **Every ScreenCaptureKit call has a watchdog**, so a capture that never answers cannot hang the refresh loop. An XPC capture helper is built in and off by default until it has been verified on macOS 27.
 - **Less idle work.** The polls that used to ask the window server questions whose answers had not changed now latch, memoize, or rate-limit, and the glyph cache publishes only when a glyph actually changed.
+
+### Known issues
+
+- On a notched display, when the frontmost app's menu is long enough to wrap past the notch, Thaw can repeatedly try to move items and briefly take the cursor. A fix is coming in alpha 2.
+- iStats menu bar items may be hidden when another item gets hidden. We are working with the iStats developers to resolve this issue.
 
 ## [2.1.0-beta.2]
 
