@@ -7,6 +7,40 @@ The `release.yml` workflow reads the section matching the release tag
 (`## [tag]`) and uses it as the release notes for both the GitHub Release
 and the Sparkle appcast, unless overridden with the `release_notes` input.
 
+## [3.0.0-alpha.2] - 2026-09-10
+
+We reenable the cursor free method, reorders now land the moment you drop an item, and the cursor stays yours. Plus, a fix for layouts saved on macOS 26 being discarded on 27.
+
+Hey, we have a Discord! Come say hi: [discord.gg/KDfWjWDnR4](https://discord.gg/KDfWjWDnR4). Something broke? [Open an issue](https://github.com/thaw-app/Thaw/issues/new/choose). Something missing? [Tell us here](https://github.com/thaw-app/Thaw/discussions).
+
+<a href="https://www.producthunt.com/products/thaw-2?embed=true&amp;utm_source=badge-featured&amp;utm_medium=badge&amp;utm_campaign=badge-thaw-3" target="_blank" rel="noopener noreferrer"><img alt="Thaw - The only app that owns your whole menu bar, in and out | Product Hunt" width="250" height="54" src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1239794&amp;theme=light&amp;t=1788423441056"></a>
+
+Thanks to @lathe-agent-oa (@TheBenMeadows) for [#1085](https://github.com/thaw-app/Thaw/issues/1085), the report that showed how layouts saved on macOS 26 were being discarded on 27, complete with the identifier pairs that made the fix possible.
+
+---
+
+### Upgrade from 3.0.0-alpha.1
+
+1. Thaw asks for one new permission on launch: access to the menu bar layout table. A file panel opens on that one file. Select it, press Grant Access, done. Full Disk Access still works if you prefer it.
+2. Nothing else to do. Profiles, saved layouts, and hotkeys carry over untouched.
+3. Layouts saved on macOS 26 come back. Items that changed identity with the upgrade are matched to their saved entries again.
+
+---
+
+### Menu bar
+
+- **Reorders write the layout table.** macOS 27 keeps every item's position in one protected file. With access to it, a move is a write and the bar re-sorts on its own in well under a second. The synthetic drag that hid the cursor and held your mouse for a second and a half is off.
+- **Menu bar layout access.** The permission behind that write. You select the file once. The grant survives relaunches, app updates, and system updates. It is required, so onboarding asks for it next to Accessibility.
+
+### Fixes
+
+- When a saved layout does not apply, the log now says whether the order already matched or whether the saved entries no longer resolve to anything on the bar.
+
+### Known issues
+
+- iStats menu bar items may be hidden when another item gets hidden. We are working with the iStats developers to resolve this issue.
+- An app with several menu bar items that renamed them in the macOS 27 upgrade may need those items reassigned once by hand.
+
 ## [3.0.0-alpha.1] - 2026-09-09
 
 Thaw 3 is Thaw rebuilt and redesigned for macOS 27. A new engine on the platform's own model, a new settings window, new glass everywhere, and Swift 6.4 underneath.
@@ -118,6 +152,62 @@ Three things from the 2.1 preview line are still on their way to macOS 27. Anoth
 
 - On a notched display, when the frontmost app's menu is long enough to wrap past the notch, Thaw can repeatedly try to move items and briefly take the cursor. A fix is coming in alpha 2.
 - iStats menu bar items may be hidden when another item gets hidden. We are working with the iStats developers to resolve this issue.
+
+## [2.1.0-beta.3]
+
+Hey, we have a Discord! Come say hi: [discord.gg/KDfWjWDnR4](https://discord.gg/KDfWjWDnR4).
+
+Please report issues at [github.com/thaw-app/Thaw/issues](https://github.com/thaw-app/Thaw/issues).
+
+<a href="https://www.producthunt.com/products/thaw-2?embed=true&amp;utm_source=badge-featured&amp;utm_medium=badge&amp;utm_campaign=badge-thaw-3" target="_blank" rel="noopener noreferrer"><img alt="Thaw - The only app that owns your whole menu bar, in and out | Product Hunt" width="250" height="54" src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1239794&amp;theme=light&amp;t=1788423441056"></a>
+
+Thanks to @wiper2 for the spacing report and the crash logs behind it, @lucifercraig12345-create for finding both the search freeze and the spacer crash, @Chamiu for the `dropReverted` report, and @ppocass for tracing a menu bar that never rendered down to the window number itself.
+
+Five reported bugs, four more found while fixing them, and three changes to how item images are captured. The one worth reading about is the first. The #720 fix in beta.2 taught the spacing relaunch wave to restart system LaunchAgents through `launchctl` instead of killing them, which rescued Spotlight. It did not stop the wave from terminating system binaries that no LaunchAgent claims, and those are just as unrestartable.
+
+---
+
+### Upgrade from 2.1.0-beta.2
+
+1. Update in place through Sparkle on the beta channel. Stable stays on 2.0.1 until 2.1.0 leaves beta.
+2. No schema or `defaults` changes. Profiles, saved layouts, and hotkeys carry over untouched.
+3. Spacing changes now leave some items alone. A menu bar item whose owner Thaw declines to restart keeps its previous spacing until that app next starts on its own, so the bar can look uneven for a while after a spacing change. `FREQUENT_ISSUES.md` has a new section listing what Thaw will and will not quit.
+4. An app that refuses a quit request is no longer force-terminated. If an app is holding an unsaved document, it stays running and keeps its old spacing rather than losing the document.
+
+---
+
+### Main fixes
+
+1. Changing menu bar spacing no longer kills system services that cannot be brought back (#1070, thanks @wiper2). macOS reads `NSStatusItemSpacing` once, when a status item's owner starts, so applying a spacing change means restarting the apps that own menu bar items. The wave did that without asking whether each one could be restarted. Beta.2 fixed the case where an indexed LaunchAgent was involved, but a launch-constrained CoreServices binary that no agent claims got terminated like any ordinary app, and the kernel then killed both the relaunch and the fallback launch at exec: the same CODESIGNING termination and "Launch Constraint Violation" as #720, from the same cause, because Thaw is not a launching parent those binaries accept. Terminating them is also a *successful* exit, so launchd has no reason to bring them back on its own. Spotlight and the input menu stayed dead until the next reboot, and `Cmd + Space` with them. Spacing is re-applied whenever a display connects or disconnects, which is why the reporter hit this on every sleep and wake. Every candidate is now triaged before anything is signalled. An item owned by an indexed LaunchAgent is restarted with `launchctl kickstart -k`, as before. A binary under `/System`, `/usr`, `/bin`, `/sbin`, or `/Library/Apple` with no label to kickstart is left running, and so is a process with no launchable bundle, such as an XPC helper or an extension host. Ordinary apps are quit and launched back the way they always were. Anything the wave leaves running is also dropped from the set of items it waits to see reattach, so the settling period no longer stalls on items that never detached.
+2. Typing in the settings search field no longer freezes the app (#1055, thanks @lucifercraig12345-create). Every row in `SectionedList` carried a `GeometryReader` that reported its frame back up the view tree, so a list long enough to matter re-measured itself on every keystroke, and the reporter found it by typing and scrolling at the same time. The per-row frame tracking is gone, and scroll-to-selection uses a center anchor instead of measured frames.
+3. Adding a spacer to a visible section no longer crashes (#1056, thanks @lucifercraig12345-create). `StatusItemStorage` asked AppKit for a status item of zero length. AppKit can answer that with a synthetic window whose `windowNumber` has no representable `CGWindowID`, and the crash came from resizing that window. The status item now starts one point wide, and the first `updateStatusItem` pass applies the intended control item length immediately after.
+4. A move started just after an app updates no longer reverts (#1058, thanks @Chamiu). `moveEndpointDisposition` read the `isOnScreen` bit and trusted it, without looking at where the item actually sat in the parked lane, so a move that had really landed was reported as `dropReverted`. The geometry is checked first now, and the retry goes through `sourceAnchoredTeleport`, which presses on the source window and releases at the destination rather than replaying the original gesture.
+5. A menu bar that never renders because of a bad window number is caught rather than acted on (#1060, thanks @ppocass). `CGWindowID(exactly:)` accepted any value that happened to fit, so a synthetic or negative window number became an ID that looked entirely plausible downstream. `windowServerID(windowNumber:)` rejects zero, negative, and non-representable values instead of converting them.
+
+---
+
+### Layout work stays out of your way
+
+Three separate ways an automatic batch could work against whoever was using the mouse at the time.
+
+1. Bulk layout work has one owner. An explicit profile apply, a background re-sort, and a saved-order restore could all run at once and write over each other. Each claims a lease ranked by authority now: a profile you selected supersedes background work and never the reverse, and a superseded batch stops at its next move instead of finishing on top of the newer one.
+2. Automatic batches wait for a pause in physical input. They used to move items out from under a pointer that was still in use. A batch checks for a lull before it starts, checks again between moves, and defers the rest when input resumes, leaving your arrangement where you put it.
+3. The cursor stays where you left it. Cursor restoration ran at the end of every batch, warping the pointer back to wherever that batch had started even if you had moved the mouse in the meantime. It now runs only when the HID timestamps show no physical pointer input since the operation took ownership.
+
+---
+
+### More fixes
+
+1. Clicking one of Apple's own menu bar items opens the right thing. Activation tried `AXShowMenu` first, but Apple's status items read that as a request for their contextual menu rather than as a normal click. Only `AXPress` is used now.
+2. Moves resolve their endpoints against live windows. Endpoint validation leaned on persisted PID seeds and propagated ownership between items that shared a title, which let a stale endpoint pass for a current one. `refreshMoveEndpoints` re-reads the exact windows a move will use and resolves ownership for that set alone, so a failed live resolution rejects the move instead of dressing up an old one.
+
+---
+
+### Performance
+
+1. Menu bar item images refresh off the main actor. `refreshImages` was `nonisolated`, which under Approachable Concurrency keeps the caller's actor, so the bounds queries, the crop, and the detached copies all ran on the main thread next to UI work. They run on the background pool now, and publication hops back through `applyRefreshedImages`.
+2. Blink triggers capture only the items they watch. Attention detection was a single Boolean demand, so one enabled trigger made the live loop capture every item in the concealed sections. The image cache takes the identifiers the enabled triggers name and captures those windows alone. The global "surface items seeking attention" setting is unaffected and still samples everything.
+3. Those captures go out as one request. Each watched item used to make its own round trip through the capture helper.
 
 ## [2.1.0-beta.2]
 
