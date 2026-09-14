@@ -7,6 +7,84 @@ The `release.yml` workflow reads the section matching the release tag
 (`## [tag]`) and uses it as the release notes for both the GitHub Release
 and the Sparkle appcast, unless overridden with the `release_notes` input.
 
+## [3.0.0-alpha.4] - 2026-09-14
+
+This is one of the last alphas. We are targeting the beta release by the end of this week. Once beta lands and the core functions are stable and reliable, the codebase opens for contributions.
+
+Settings is rebuilt. The fifteen-pane sidebar is gone. What replaces it is a grouped sidebar with no nested tabs, a dedicated Thaw Bar page with a live preview, a customizable sidebar, and a separate appearance for the Thaw Bar itself.
+
+Something broke? [Open an issue](https://github.com/thaw-app/Thaw/issues/new/choose). Something missing? [Tell us here](https://github.com/thaw-app/Thaw/discussions).
+
+---
+
+### Upgrade from 3.0.0-alpha.3
+
+1. Nothing to do. Profiles, saved layouts, hotkeys, appearance, and permissions all carry over.
+2. Your last settings pane reopens. If it moved, it remaps to its new home.
+3. You can now hide sidebar destinations you don't use. Open the overflow menu and pick "Customize Sidebar."
+
+---
+
+### Settings
+
+- **Fifteen panes down to a grouped sidebar.** General, Layout, Visibility, Appearance, Thaw Bar, Profiles, Shortcuts, Automation, Displays, Spaces, Privacy, Experiments, and Troubleshooting. Grouped with the system's inter-section spacing, no text headings. About lives in the status-item menu. Scripts and Custom Status Icon are reachable through search and Experiments.
+- **Layout and Visibility are direct peers, not a nested tab.** Menu Bar used to be one destination with an Arrange / Behavior segmented control inside it. Now Layout and Visibility each have their own sidebar row. Layout holds the bar editor and every layout control. Visibility holds the reveal and rehide lifecycle, search configuration, and tooltips.
+- **Advanced is gone.** Its three controls moved to where they belong. App-menu hiding and the secondary context menu are in General. Auto-zen-while-presenting is in Automation. The reorder timeout is parked behind the Advanced layout controls disclosure; its write path is bypassed on macOS 27, so the UI is hidden until it has a visible effect.
+- **Customize the sidebar.** Hide destinations you don’t use from the overflow menu’s “Customize Sidebar” sheet. Hidden panes stay reachable through search. The current pane and the last visible pane can’t be hidden.
+
+### Thaw Bar
+
+- **Dedicated page with a live preview.** The Thaw Bar configuration that was buried inside Displays now has its own sidebar entry. The preview shows the hidden section's items in the chosen arrangement (horizontal, vertical, grid), on the real menu-bar surface, with the actual Thaw Bar shape and border from the appearance config. An "Open Thaw Bar" button opens the real panel. When it's off, the button says "Enable & Open."
+- **Separate Thaw Bar appearance.** Ported from the 2.1.0 beta versions. The Thaw Bar can now draw with its own shape, tint, and border, independent of the menu bar's. The override is off by default and seeded from the values on screen, so turning it on changes nothing until you edit something. Rounded corners, tint (solid or gradient), tint opacity, border color, and border width. The border shape omits the top edge on square corners so it is not clipped by the display's rounded screen corners.
+
+### Menu Bar editor
+
+- **One short instruction instead of four.** The heading, drag instructions, the Command-drag tip, and the macOS limitation note collapsed into a single line beside the editor. The OS limitation is a footnote. The refusal notice still appears when a move fails.
+- **Empty groups state is a compact row.** The 110pt centered empty state is gone. A one-line footnote says what to do instead.
+- **Command-drag toggle moved.** "Show all sections when Command-dragging" moved from Visibility to Layout's Advanced layout controls disclosure, where the other advanced layout behaviors live.
+
+### General
+
+- **Contextual menu controls moved here.** "Hide app menus when showing menu bar items" and "Enable secondary context menu" (plus its quit sub-toggle) moved from the dissolved Advanced pane to General.
+- **"No active profile" instead of "None."** The sidebar's profile footer says what it means.
+
+### Profiles
+
+- **Quieter rows.** Creation and modification dates moved into the "Save Current" menu as a detail, not beside the name. "Update" is now "Save Current" with clearer wording. The auto-switching link is a single inline footnote, not a section card.
+- **Profile auto-switching moved to Automation.** The display and Space profile-assignment controls moved from Profiles to Automation, with a direct link from Profiles.
+
+### Experiments
+
+- **Shorter caution, feedback below the list.** The large red introductory pill is gone. A one-line caution sits above the experiments. Feedback links (The Lab, Discord) sit below them.
+- **Customize before enabling.** The Customize button for the Custom Status Icon is available before the feature is turned on, so you can inspect the builder without adding it to the menu bar.
+- **Custom Status Icon moved here.** It is no longer a sidebar destination. It is an Experiments toggle with a Customize link.
+
+### Simple Mode
+
+- **Arrangement picker added.** "Who arranges items" (manual vs. automatic) is now at the top of Simple Mode. The core loop is self-contained: decide who arranges, then drag.
+- **Profiles removed.** Simple Mode is the everyday surface. Profiles are a power-user feature available in the full window.
+
+### Fixes
+
+- **Capture jitter on 5 items fixed.** Five menu bar items (1Password, Hookshot, WisprFlow, CleanShotX, Okta) oscillated 1 pixel on every capture cycle because of sub-pixel rounding. The capture bounds tolerance is raised from 0.5pt to 1.0pt, so the capture loop stops spinning while Settings is open.
+- **49pt menu bar hosting window found.** On displays with a 49pt menu bar (larger displays, different scaling), the hosting window was never matched because the geometry check capped at 40pt. The threshold is raised to 60pt (point space) and 120px (pixel space), so system items (Clock, Control Center, Wi-Fi, Now Playing) get their clean hosting-window captures instead of falling back to the display strip every cycle.
+
+### Under the hood
+
+- **@Observable migration.** StatusIconWidgetController, NotchClockWidget, NotchMediaWidget, and NotchAccessoryWidget migrated from ObservableObject + @Published to @Observable, for per-property observation instead of whole-object invalidation.
+- **@Animatable macro.** NotchShape's manual animatableData replaced with the @Animatable macro (macOS 26+), with @AnimatableIgnored on non-animating properties.
+- **Native pickers in settings forms.** ThawPicker no longer applies glass to every picker. It uses the system menu style, so settings content reads as stable and opaque while glass is reserved for floating panels.
+- **Glass scoping.** The Thaw Bar preview no longer wraps in an extra glass frame. It matches the real panel's treatment: sampled color, card corner, shadow. Colored drop shadows removed from informational notices.
+- **Search routing.** Every relocated control's search entry routes to its new home with the right disclosure exposed. Reveal, rehide, search, and tooltip entries land on Visibility directly. Contextual-menu entries land on General. Auto-zen lands on Automation.
+
+### Known issues
+
+- An app with several menu bar items that renamed them in the macOS 27 upgrade may need those items reassigned once by hand.
+- Items whose title is live text (a temperature, a clock, a transfer rate) are placed by macOS from memory rather than from the layout table. They can land next to where you put them rather than exactly there.
+- Flux cannot be seen or properly handled by Thaw.
+
+---
+
 ## [3.0.0-alpha.3] - 2026-09-12
 
 Toggling the hidden section no longer shuffles your items, and Thaw's own icon stays where you put it. Clicking the Clock opens Notification Center without showing the items you hid. Apps that quit leave the layout editor. Siri no longer opens Settings on every message. Right-clicking Thaw's icon works on the first try. And a crash when Thaw pressed one of its own items from a background thread is gone. The Thaw Bar answers on the first click now, closing Settings no longer takes Thaw down with it, and the layout editor shows the same folded bars as Simple Mode. There is also a first prototype of a build-your-own status icon, in Settings under Widgets.
