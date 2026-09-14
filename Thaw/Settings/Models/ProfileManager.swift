@@ -694,6 +694,51 @@ final class ProfileManager {
         rearmActiveLayoutIfNeeded(updatedID: id, scope: .layoutOnly, layout: layout, itemManager: itemManager)
     }
 
+    /// Rewrites one section's order in the active profile's persisted layout
+    /// to the given sorted identifiers, so a subsequent
+    /// ``reapplyActiveProfile`` applies the new order instead of the stale
+    /// on-disk one. Used by the "Sort A→Z" action (#936), which writes the
+    /// live ``savedSectionOrder`` first and then calls this so the profile
+    /// and the live bar stay in sync. Returns true when an active profile
+    /// was updated.
+    @discardableResult
+    func updateActiveProfileSectionOrder(
+        _ section: MenuBarSection.Name,
+        identifiers: [String]
+    ) -> Bool {
+        guard let activeID = activeProfileID else { return false }
+        let key = switch section {
+        case .visible: "visible"
+        case .hidden: "hidden"
+        case .alwaysHidden: "alwaysHidden"
+        }
+        do {
+            var profile = try loadProfile(id: activeID)
+            var layout = profile.menuBarLayout
+            var saved = layout.savedSectionOrder
+            saved[key] = identifiers
+            layout.savedSectionOrder = saved
+            // Initialize itemOrder from the full savedSectionOrder when it is
+            // absent, not an empty dictionary: resolvedItemOrder prefers a
+            // non-empty itemOrder and would otherwise shadow the complete
+            // saved order with a single-section dict, dropping every other
+            // section's tracking on reapply. The updated savedSectionOrder
+            // already carries the sorted section, so seeding from it keeps
+            // all sections present.
+            if layout.itemOrder == nil {
+                layout.itemOrder = saved
+            }
+            layout.itemOrder?[key] = identifiers
+            profile.menuBarLayout = layout
+            profile.modifiedAt = Date()
+            try saveProfileAndUpdateManifest(profile)
+            return true
+        } catch {
+            diagLog.error("updateActiveProfileSectionOrder failed: \(error)")
+            return false
+        }
+    }
+
     /// Refreshes MenuBarItemManager's cached active-profile layout after an
     /// update that captured a fresh layout, so a later late-arrival re-sort
     /// honours the new layout without a manual re-apply. No-op unless the

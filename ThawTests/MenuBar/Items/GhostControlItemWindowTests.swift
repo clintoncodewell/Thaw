@@ -139,12 +139,22 @@ struct GhostControlItemWindowTests {
         #expect(ghosts == [900, 901, 902])
     }
 
-    @Test("A synthetic AppKit window number leaves duplicate dividers ambiguous")
-    func syntheticWindowNumberDoesNotSelectADuplicateDivider() {
-        let syntheticWindowNumber = Int(CGWindowID.max) + 1
-        #expect(MenuBarItemManager.authoritativeControlItemWindowID(
-            windowNumber: syntheticWindowNumber
-        ) == nil)
+    @Test("Synthetic and null AppKit window numbers are not WindowServer IDs")
+    func syntheticWindowNumbersAreRejected() {
+        let syntheticWindowNumbers = [
+            0,
+            -1,
+            Int(CGWindowID.max) + 1,
+            Int(0x4_0000_0000),
+            Int(0x5_0000_0000),
+        ]
+        for windowNumber in syntheticWindowNumbers {
+            #expect(MenuBarItemManager.windowServerID(windowNumber: windowNumber) == nil)
+            #expect(MenuBarItemManager.authoritativeControlItemWindowID(
+                windowNumber: windowNumber
+            ) == nil)
+        }
+        #expect(MenuBarItemManager.windowServerID(windowNumber: 42) == 42)
         #expect(MenuBarItemManager.authoritativeControlItemWindowID(windowNumber: 42) == 42)
 
         let items = [
@@ -162,6 +172,11 @@ struct GhostControlItemWindowTests {
         #expect(MenuBarItemManager.ControlItemPair.ambiguousControlItemTitles(
             in: items
         ) == [hiddenTitle])
+    }
+
+    @Test("Control items start nonzero so AppKit creates a real window")
+    func controlItemMaterializationLengthIsNonzero() {
+        #expect(ControlItem.statusItemMaterializationLength > 0)
     }
 
     // MARK: - Orphans under our own namespace (#1032)
@@ -207,7 +222,7 @@ struct GhostControlItemWindowTests {
     }
 
     /// The orphan's title is indistinguishable from one of our control items
-    /// caught in a bar-wide `kCGWindowName` degradation, which is why
+    /// caught in a bar-wide kCGWindowName degradation, which is why
     /// ownership is decided by window number. A degraded control item of
     /// ours is kept, so it still reaches the degradation check.
     @Test("A control item of ours with a degraded title is kept")
@@ -255,7 +270,7 @@ struct GhostControlItemWindowTests {
 
     /// The reason the orphan had to go. Left in the reading it is a
     /// self-titled item under our own namespace, which
-    /// `liveIdentitiesAreDegraded` reads as the whole bar having lost its
+    /// liveIdentitiesAreDegraded reads as the whole bar having lost its
     /// names — so every reading is discarded and the cache freezes for as
     /// long as the orphan lasts.
     @Test("Dropping the orphan clears the false degradation signal")
@@ -279,6 +294,5 @@ struct GhostControlItemWindowTests {
         let kept = items.filter { !orphans.contains($0.windowID) }
 
         #expect(!LayoutSolver.liveIdentitiesAreDegraded(identities(kept)))
-
     }
 }

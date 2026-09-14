@@ -90,7 +90,7 @@ final class MenuBarItemImageCache: @unchecked Sendable {
         /// A value that differs when the image differs, used to spot an
         /// item blinking for attention.
         ///
-        /// Hashes the pixel data rather than the `CGImage` identity, so a
+        /// Hashes the pixel data rather than the CGImage identity, so a
         /// recapture of an unchanged icon fingerprints the same. Falls back
         /// to the dimensions when the data provider yields nothing, which
         /// costs sensitivity but never invents a difference.
@@ -105,7 +105,7 @@ final class MenuBarItemImageCache: @unchecked Sendable {
             return hasher.finalize()
         }
 
-        /// The image's size, applying ``scale``.
+        /// The image's size, applying scale.
         var scaledSize: CGSize {
             CGSize(
                 width: CGFloat(cgImage.width) / scale,
@@ -113,14 +113,14 @@ final class MenuBarItemImageCache: @unchecked Sendable {
             )
         }
 
-        /// The base image, converted to an `NSImage` and applying ``scale``.
+        /// The base image, converted to an NSImage and applying scale.
         var nsImage: NSImage {
             NSImage(cgImage: cgImage, size: scaledSize)
         }
 
         /// Returns whether two optional captured images have equivalent visual content.
         ///
-        /// Pointer-equal `CGImage`s are a fast path, but scale still has to match.
+        /// Pointer-equal CGImages are a fast path, but scale still has to match.
         /// Otherwise compare dimensions and pixel data.
         static func isVisuallyEqual(_ old: CapturedImage?, _ new: CapturedImage?) -> Bool {
             guard let old, let new else { return old == nil && new == nil }
@@ -151,37 +151,41 @@ final class MenuBarItemImageCache: @unchecked Sendable {
         var excluded = [MenuBarItem]()
     }
 
+    /// Immutable input for a capture-helper batch that is safe to transfer
+    /// from the main actor to the concurrent executor.
+    private nonisolated struct IdentifierCaptureRequest: Sendable {
+        let identifier: String
+        let windowID: CGWindowID
+    }
+
     /// The cached item images, keyed by their corresponding tags.
     private(set) var images = [MenuBarItemTag: CapturedImage]()
 
     /// Tracks which items are blinking for attention.
     ///
     /// Deliberately not observable: it is fed on every capture, and the
-    /// verdict it produces is published through ``tagsSeekingAttention``
+    /// verdict it produces is published through tagsSeekingAttention
     /// instead, which only changes when the verdict does.
     @ObservationIgnored private var attentionDetector = MenuBarItemAttentionDetector()
 
     /// The items currently asking for attention.
     private(set) var tagsSeekingAttention: Set<MenuBarItemTag> = []
 
-    /// Set by ``MenuBarItemTriggersManager`` while a trigger watches for
-    /// attention-seeking items.
+    /// Item identifiers watched by enabled attention-seeking triggers.
     ///
-    /// Detection is otherwise tied to the reveal setting, which a user may
-    /// leave off while still wanting a trigger to act on the same signal.
-    ///
-    /// Flipping this restarts the live-refresh loop: with every UI consumer
-    /// closed, capture only runs when the loop's section selection includes
-    /// the concealed sections, and that selection reads this flag.
-    @ObservationIgnored var isAttentionDetectionRequired = false {
+    /// This is deliberately a set rather than a Boolean demand flag: when no
+    /// UI consumes a whole section, the live loop captures only these items.
+    /// The global "surface items seeking attention" setting remains separate
+    /// and continues to sample every concealed item.
+    @ObservationIgnored var attentionDetectionItemIdentifiers = Set<String>() {
         didSet {
-            guard oldValue != isAttentionDetectionRequired else { return }
+            guard oldValue != attentionDetectionItemIdentifiers else { return }
             startLiveRefreshIfNeeded()
         }
     }
 
-    /// Memoized results of ``trimmedImage(for:)``, keyed by tag, each paired
-    /// with the `CGImage` it was derived from so a recapture invalidates it.
+    /// Memoized results of trimmedImage(for:), keyed by tag, each paired
+    /// with the CGImage it was derived from so a recapture invalidates it.
     ///
     /// Deliberately not observable: this is derived data, and writing it from
     /// inside a SwiftUI body — which is exactly where it is filled — must not
@@ -234,34 +238,34 @@ final class MenuBarItemImageCache: @unchecked Sendable {
     /// Storage for internal observers.
     private var cancellables = Set<AnyCancellable>()
 
-    /// Task observing `AdvancedSettings.iconRefreshInterval`, which is
-    /// `@Observable` rather than a Combine `ObservableObject`.
+    /// Task observing AdvancedSettings.iconRefreshInterval, which is
+    /// @Observable rather than a Combine ObservableObject.
     private var iconRefreshIntervalObservationTask: Task<Void, Never>?
 
-    /// Task observing `AppNavigationState`'s properties (wave 3), which is
-    /// `@Observable` rather than a Combine `ObservableObject`.
+    /// Task observing AppNavigationState's properties (wave 3), which is
+    /// @Observable rather than a Combine ObservableObject.
     private var navigationStateObservationTask: Task<Void, Never>?
 
-    /// Task observing `menuBarManager.averageColorInfo` (wave 3), which is
-    /// `@Observable` rather than a Combine `ObservableObject`. Bridges into
-    /// `colorChangeSubject` so it can still participate in the
-    /// `Publishers.MergeMany` below.
+    /// Task observing menuBarManager.averageColorInfo (wave 3), which is
+    /// @Observable rather than a Combine ObservableObject. Bridges into
+    /// colorChangeSubject so it can still participate in the
+    /// Publishers.MergeMany below.
     private var averageColorInfoObservationTask: Task<Void, Never>?
 
-    /// Bridges `averageColorInfoObservationTask`'s Observation-based updates
-    /// into the Combine `Publishers.MergeMany` pipeline in
-    /// `configureCancellables()`.
+    /// Bridges averageColorInfoObservationTask's Observation-based updates
+    /// into the Combine Publishers.MergeMany pipeline in
+    /// configureCancellables().
     private let colorChangeSubject = PassthroughSubject<Void, Never>()
 
-    /// Task observing `itemManager.itemCache` (wave 4), which is
-    /// `@Observable` rather than a Combine `ObservableObject`. Bridges into
-    /// `itemCacheChangeSubject` so it can still participate in the
-    /// `Publishers.MergeMany` below.
+    /// Task observing itemManager.itemCache (wave 4), which is
+    /// @Observable rather than a Combine ObservableObject. Bridges into
+    /// itemCacheChangeSubject so it can still participate in the
+    /// Publishers.MergeMany below.
     private var itemCacheObservationTask: Task<Void, Never>?
 
-    /// Bridges `itemCacheObservationTask`'s Observation-based updates into
-    /// the Combine `Publishers.MergeMany` pipeline in
-    /// `configureCancellables()`.
+    /// Bridges itemCacheObservationTask's Observation-based updates into
+    /// the Combine Publishers.MergeMany pipeline in
+    /// configureCancellables().
     private let itemCacheChangeSubject = PassthroughSubject<Void, Never>()
 
     private var memoryPressureSource: DispatchSourceMemoryPressure?
@@ -298,7 +302,7 @@ final class MenuBarItemImageCache: @unchecked Sendable {
     static nonisolated let maxIconRefreshRate: Double = 30
 
     /// Minimum spacing enforced between visible-section SCK captures, in seconds.
-    /// Reciprocal of ``maxIconRefreshRate``.
+    /// Reciprocal of maxIconRefreshRate.
     static nonisolated let minIconRefreshInterval: TimeInterval = 1.0 / maxIconRefreshRate
 
     /// Tracks whether the MenuBarLayoutSettingsPane is currently open.
@@ -517,9 +521,9 @@ final class MenuBarItemImageCache: @unchecked Sendable {
             .map { _ in () }
             .eraseToAnyPublisher()
 
-            // `menuBarManager` is now `@Observable` (wave 3), so it no longer
-            // has an `$averageColorInfo` publisher. `colorChangeSubject` is
-            // fed by `averageColorInfoObservationTask` (started below) and
+            // menuBarManager is now @Observable (wave 3), so it no longer
+            // has an $averageColorInfo publisher. colorChangeSubject is
+            // fed by averageColorInfoObservationTask (started below) and
             // bridges those updates back into this Combine merge.
             let colorChangePublisher: AnyPublisher<Void, Never> = colorChangeSubject
                 .eraseToAnyPublisher()
@@ -536,9 +540,9 @@ final class MenuBarItemImageCache: @unchecked Sendable {
                 }
             }
 
-            // `itemManager` is now `@Observable` (wave 4), so it no longer
-            // has a `$itemCache` publisher. `itemCacheChangeSubject` is fed
-            // by `itemCacheObservationTask` (started below) and bridges
+            // itemManager is now @Observable (wave 4), so it no longer
+            // has a $itemCache publisher. itemCacheChangeSubject is fed
+            // by itemCacheObservationTask (started below) and bridges
             // those updates back into this Combine merge.
             let itemCacheChangePublisher: AnyPublisher<Void, Never> = itemCacheChangeSubject
                 .eraseToAnyPublisher()
@@ -585,11 +589,11 @@ final class MenuBarItemImageCache: @unchecked Sendable {
             .store(in: &c)
 
             // Observe navigation state changes to start/stop live refresh.
-            // `AppNavigationState` is `@Observable` (wave 3) rather than a
-            // Combine `ObservableObject`, so this is observed via the
-            // `Observations` async sequence instead of its old
-            // `$isIceBarPresented`/etc. projections. The original pipeline
-            // debounced 50ms; since `startLiveRefreshIfNeeded()` is itself
+            // AppNavigationState is @Observable (wave 3) rather than a
+            // Combine ObservableObject, so this is observed via the
+            // Observations async sequence instead of its old
+            // $isIceBarPresented/etc. projections. The original pipeline
+            // debounced 50ms; since startLiveRefreshIfNeeded() is itself
             // idempotent (guards internally against redundant starts), the
             // debounce is dropped in favor of firing directly on each change.
             navigationStateObservationTask = Task { @MainActor [weak self, navigationState = appState.navigationState] in
@@ -610,20 +614,28 @@ final class MenuBarItemImageCache: @unchecked Sendable {
 
             // Start/stop the live refresh when the Hotkeys pane's per-item list
             // is expanded or collapsed, since that gates its capture consumer.
-            // Replaced by `isItemHotkeyListExpanded`'s `didSet` above now
-            // that this class is @Observable (no more `$isItemHotkeyListExpanded`
+            // Replaced by isItemHotkeyListExpanded's didSet above now
+            // that this class is @Observable (no more $isItemHotkeyListExpanded
             // Combine projection to subscribe to).
 
-            // Restart the live refresh loop when the icon refresh interval
-            // changes. `AdvancedSettings` is `@Observable` rather than a
-            // Combine `ObservableObject`, so this is observed via the
-            // `Observations` async sequence instead of `$iconRefreshInterval`.
+            // Restart the live refresh loop when its cadence or global
+            // attention demand changes. The initial observation also starts
+            // global detection when there is no visible UI consumer.
             let advancedSettings = appState.settings.advanced
             iconRefreshIntervalObservationTask = Task { @MainActor [weak self] in
-                let changes = Observations { advancedSettings.iconRefreshInterval }
-                for await _ in changes {
+                var previous: (interval: TimeInterval, globalAttention: Bool)?
+                let changes = Observations {
+                    (
+                        interval: advancedSettings.iconRefreshInterval,
+                        globalAttention: advancedSettings.surfaceItemsSeekingAttention
+                    )
+                }
+                for await state in changes {
                     guard let self else { return }
-                    guard self.liveRefreshTask != nil else { continue }
+                    guard previous?.interval != state.interval
+                        || previous?.globalAttention != state.globalAttention
+                    else { continue }
+                    previous = state
                     self.liveRefreshTask?.cancel()
                     self.liveRefreshTask = nil
                     self.startLiveRefreshIfNeeded()
@@ -680,6 +692,24 @@ final class MenuBarItemImageCache: @unchecked Sendable {
         isSettingsPaneOpen: Bool
     ) -> Bool {
         hasVisibleConsumer || (allowBackgroundCapture && isSettingsPaneOpen)
+    }
+
+    /// Returns the identifiers a section needs in the next live capture.
+    ///
+    /// Visible consumers and global attention detection consume the complete
+    /// section. Trigger-only demand is intersected with the section's current
+    /// contents so unrelated icons never enter the capture batch.
+    static nonisolated func requiredCaptureIdentifiers(
+        availableIdentifiers: some Sequence<String>,
+        consumerNeedsWholeSection: Bool,
+        globalAttentionNeedsWholeSection: Bool,
+        attentionTriggerIdentifiers: Set<String>
+    ) -> Set<String> {
+        let available = Set(availableIdentifiers)
+        if consumerNeedsWholeSection || globalAttentionNeedsWholeSection {
+            return available
+        }
+        return available.intersection(attentionTriggerIdentifiers)
     }
 
     /// Refreshes the cache for currently visible consumers, or keeps a warm
@@ -774,14 +804,16 @@ final class MenuBarItemImageCache: @unchecked Sendable {
             let nav = await MainActor.run {
                 self.makeNavigationStateSnapshot()
             }
+            let globalAttentionDetection = self.appState?.settings.advanced.surfaceItemsSeekingAttention == true
             let needsRefresh = self.hasVisibleCaptureConsumer(nav: nav)
-                || self.isAttentionDetectionRequired
+                || !self.attentionDetectionItemIdentifiers.isEmpty
+                || globalAttentionDetection
 
             if needsRefresh {
                 // Already running — don't restart
                 guard self.liveRefreshTask == nil else { return }
                 MenuBarItemImageCache.diagLog.debug(
-                    "Starting live refresh (iceBar=\(nav.isIceBarPresented), search=\(nav.isSearchPresented), settings=\(nav.isSettingsPresented), attention=\(self.isAttentionDetectionRequired))"
+                    "Starting live refresh (iceBar=\(nav.isIceBarPresented), search=\(nav.isSearchPresented), settings=\(nav.isSettingsPresented), attentionTriggers=\(self.attentionDetectionItemIdentifiers.count), globalAttention=\(globalAttentionDetection))"
                 )
                 lastSCKRefreshAt = nil
                 lastHiddenRefreshAt = nil
@@ -806,9 +838,9 @@ final class MenuBarItemImageCache: @unchecked Sendable {
     ///
     /// Runs a single capture loop that serves all consumer views (IceBar,
     /// Search, Layout Settings) instead of each view running its own loop.
-    /// Heavy work (`refreshImages`) is `nonisolated` and runs off the main
-    /// actor — only navigation state reads happen on `@MainActor`.
-    /// Uses `self.appState` (weak property) to avoid retain cycle via
+    /// Heavy work (refreshImages) is @concurrent and runs on the
+    /// background pool — only navigation state reads happen on @MainActor.
+    /// Uses self.appState (weak property) to avoid retain cycle via
     /// the task's async stack frame.
     @MainActor
     private func runLiveRefreshLoop() async {
@@ -837,8 +869,10 @@ final class MenuBarItemImageCache: @unchecked Sendable {
                 )
             }
 
-            // Determine which sections to refresh based on what's visible
-            var sections: [MenuBarSection.Name]
+            // Determine which sections a visible UI consumer needs in full.
+            // Attention-trigger demand is applied per identifier below, so a
+            // single watched icon cannot expand this set to whole sections.
+            var consumerSections = Set<MenuBarSection.Name>()
             let isLayoutPane = nav.isSettingsPresented
                 && nav.settingsNavigationIdentifier == .menuBarLayout
             // The Hotkeys pane only needs item icons while its per-item list
@@ -848,47 +882,38 @@ final class MenuBarItemImageCache: @unchecked Sendable {
                 && isItemHotkeyListExpanded
             if nav.isSearchPresented || isLayoutPane || isHotkeyListVisible {
                 if nav.isSearchPresented, !isLayoutPane, !isHotkeyListVisible {
-                    // Search is the only consumer here that can be told to
-                    // leave whole sections out of its results; capturing icons
-                    // for rows it will never render is pure waste. The layout
-                    // pane and the hotkey list always show every section, so
-                    // they keep the unfiltered set.
+                    // Search is the only consumer here that can omit sections.
                     let advanced = appState.settings.advanced
-                    sections = MenuBarSection.Name.allCases.filter { name in
+                    consumerSections = Set(MenuBarSection.Name.allCases.filter { name in
                         switch name {
                         case .visible: advanced.searchIncludeVisible
                         case .hidden: advanced.searchIncludeHidden
                         case .alwaysHidden: advanced.searchIncludeAlwaysHidden
                         }
-                    }
+                    })
                 } else {
-                    sections = MenuBarSection.Name.allCases
+                    consumerSections = Set(MenuBarSection.Name.allCases)
                 }
             } else if nav.isIceBarPresented,
                       let current = appState.menuBarManager.iceBarPanel.currentSection
             {
-                sections = [current]
-            } else if isAttentionDetectionRequired {
-                // Attention triggers watch concealed icons, and the blink
-                // only exists in the capture: sample them even when every
-                // UI consumer is closed.
-                sections = [.hidden, .alwaysHidden]
-            } else {
+                consumerSections = [current]
+            }
+
+            let globalAttentionDetection = appState.settings.advanced.surfaceItemsSeekingAttention
+            let triggerAttentionIdentifiers = attentionDetectionItemIdentifiers
+            guard !consumerSections.isEmpty
+                || globalAttentionDetection
+                || !triggerAttentionIdentifiers.isEmpty
+            else {
                 try? await Task.sleep(for: .milliseconds(50))
                 continue
             }
 
-            // A single-section consumer (the Thaw Bar) can be pointed at the
-            // visible section while a trigger watches a concealed icon; the
-            // concealed sections always stay in the sampled set when their
-            // capture is demanded for attention detection.
-            if isAttentionDetectionRequired {
-                for concealed in [MenuBarSection.Name.hidden, .alwaysHidden]
-                    where !sections.contains(concealed)
-                {
-                    sections.append(concealed)
-                }
-            }
+            // Inspect every section so trigger-only demand can follow a watched
+            // item when it moves. Global attention intentionally retains full
+            // coverage of both concealed sections.
+            let sections = MenuBarSection.Name.allCases
 
             if appState.itemManager.lastMoveOperationOccurred(within: .seconds(2))
                 || appState.itemManager.isResettingLayout
@@ -905,7 +930,16 @@ final class MenuBarItemImageCache: @unchecked Sendable {
             var alwaysHiddenItems = [MenuBarItem]()
 
             for section in sections {
-                let items = appState.itemManager.itemCache.managedItems(for: section)
+                let availableItems = appState.itemManager.itemCache.managedItems(for: section)
+                let requiredIdentifiers = Self.requiredCaptureIdentifiers(
+                    availableIdentifiers: availableItems.map(\.tag.tagIdentifier),
+                    consumerNeedsWholeSection: consumerSections.contains(section),
+                    globalAttentionNeedsWholeSection: globalAttentionDetection && section != .visible,
+                    attentionTriggerIdentifiers: triggerAttentionIdentifiers
+                )
+                let items = availableItems.filter {
+                    requiredIdentifiers.contains($0.tag.tagIdentifier)
+                }
                 guard !items.isEmpty else { continue }
                 guard let sectionInterval = MenuBarLiveRefreshPolicy.refreshInterval(
                     for: section,
@@ -1020,7 +1054,7 @@ final class MenuBarItemImageCache: @unchecked Sendable {
     /// for each item and returns the result.
     ///
     /// Accepts pre-fetched window bounds alongside each item to avoid a
-    /// redundant `getWindowBounds` system call and eliminate the TOCTOU race
+    /// redundant getWindowBounds system call and eliminate the TOCTOU race
     /// where a window could move between bounds lookup and composite capture.
     /// All items passed to this function are expected to be on-screen;
     /// off-screen items should be pre-filtered by the caller.
@@ -1163,10 +1197,10 @@ final class MenuBarItemImageCache: @unchecked Sendable {
 
     /// Captures an image of each of the given items individually, then
     /// returns the result.
-    /// The scale a captured image was actually taken at, or `nil` when the
+    /// The scale a captured image was actually taken at, or nil when the
     /// image cannot be trusted at any scale.
     ///
-    /// `expected` is the scale of the display Thaw resolved for the menu
+    /// expected is the scale of the display Thaw resolved for the menu
     /// bar; the image's pixel width divided by the item's point width is the
     /// scale the window server actually captured at. Normally they agree.
     /// When they do not, the captured value is the truthful one — it is
@@ -1255,15 +1289,15 @@ final class MenuBarItemImageCache: @unchecked Sendable {
                 continue
             }
 
-            // `scale` comes from the display Thaw believes owns the menu
+            // scale comes from the display Thaw believes owns the menu
             // bar, but ScreenCaptureKit captures at the scale of whichever
             // display it selects by frame intersection. On a mixed-scale
             // multi-display setup those disagree, and caching an image under
             // the wrong scale doubles every consumer's idea of its point
             // size — the oversized Layout rows in #851/#736.
-            // `compositeCapture` and `refreshImages` both reject a
+            // compositeCapture and refreshImages both reject a
             // pixel/point mismatch; this path did not, and it is precisely
-            // the fallback that runs after `compositeCapture` rejects one.
+            // the fallback that runs after compositeCapture rejects one.
             guard let resolvedScale = MenuBarItemImageCache.resolvedScale(
                 imagePixelWidth: image.width,
                 boundsWidth: item.bounds.width,
@@ -1396,10 +1430,18 @@ final class MenuBarItemImageCache: @unchecked Sendable {
     ///
     /// Performs a single composite capture and crops individual items.
     /// Updates LRU access timestamps for refreshed images to keep them
-    /// consistent with the `images` dict (preventing LRU inconsistencies),
+    /// consistent with the images dict (preventing LRU inconsistencies),
     /// but skips full cache management (LRU eviction, failure tracking,
     /// size enforcement, cleanup).
-    /// Skips `@Published` updates when images haven't changed visually.
+    /// Skips @Published updates when images haven't changed visually.
+    ///
+    /// Marked @concurrent because nonisolated alone does not leave the
+    /// caller's actor under Approachable Concurrency (SE-0461
+    /// nonisolated(nonsending)): the bounds queries, the crop, and the
+    /// detached copies would otherwise run on the main thread alongside UI
+    /// work. Cache publication hops back through applyRefreshedImages,
+    /// which stays on the main actor.
+    @concurrent
     nonisolated func refreshImages(
         of items: [MenuBarItem],
         scale: CGFloat,
@@ -1420,10 +1462,10 @@ final class MenuBarItemImageCache: @unchecked Sendable {
             }
             // Degenerate windows must not reach the union. A zero-width or
             // zero-height window contributes nothing to the composite — the
-            // capture APIs drop it, and `cropping(to:)` on an empty rect
+            // capture APIs drop it, and cropping(to:) on an empty rect
             // returns nil — but including it still corrupts the geometry the
             // composite gets sliced against: parked off-screen it drags
-            // `boundsUnion` across the whole gap to its position, so the
+            // boundsUnion across the whole gap to its position, so the
             // expected-width check below compares the composite of the real
             // items against a union thousands of points wide and discards
             // every batch.
@@ -1536,6 +1578,67 @@ final class MenuBarItemImageCache: @unchecked Sendable {
         await applyRefreshedImages(newImages)
     }
 
+    /// Captures a fresh batch for image-comparison triggers through the
+    /// recyclable helper process. Selection stays on the main actor; capture
+    /// and frame-to-image copies run on the concurrent executor.
+    func captureCurrentImages(
+        forItemIdentifiers identifiers: Set<String>
+    ) async -> [String: CGImage] {
+        guard let appState, !identifiers.isEmpty else { return [:] }
+
+        let requests: [IdentifierCaptureRequest] = appState.itemManager.itemCache.managedItems.compactMap { item in
+            let identifier = item.tag.tagIdentifier
+            guard identifiers.contains(identifier) else { return nil }
+            return IdentifierCaptureRequest(identifier: identifier, windowID: item.windowID)
+        }
+        guard !requests.isEmpty else { return [:] }
+
+        let preferredDisplayID = appState.itemManager.itemCache.displayID
+        guard let screen = Self.resolveScreen(preferredDisplayID: preferredDisplayID) else {
+            return [:]
+        }
+
+        do {
+            try await captureSemaphore.wait()
+        } catch {
+            return [:]
+        }
+        let captured = await Self.captureCurrentImages(
+            requests: requests,
+            scale: screen.screen.backingScaleFactor,
+            option: captureOption
+        )
+        await captureSemaphore.signal()
+        return captured
+    }
+
+    @concurrent
+    private static nonisolated func captureCurrentImages(
+        requests: [IdentifierCaptureRequest],
+        scale: CGFloat,
+        option: CGWindowImageOption
+    ) async -> [String: CGImage] {
+        let frames = await MenuBarCaptureService.Connection.shared.capture(
+            windowIDs: requests.map(\.windowID),
+            scale: scale,
+            option: option
+        )
+        guard !frames.isEmpty, !Task.isCancelled else { return [:] }
+
+        let identifierByWindowID = Dictionary(
+            requests.map { ($0.windowID, $0.identifier) },
+            uniquingKeysWith: { first, _ in first }
+        )
+        var images = [String: CGImage]()
+        for frame in frames {
+            guard let identifier = identifierByWindowID[frame.windowID],
+                  let image = MenuBarCaptureService.makeImage(from: frame)
+            else { continue }
+            images[identifier] = image
+        }
+        return images
+    }
+
     private func applyRefreshedImages(_ newImages: [MenuBarItemTag: CapturedImage]) {
         var updatedCount = 0
         for (tag, newImage) in newImages where !CapturedImage.isVisuallyEqual(images[tag], newImage) {
@@ -1558,20 +1661,26 @@ final class MenuBarItemImageCache: @unchecked Sendable {
     /// Feeds a batch of captures to the attention detector and republishes
     /// the verdict when it changes.
     private func recordForAttention(_ newImages: [MenuBarItemTag: CapturedImage]) {
-        guard Defaults.bool(forKey: .surfaceItemsSeekingAttention) || isAttentionDetectionRequired else {
+        let globalAttentionDetection = Defaults.bool(forKey: .surfaceItemsSeekingAttention)
+        guard globalAttentionDetection || !attentionDetectionItemIdentifiers.isEmpty else {
             if !tagsSeekingAttention.isEmpty {
                 tagsSeekingAttention = []
             }
             return
         }
 
+        let detectionTags = globalAttentionDetection
+            ? Set(images.keys)
+            : Set(images.keys.filter {
+                attentionDetectionItemIdentifiers.contains($0.tagIdentifier)
+            })
         let now = Date.timeIntervalSinceReferenceDate
-        for (tag, image) in newImages {
+        for (tag, image) in newImages where detectionTags.contains(tag) {
             attentionDetector.record(fingerprint: image.fingerprint, for: tag, at: now)
         }
-        attentionDetector.retain(Set(images.keys))
+        attentionDetector.retain(detectionTags)
 
-        let seeking = Set(images.keys.filter { attentionDetector.isSeekingAttention($0, at: now) })
+        let seeking = Set(detectionTags.filter { attentionDetector.isSeekingAttention($0, at: now) })
         guard seeking != tagsSeekingAttention else { return }
         tagsSeekingAttention = seeking
         if !seeking.isEmpty {
@@ -1700,7 +1809,7 @@ final class MenuBarItemImageCache: @unchecked Sendable {
         }
     }
 
-    /// Returns the `count` least recently used tags, sorted by access time (oldest first).
+    /// Returns the count least recently used tags, sorted by access time (oldest first).
     func leastRecentlyUsedTags(
         count: Int,
         excluding excludedTags: Set<MenuBarItemTag> = []
@@ -1749,11 +1858,11 @@ final class MenuBarItemImageCache: @unchecked Sendable {
     /// Returns the item's image with its transparent left and right margins
     /// trimmed off, ready to display at its captured scale.
     ///
-    /// Memoized. Trimming allocates a `CGContext`, draws the image into it,
+    /// Memoized. Trimming allocates a CGContext, draws the image into it,
     /// and scans the result's alpha channel — cheap once, but its callers are
-    /// SwiftUI bodies that re-evaluate for *every* row on every keystroke, so
+    /// SwiftUI bodies that re-evaluate for every row on every keystroke, so
     /// computing it on demand made the cost scale with item count × typing
-    /// speed. The memo is keyed on the `CGImage` the trim came from, so a
+    /// speed. The memo is keyed on the CGImage the trim came from, so a
     /// recapture (new icon state) still refreshes it.
     func trimmedImage(for tag: MenuBarItemTag) -> NSImage? {
         guard let captured = image(for: tag) else {
@@ -1793,7 +1902,7 @@ final class MenuBarItemImageCache: @unchecked Sendable {
     }
 
     /// Validates cache entries and removes items with invalid window IDs.
-    /// Tags in `preserving` are kept even if they are no longer in the item cache.
+    /// Tags in preserving are kept even if they are no longer in the item cache.
     /// Returns the number of items removed during cleanup.
     @MainActor
     private func validateAndCleanupInvalidEntries(

@@ -174,7 +174,7 @@ extension MenuBarItemManager {
                 nil
             case let .dropReverted(item):
                 // An app with no bundle identifier — a bare executable such
-                // as a `swift run` build — is keyed by path in Control
+                // as a swift run build — is keyed by path in Control
                 // Center, which has refused every off-screen drop of such an
                 // item in the field. Say so, or the alert reads as a Thaw
                 // bug the next time around.
@@ -199,7 +199,7 @@ extension MenuBarItemManager {
         /// the events we posted.
         ///
         /// Only failures that are specifically about the owner staying
-        /// silent count. `cannotComplete` is deliberately excluded: it is
+        /// silent count. cannotComplete is deliberately excluded: it is
         /// the catch-all, and attributing it to the owner would mark items
         /// over failures that had nothing to do with them.
         var indicatesUnresponsiveOwner: Bool {
@@ -219,12 +219,21 @@ extension MenuBarItemManager {
     /// paused input for at least the given duration.
     ///
     /// - Parameter duration: The duration that certain types of input
-    ///   events must not have occurred within in order to return `true`.
+    ///   events must not have occurred within in order to return true.
     nonisolated func hasUserPausedInput(for duration: Duration) -> Bool {
         NSEvent.modifierFlags.isEmpty &&
             !MouseHelpers.lastMovementOccurred(within: duration) &&
             !MouseHelpers.lastScrollWheelOccurred(within: duration) &&
             !MouseHelpers.isButtonPressed()
+    }
+
+    /// Returns whether physical input has paused, excluding Thaw's synthetic
+    /// cursor warps and posted events from the movement/scroll timestamps.
+    nonisolated func hasUserPausedPhysicalInput(for duration: Duration) -> Bool {
+        NSEvent.modifierFlags.isEmpty &&
+            !MouseHelpers.lastMovementOccurred(within: duration, stateID: .hidSystemState) &&
+            !MouseHelpers.lastScrollWheelOccurred(within: duration, stateID: .hidSystemState) &&
+            !MouseHelpers.lastPointerButtonEventOccurred(within: duration, stateID: .hidSystemState)
     }
 
     /// Waits asynchronously for the user to pause input.
@@ -249,7 +258,7 @@ extension MenuBarItemManager {
         let waitTask = Task { () -> InputPauseWaitResult in
             while true {
                 try Task.checkCancellation()
-                if let shouldContinue, !(await shouldContinue()) {
+                if let shouldContinue, await !shouldContinue() {
                     return .superseded
                 }
                 if hasUserPausedInput(for: pause) {
@@ -262,9 +271,9 @@ extension MenuBarItemManager {
             }
         }
         do {
-            // `waitTask` is unstructured, so awaiting its value does not carry
+            // waitTask is unstructured, so awaiting its value does not carry
             // the caller's cancellation into it. Without the handler a caller
-            // cancelled while input stays active waits for a `nil` timeout that
+            // cancelled while input stays active waits for a nil timeout that
             // never arrives.
             return try await withTaskCancellationHandler {
                 try await waitTask.value
@@ -273,7 +282,7 @@ extension MenuBarItemManager {
             }
         } catch {
             // Only cancellation reaches here. Named so a log full of bare
-            // `cannotComplete` failures (#900) can tell this stage apart.
+            // cannotComplete failures (#900) can tell this stage apart.
             MenuBarItemManager.diagLog.debug("waitForUserInputPause: wait interrupted: \(error)")
             throw EventError.cannotComplete
         }
@@ -282,7 +291,7 @@ extension MenuBarItemManager {
     /// Waits for a lull in user input before an automatic bulk apply
     /// begins issuing its move sequence.
     ///
-    /// `waitForUserToPauseInput` gates each move; this gates the batch. The
+    /// waitForUserToPauseInput gates each move; this gates the batch. The
     /// distinction matters because a batch hides the cursor for its entire
     /// length: dispatched the moment a late arrival is noticed, it can take
     /// the pointer away mid-interaction and then contest it move by move
@@ -291,13 +300,13 @@ extension MenuBarItemManager {
     /// the first poll already passes — and sidesteps the collision when the
     /// bar is not idle.
     ///
-    /// Deferring only. The cap guarantees the batch still runs, and
-    /// cancellation exits promptly so a newer apply can replace this one;
-    /// the caller re-checks `Task.isCancelled` immediately afterwards.
+    /// The cap is a deadline for this dispatch, not permission to override
+    /// active input. Reaching it returns false so a later cache/profile event
+    /// can retry. Cancellation also exits promptly for a newer apply.
     ///
     /// On by default at 300 ms; disable with:
     ///   defaults write com.stonerl.Thaw bulkApplyIdleThresholdMs -int 0
-    nonisolated func waitForBulkApplyIdleWindow() async {
+    nonisolated func waitForBulkApplyIdleWindow() async -> Bool {
         let thresholdMs = (Defaults.object(forKey: .bulkApplyIdleThresholdMs) as? Int)
             ?? Defaults.DefaultValue.bulkApplyIdleThresholdMs
         let capMs = (Defaults.object(forKey: .bulkApplyIdleWaitCapMs) as? Int)
@@ -306,34 +315,39 @@ extension MenuBarItemManager {
             thresholdMs: thresholdMs,
             capMs: capMs
         ) else {
-            return
+            return true
         }
 
         let start = ContinuousClock.now
         while !Task.isCancelled {
             let elapsed = ContinuousClock.now - start
-            if MenuBarItemManager.bulkApplyIdleWaitConcluded(
+            switch MenuBarItemManager.bulkApplyIdleWaitDecision(
                 userHasPausedInput: hasUserPausedInput(for: window.threshold),
                 elapsed: elapsed,
                 cap: window.cap
             ) {
-                if elapsed >= window.cap {
-                    MenuBarItemManager.diagLog.debug(
-                        "Bulk apply idle gate: cap reached after \(elapsed.milliseconds) ms without a lull; proceeding anyway"
-                    )
-                } else if elapsed > .zero {
+            case .ready:
+                if elapsed > .zero {
                     MenuBarItemManager.diagLog.debug(
                         "Bulk apply idle gate: waited \(elapsed.milliseconds) ms for input to settle"
                     )
                 }
-                return
+                return true
+            case .deferBatch:
+                MenuBarItemManager.diagLog.debug(
+                    "Bulk apply idle gate: deadline reached after \(elapsed.milliseconds) ms without a lull; deferring"
+                )
+                return false
+            case .waiting:
+                break
             }
             do {
                 try await Task.sleep(for: .milliseconds(50))
             } catch {
-                return // Cancelled; the caller's Task.isCancelled check handles it.
+                return false
             }
         }
+        return false
     }
 
     /// Returns the dynamic delay still required between move operations.
@@ -410,10 +424,10 @@ extension MenuBarItemManager {
     /// Whether a previously cached source PID still belongs to a live
     /// process.
     ///
-    /// `kill(pid, 0)` is the same liveness probe `postMoveEvents` already
+    /// kill(pid, 0) is the same liveness probe postMoveEvents already
     /// makes before addressing a target, kept in one named place so the
     /// reconciliation guard and the event path agree about what "alive"
-    /// means. `ESRCH` is the only answer that means gone; `EPERM` says the
+    /// means. ESRCH is the only answer that means gone; EPERM says the
     /// process exists but is not ours to signal, which still counts as
     /// alive.
     static nonisolated func previousPIDIsLive(_ pid: pid_t) -> Bool {
@@ -425,10 +439,10 @@ extension MenuBarItemManager {
 
     /// The process a synthetic move event should be posted to.
     ///
-    /// `ownerPID` is the CG owner of the window being dragged. `sourcePID`
+    /// ownerPID is the CG owner of the window being dragged. sourcePID
     /// is the app whose status item it logically is. Before macOS 26 these
     /// were the same process; on 26 Control Center hosts every status item
-    /// window, so preferring `sourcePID` posts to a process that does not
+    /// window, so preferring sourcePID posts to a process that does not
     /// own the window under the cursor.
     ///
     /// Pure over its inputs.
@@ -551,7 +565,7 @@ extension MenuBarItemManager {
         }
     }
 
-    /// Resumes the stored continuation by throwing `error`, if no other
+    /// Resumes the stored continuation by throwing error, if no other
     /// path has resumed it yet. Used to fail an in-flight event operation
     /// early instead of waiting out its timeout.
     private nonisolated func resumeFailureIfNeeded(
@@ -564,13 +578,13 @@ extension MenuBarItemManager {
         }
     }
 
-    /// Returns whether `rEvent` is a stray echo of this operation's own
-    /// event: it carries the same `eventSourceUserData` — unique per posted
+    /// Returns whether rEvent is a stray echo of this operation's own
+    /// event: it carries the same eventSourceUserData — unique per posted
     /// event, so a positive identification — but its window fields no longer
     /// match the ones it was posted with.
     ///
     /// The window server re-resolves
-    /// `mouseEventWindowUnderMousePointer*` against whatever actually sits
+    /// mouseEventWindowUnderMousePointer* against whatever actually sits
     /// under the cursor. For an item parked off the left edge, the posted
     /// coordinates get clamped to the display's leftmost edge — under the
     /// Apple menu — and the event comes back bound to that window instead.
@@ -603,11 +617,11 @@ extension MenuBarItemManager {
     /// rather than let it run to timeout.
     ///
     /// The mismatch is always logged; only the early failure is gated. The
-    /// window server re-resolves the `mouseEventWindowUnderMousePointer*`
+    /// window server re-resolves the mouseEventWindowUnderMousePointer*
     /// fields against whatever actually sits under the cursor, so a mismatch
     /// is the signature of a move whose coordinates were clamped — the
     /// top-left/Apple-menu case for items parked off the left edge. Whether
-    /// that is *always* unrecoverable is unverified on real hardware, hence
+    /// that is always unrecoverable is unverified on real hardware, hence
     /// the opt-in. Enable with:
     ///   defaults write com.stonerl.Thaw failFastOnEventWindowMismatch -bool YES
     private nonisolated var failsFastOnEventWindowMismatch: Bool {
@@ -661,8 +675,8 @@ extension MenuBarItemManager {
             option: .listenOnly
         ) { tap, rEvent in
             guard rEvent.matches(context.event, byIntegerFields: CGEventField.menuBarItemEventFields) else {
-                // `eventSourceUserData` is unique per posted event (see
-                // `setUserData`), so matching on it alone positively
+                // eventSourceUserData is unique per posted event (see
+                // setUserData), so matching on it alone positively
                 // identifies this operation's own event. Getting here with
                 // that field equal means the event came back with the window
                 // fields rewritten — it was delivered against a different
@@ -962,7 +976,7 @@ extension MenuBarItemManager {
         } catch {
             // Cancellation of a superseded operation lands here. The
             // underlying error used to be discarded, leaving #900's log a
-            // wall of indistinguishable `cannotComplete`s.
+            // wall of indistinguishable cannotCompletes.
             MenuBarItemManager.diagLog.debug("postEvent: event wait for \(item.logString) failed: \(error)")
             throw EventError.cannotComplete
         }
@@ -975,11 +989,11 @@ extension MenuBarItemManager {
     ///   - event: The event to post.
     ///   - item: The menu bar item that the event targets.
     ///   - timeout: The base duration to wait before throwing an error.
-    ///     The value of this parameter is multiplied by `count` to
+    ///     The value of this parameter is multiplied by count to
     ///     produce the actual timeout duration.
     ///   - count: The number of times to repeat the operation. As it
     ///     is considerably more efficient, prefer increasing this value
-    ///     over repeatedly calling `postEventWithBarrier`.
+    ///     over repeatedly calling postEventWithBarrier.
     nonisolated func postEventWithBarrier(
         _ event: CGEvent,
         to item: MenuBarItem,
@@ -1002,11 +1016,11 @@ extension MenuBarItemManager {
     ///   - event: The event to post.
     ///   - item: The menu bar item that the event targets.
     ///   - timeout: The base duration to wait before throwing an error.
-    ///     The value of this parameter is multiplied by `count` to
+    ///     The value of this parameter is multiplied by count to
     ///     produce the actual timeout duration.
     ///   - count: The number of times to repeat the operation. As it
     ///     is considerably more efficient, prefer increasing this value
-    ///     over repeatedly calling `scrombleEvent`.
+    ///     over repeatedly calling scrombleEvent.
     nonisolated func scrombleEvent(
         _ event: CGEvent,
         item: MenuBarItem,

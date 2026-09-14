@@ -89,6 +89,27 @@ struct MoveEndpointIdentityTests {
         ) == .failure(.recycledDestination))
     }
 
+    @Test("Fresh endpoints overlay an unresolved geometry snapshot")
+    func freshEndpointsOverlayGeometrySnapshot() {
+        let source = item(windowID: 40, x: 100, sourcePID: nil, title: "Source")
+        let middle = item(windowID: 41, x: 200, sourcePID: nil, title: "Middle")
+        let target = item(windowID: 42, x: 300, sourcePID: nil, title: "Target")
+        let freshSource = item(windowID: 40, x: 140, sourcePID: 81, title: "Source")
+        let freshTarget = item(windowID: 42, x: 340, sourcePID: 81, title: "Target")
+
+        let merged = MenuBarItemManager.replacingMoveEndpoints(
+            in: [source, middle, target],
+            with: [freshSource, freshTarget]
+        )
+
+        #expect(merged.map(\.windowID) == [40, 41, 42])
+        #expect(merged[0].sourcePID == 81)
+        #expect(merged[0].bounds.minX == 140)
+        #expect(merged[1] == middle)
+        #expect(merged[2].sourcePID == 81)
+        #expect(merged[2].bounds.minX == 340)
+    }
+
     @Test("Exact endpoints produce deterministic ordinal positions")
     func exactEndpointsProduceIndices() {
         let source = item(windowID: 40, x: 100, title: "Source")
@@ -126,6 +147,27 @@ struct MoveEndpointIdentityTests {
             sourceWindowID: source.windowID,
             destinationWindowID: destination.windowID
         ) == nil)
+    }
+
+    @Test("An off-display Tahoe window is parked despite its onscreen bit")
+    func onscreenBitDoesNotOverrideParkedGeometry() {
+        let selected: CGDirectDisplayID = 1
+        let displays = [
+            MenuBarItemManager.MoveDisplayGeometry(
+                id: selected,
+                bounds: CGRect(x: 0, y: 0, width: 1728, height: 1117)
+            ),
+        ]
+        let parked = CGRect(x: -7775, y: 0, width: 24, height: 24)
+
+        #expect(MenuBarItemManager.moveEndpointDisposition(
+            bounds: parked,
+            isOnScreen: true,
+            selectedDisplayID: selected,
+            displays: displays,
+            parkedLaneYRange: 0 ... 24,
+            controlDividerX: 1400
+        ) == .parked)
     }
 
     @Test("Parked lane geometry is not mistaken for a left display")

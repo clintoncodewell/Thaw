@@ -10,8 +10,8 @@ import AppKit
 import Collections
 import Foundation
 
-/// The live half of ``MenuBarItemTriggersManager``: everything whose substance
-/// needs a running `AppState`. Setup and its observations, the evaluation pass
+/// The live half of MenuBarItemTriggersManager: everything whose substance
+/// needs a running AppState. Setup and its observations, the evaluation pass
 /// that reads the item cache, the debounced apply, the serial move chain and
 /// its retry bookkeeping, reveal notifications, script runs, and the image
 /// capture behind the icon-watching conditions. None of that can run in a unit
@@ -60,10 +60,10 @@ extension MenuBarItemTriggersManager {
         // different section. Watching it lets triggers repair a manual or
         // external move promptly, rather than trusting a stale Boolean memo
         // until the condition itself happens to flip.
-        // `MenuBarItemManager` is @Observable, so its old `$itemCache`
+        // MenuBarItemManager is @Observable, so its old $itemCache
         // projection is gone. Match the app's Observations async-sequence
-        // pattern; `scheduleEvaluation(after:)` already coalesces, which is
-        // what the old `.debounce` provided.
+        // pattern; scheduleEvaluation(after:) already coalesces, which is
+        // what the old .debounce provided.
         itemCacheObservationTask?.cancel()
         itemCacheObservationTask = Task { @MainActor [weak self, weak appState] in
             let changes = Observations { appState?.itemManager.itemCache }
@@ -114,7 +114,7 @@ extension MenuBarItemTriggersManager {
         // Re-apply when feature flags change (a newly enabled source may
         // satisfy a trigger that was previously inert).
         featureFlags.addChangeHandler { [weak self] in
-            // `isAvailable` reads the flags, so ownership changes with them.
+            // isAvailable reads the flags, so ownership changes with them.
             self?.refreshControlledIdentifiers()
             // Run after the flag set mutates so cached sources whose
             // monitors live here (scripts and image hashes) populate
@@ -122,6 +122,7 @@ extension MenuBarItemTriggersManager {
             DispatchQueue.main.async {
                 self?.runScriptsIfNeeded()
                 self?.refreshImageHashesIfNeeded()
+                self?.updateAttentionDetectionDemand()
                 self?.scheduleEvaluation()
             }
         }
@@ -132,8 +133,8 @@ extension MenuBarItemTriggersManager {
     /// Evaluates every enabled trigger against the given system state.
     ///
     /// A reveal decision that has flipped relative to the item's current
-    /// placement is applied immediately when `force` is `true` (startup,
-    /// edits, the safety timer) or after a debounce when `false` (live state
+    /// placement is applied immediately when force is true (startup,
+    /// edits, the safety timer) or after a debounce when false (live state
     /// changes).
     func evaluate(for state: SystemState, force: Bool) {
         guard let appState else { return }
@@ -179,8 +180,8 @@ extension MenuBarItemTriggersManager {
         // Editor ownership is a separate question from which items currently
         // carry an action, and it has a single writer. An overridden trigger
         // emits no action but still owns its target, so deriving ownership
-        // from `plan.actions` here would contradict
-        // `refreshControlledIdentifiers` and make the badge flicker depending
+        // from plan.actions here would contradict
+        // refreshControlledIdentifiers and make the badge flicker depending
         // on which writer ran last.
         refreshControlledIdentifiers()
         appState.itemManager.setTriggerControlledItemIdentifiers(triggerControlledIdentifiers)
@@ -682,20 +683,22 @@ extension MenuBarItemTriggersManager {
         }
     }
 
-    /// Tells the image cache whether any enabled trigger needs blink
-    /// detection running, so it is not tied to the reveal setting alone.
+    /// Gives the image cache the exact identifiers watched by enabled blink
+    /// triggers, so trigger-only capture never expands to whole sections.
     func updateAttentionDetectionDemand() {
         guard let appState else { return }
-        let required = featureFlags.isEnabled(.attentionSeeking) && triggers.contains { trigger in
-            trigger.isEnabled && trigger.allConditions.contains { condition in
-                if case let .itemSeekingAttention(id) = condition {
-                    return !id.isEmpty
+        let identifiers = featureFlags.isEnabled(.attentionSeeking)
+            ? Set(triggers.lazy.filter(\.isEnabled).flatMap { trigger in
+                trigger.allConditions.compactMap { condition -> String? in
+                    guard case let .itemSeekingAttention(id) = condition, !id.isEmpty else {
+                        return nil
+                    }
+                    return id
                 }
-                return false
-            }
-        }
-        guard appState.imageCache.isAttentionDetectionRequired != required else { return }
-        appState.imageCache.isAttentionDetectionRequired = required
+            })
+            : []
+        guard appState.imageCache.attentionDetectionItemIdentifiers != identifiers else { return }
+        appState.imageCache.attentionDetectionItemIdentifiers = identifiers
     }
 
     func refreshImageHashesIfNeeded() {
@@ -733,12 +736,19 @@ extension MenuBarItemTriggersManager {
         }
 
         isRefreshingImages = true
-        Task { @MainActor [weak self] in
-            guard let self else { return }
+        Task { @MainActor [weak self, weak appState] in
+            guard let self, let appState else { return }
 
+            // One XPC request captures every watched window. The helper owns
+            // the leaking SkyLight call and is recycled independently of Thaw.
+            let currentImages = await appState.imageCache.captureCurrentImages(
+                forItemIdentifiers: ids
+            )
             var changed = removedAny
             for id in ids {
-                guard let fingerprints = await self.currentImageFingerprints(forItemIdentifier: id) else {
+                guard let image = currentImages[id],
+                      let fingerprints = self.imageFingerprints(for: image)
+                else {
                     if self.imageHashes[id] != nil || self.exactImageHashes[id] != nil {
                         self.imageHashes[id] = nil
                         self.exactImageHashes[id] = nil
@@ -766,39 +776,26 @@ extension MenuBarItemTriggersManager {
         }
     }
 
-    /// Captures the watched item's window and returns both comparison hashes.
-    private func currentImageFingerprints(
-        forItemIdentifier id: String
-    ) async -> (perceptual: UInt64, exact: UInt64)? {
-        guard
-            let image = await currentImage(forItemIdentifier: id),
-            let perceptual = ImageHashing.averageHash(image),
-            let exact = ImageHashing.exactHash(image)
+    /// Returns both comparison hashes for an already captured image.
+    private func imageFingerprints(
+        for image: CGImage
+    ) -> (perceptual: UInt64, exact: UInt64)? {
+        guard let perceptual = ImageHashing.averageHash(image),
+              let exact = ImageHashing.exactHash(image)
         else {
             return nil
         }
         return (perceptual, exact)
     }
 
-    /// Captures the watched item's current window image.
-    private func currentImage(forItemIdentifier id: String) async -> CGImage? {
-        guard
-            let appState,
-            let item = appState.itemManager.itemCache.managedItems.first(where: { $0.tag.tagIdentifier == id })
-        else {
-            return nil
-        }
-
-        return await ScreenCapture.captureWindowAsync(with: item.windowID)
-            ?? ScreenCapture.captureWindow(with: item.windowID)
-    }
-
     /// Captures both the runtime hash and a compact settings preview.
     func captureImageReference(forItemIdentifier id: String) async -> ImageComparisonReference? {
-        guard
-            let image = await currentImage(forItemIdentifier: id),
-            let perceptualHash = ImageHashing.averageHash(image),
-            let exactHash = ImageHashing.exactHash(image)
+        guard let appState,
+              let image = await appState.imageCache.captureCurrentImages(
+                  forItemIdentifiers: [id]
+              )[id],
+              let perceptualHash = ImageHashing.averageHash(image),
+              let exactHash = ImageHashing.exactHash(image)
         else {
             return nil
         }
