@@ -226,8 +226,13 @@ runs:
         package_name="$(sed -nE 's/^[[:space:]]*name: "([^"]+)",?$/\1/p' "$manifest" | head -1)"
         target_name="$(grep -A1 -E '\.binaryTarget\(' "$manifest" | sed -nE 's/^[[:space:]]*name: "([^"]+)",?$/\1/p' | head -1)"
         platform="$(grep -oE '\.macOS\(\.v[0-9]+\)' "$manifest" | head -1)"
-        : "${platform:=.macOS(.v26)}"
-        for v in asset manifest_sum package_name target_name; do
+        # The stand-in states the same platform as the package it replaces, so
+        # it needs the same PackageDescription to express it: .v27 is only
+        # available from 6.4. Take the tools version from the manifest rather
+        # than fixing one here, and a package that moves to a newer platform
+        # keeps resolving.
+        tools_version="$(sed -nE 's#^//[[:space:]]*swift-tools-version:[[:space:]]*([0-9.]+).*#\1#p' "$manifest" | head -1)"
+        for v in asset manifest_sum package_name target_name platform tools_version; do
           if [[ -z "${!v}" ]]; then
             echo "::error::Could not read ${v} from the package manifest at ${version}"
             exit 1
@@ -267,7 +272,7 @@ runs:
         fi
 
         cat > "$override/Package.swift" <<EOF
-        // swift-tools-version: 6.3
+        // swift-tools-version: ${tools_version}
         // Generated in CI: path-based stand-in for a binary package SwiftPM cannot fetch here.
         import PackageDescription
 
