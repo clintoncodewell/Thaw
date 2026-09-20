@@ -258,4 +258,50 @@ struct MoveEventCoordinatesTests {
 
         #expect(point == CGPoint(x: bounds.minX, y: bounds.minY))
     }
+
+    // MARK: - Parked release point
+
+    /// A parked teleport must keep the point planned before the press: a held
+    /// item reads at the display origin and its lane reflows by ~1000pt.
+    @Test("A parked teleport keeps the release point planned before the press")
+    func parkedTeleportKeepsPlannedReleasePoint() {
+        #expect(
+            MenuBarItemManager.MoveStrategy.parkedTeleport.keepsPlannedReleasePoint(
+                targetDisposition: .parked
+            )
+        )
+        #expect(
+            MenuBarItemManager.MoveStrategy.parkedTeleport.keepsPlannedReleasePoint(
+                targetDisposition: .selectedDisplay
+            )
+        )
+    }
+
+    /// A source-anchored retry keeps the planned point only when its
+    /// destination is parked; a visible destination's reflow is real.
+    @Test("A source-anchored retry keeps the planned point only for a parked destination")
+    func sourceAnchoredRetryKeepsPlannedPointOnlyWhenTargetParked() {
+        #expect(
+            MenuBarItemManager.MoveStrategy.sourceAnchoredTeleport.keepsPlannedReleasePoint(
+                targetDisposition: .parked
+            )
+        )
+        #expect(
+            !MenuBarItemManager.MoveStrategy.sourceAnchoredTeleport.keepsPlannedReleasePoint(
+                targetDisposition: .selectedDisplay
+            )
+        )
+    }
+
+    @Test("Other transports always re-resolve their release point")
+    func otherTransportsReresolveReleasePoint() {
+        for strategy in [
+            MenuBarItemManager.MoveStrategy.teleport,
+            .faithfulDrag,
+            .crossNotchTeleport,
+        ] {
+            #expect(!strategy.keepsPlannedReleasePoint(targetDisposition: .parked))
+            #expect(!strategy.keepsPlannedReleasePoint(targetDisposition: .selectedDisplay))
+        }
+    }
 }

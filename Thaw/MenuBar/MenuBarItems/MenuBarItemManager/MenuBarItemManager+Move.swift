@@ -142,6 +142,25 @@ extension MenuBarItemManager {
             case .sourceAnchoredTeleport: "sourceAnchoredTeleport"
             }
         }
+
+        /// Whether this move releases at the point planned before the press
+        /// instead of a mid-hold snapshot. While a parked item is held, its
+        /// lane reads as reflowed by roughly a thousand points.
+        /// (#1074, #1102, #1104, #1133)
+        func keepsPlannedReleasePoint(
+            targetDisposition: MoveEndpointDisposition
+        ) -> Bool {
+            switch self {
+            case .parkedTeleport:
+                return true
+            case .sourceAnchoredTeleport:
+                // A source-anchored retry can address a visible destination,
+                // where the reflow is real and the fresh point is correct.
+                return targetDisposition == .parked
+            case .teleport, .faithfulDrag, .crossNotchTeleport:
+                return false
+            }
+        }
     }
 
     /// Whether a horizontal on-bar gesture can stay inside one safe segment.
@@ -1413,6 +1432,14 @@ extension MenuBarItemManager {
                     targetBounds: releaseEndpoints.target.bounds,
                     on: displayID
                 )
+                let releaseLocation = strategy.keepsPlannedReleasePoint(
+                    targetDisposition: geometry.target
+                ) ? eventLocations.release : releasePoints.end
+                if releaseLocation != releasePoints.end {
+                    MenuBarItemManager.diagLog.debug(
+                        "Parked release kept planned point \(releaseLocation.x) instead of reflowed \(releasePoints.end.x)"
+                    )
+                }
                 let liveReleaseItem = strategy == .sourceAnchoredTeleport
                     ? releaseEndpoints.source
                     : releaseEndpoints.target
@@ -1420,7 +1447,7 @@ extension MenuBarItemManager {
                     item: liveReleaseItem,
                     source: source,
                     type: .move(.mouseUp),
-                    location: releasePoints.end
+                    location: releaseLocation
                 ) else {
                     throw EventError.eventCreationFailure(releaseEndpoints.source)
                 }

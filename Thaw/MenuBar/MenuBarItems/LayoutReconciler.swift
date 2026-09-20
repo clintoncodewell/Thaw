@@ -295,6 +295,38 @@ nonisolated enum LayoutReconciler {
                 return desiredFiltered.endIndex
             }
         }
+        /// Default insertion index for a section when no NewItemsPlacement
+        /// anchor applies. Mirrors `defaultNewItemsBadgeIndex` so the badge
+        /// and a new item's slot cannot disagree. (#1069)
+        func sectionDefaultIndex(for section: MenuBarSection.Name) -> Int {
+            switch section {
+            case .visible:
+                // Visible is the first block, so its leftmost slot is 0.
+                // Skip a leading chevron only; the icon can sit mid-section.
+                if let chevron = controlUIDs.visible, desiredFiltered.first == chevron {
+                    return 1
+                }
+                return 0
+            case .hidden:
+                return controlUIDs.alwaysHidden != nil
+                    ? sectionStartIndex(for: .hidden)
+                    : sectionEndIndex(for: .hidden)
+            case .alwaysHidden:
+                return sectionEndIndex(for: .alwaysHidden)
+            }
+        }
+        /// Whether a section's default slot is at its start, where successive
+        /// defaults need an offset to keep their order.
+        func sectionDefaultIsAtStart(_ section: MenuBarSection.Name) -> Bool {
+            switch section {
+            case .visible:
+                return true
+            case .hidden:
+                return controlUIDs.alwaysHidden != nil
+            case .alwaysHidden:
+                return false
+            }
+        }
         func sectionKeyString(for section: MenuBarSection.Name) -> String {
             switch section {
             case .visible: return "visible"
@@ -446,16 +478,23 @@ nonisolated enum LayoutReconciler {
             }
         }
 
-        // Pass 3: .newItemDefault placements. Insert at the section
-        // end in unmanagedUIDs order so their relative ordering
-        // matches the current menu bar.
+        // Pass 3: .newItemDefault placements, at the badge's default slot so
+        // a new item lands where the placeholder sits. (#1069)
+        var defaultInsertedCount = [MenuBarSection.Name: Int]()
         for uid in unmanagedUIDs {
             if case let .newItemDefault(section) = placements[uid] {
                 // Guards the caller invariant: see pass 1.
                 if desiredFiltered.contains(uid) {
                     continue
                 }
-                desiredFiltered.insert(uid, at: sectionEndIndex(for: section))
+                // A start slot is stable, so offset each insert; an end slot
+                // advances on its own.
+                let base = sectionDefaultIndex(for: section)
+                let offset = sectionDefaultIsAtStart(section)
+                    ? defaultInsertedCount[section, default: 0]
+                    : 0
+                desiredFiltered.insert(uid, at: base + offset)
+                defaultInsertedCount[section, default: 0] += 1
                 sectionMap[uid] = sectionKeyString(for: section)
             }
         }
