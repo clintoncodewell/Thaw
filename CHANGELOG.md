@@ -11,7 +11,11 @@ and the Sparkle appcast, unless overridden with the `release_notes` input.
 
 **macOS 26 only · Build 60**
 
-A bug-fix pass on the menu bar layout engine and its settings. Seven field reports are fixed here, from parked reorders that reverted to the screen-recording indicator.
+A bug-fix pass on the menu bar layout engine and its settings, plus one new option. Eight field reports are fixed here, from parked reorders that reverted to the screen-recording indicator.
+
+### New
+
+- **Keep Thaw out of the Dock while you toggle the bar.** "Hide Dock icon when toggling the menu bar" (General) stops Thaw switching to a regular activation policy when it shows or hides hidden items, so the Dock icon no longer flashes on every toggle. Overflow that would have hidden the frontmost app's menus opens in the Thaw Bar instead. Settings and other explicit windows still appear normally. [#1128](https://github.com/thaw-app/Thaw/issues/1128)
 
 ### Fixes
 
@@ -22,8 +26,9 @@ A bug-fix pass on the menu bar layout engine and its settings. Seven field repor
 5. **The Smart rehide interval is visible where it is used.** Smart falls back to the same interval Timed uses, but the slider only appeared under Timed, so the value that governed Smart could not be seen or changed. The slider now appears under both. Focus rehides on activation and ignores the interval. [#1049](https://github.com/thaw-app/Thaw/issues/1049)
 6. **A renamed anchor still places new items.** A "New items" anchor saved under a helper's name stopped matching after the namespace was canonicalized, so new items fell back to the section default. Anchor lookup now canonicalizes, and the placement names the live item. [#1069](https://github.com/thaw-app/Thaw/issues/1069)
 7. **App-icon mode stops sampling the menu bar.** "Always use app icon for menu bar items" only changed what Thaw drew; it still captured the menu bar for previews, which is what raises the screen-recording indicator. With the setting on, Thaw no longer captures. [#1051](https://github.com/thaw-app/Thaw/issues/1051)
+8. **The Thaw Bar uses the right icon tint on every display.** Opening the bar on a second display briefly showed the other display's light or dark icon tint. Thaw now keeps a per-display icon snapshot and restores it before the bar appears. [#1065](https://github.com/thaw-app/Thaw/issues/1065)
 
-## [3.0.0-alpha.6] - 2026-09-20
+## [3.0.0-alpha.6] - 2026-09-21
 
 **macOS 27 only · Build 106**
 
@@ -67,6 +72,10 @@ A bug-fix pass on the menu bar layout engine and its settings. Seven field repor
 - **A Core Foundation result that is not an array or a dictionary no longer crashes the app.** Five bridging sites are checked before use.
 - **A Manual-arrangement reorder is refused with a warning** instead of silently overwriting the order you saved.
 - **A missing capture no longer leaves a blank slot.** An item with no app icon and no capture, such as a concealed Apple module, now falls back to a substitute glyph instead of an empty cell.
+- **Right-clicking an item in the Thaw Bar opens its menu again.** Alpha 6 sent the right click through the move path, so an item macOS would not let Thaw move never got a context menu.
+- **A failed menu bar capture falls back to the app icon** instead of leaving the slot blank or black.
+- **A reveal whose menu bar capture fails no longer pegs a CPU core.** The join loop spun the main thread, which is the system-wide lag some of you saw during a reveal.
+- **Time Machine is recognized by name.** macOS 27 stopped reporting a title for it, so Thaw filed it as an unnamed item and could not place it.
 
 ### Menu bar reliability
 
@@ -87,10 +96,12 @@ A bug-fix pass on the menu bar layout engine and its settings. Seven field repor
 - **A move the position store cannot express still completes** through the Command-drag fallback. Drops can land next to parked-band items, and two icons of one app sitting on one weight are separated.
 - **The Thaw icon honours a held Option**, and Always Hidden presents the Thaw Bar when it is on.
 - **The capture helper no longer aborts while ScreenCaptureKit builds its window filter**, and Layout opens right after the Thaw Bar without the multi-second wait.
+- **The Thaw Bar stays beside the Thaw icon when macOS parks it.** It used to anchor to the parked position and land at the left edge of the screen.
+- **The Thaw icon comes back after a display change.** Recovery used to give up for the rest of the session.
 
 ### Still under investigation
 
-- **Thaw's own menu bar item can still go missing on macOS 27.** A stranded control item is now reseated instead of staying invisible until relaunch. This needs a live test on macOS 27 before it is called fixed. [#1135](https://github.com/thaw-app/Thaw/issues/1135)
+- **Thaw's own menu bar item can still go missing on macOS 27.** Thaw now treats a parked Thaw icon as parked, so the bar and the layout engine stop planning on that position, and recovery retries after a display change. macOS can still park the item, so this needs a live test before it is called fixed. [#1135](https://github.com/thaw-app/Thaw/issues/1135)
 - **Hidden section items still look wrong in some cases.** Always-hidden icons are captured after the section settles, and edge-ring knock-out helps full-frame icons, but the reports stay open. [#1119](https://github.com/thaw-app/Thaw/issues/1119)
 - **The five clicking bugs reported against alpha.5 have fixes in this build.** The reports stay open until someone confirms them on a live macOS 27 setup: empty-spot clicks, the Notification Center shortcut, the right-click menu, hidden-section collapse, and a dead Thaw Bar icon. [#1145](https://github.com/thaw-app/Thaw/issues/1145), [#1146](https://github.com/thaw-app/Thaw/issues/1146), [#1147](https://github.com/thaw-app/Thaw/issues/1147), [#1148](https://github.com/thaw-app/Thaw/issues/1148), [#1149](https://github.com/thaw-app/Thaw/issues/1149)
 - **Uneven gaps after a spacing change are not resolved.** [#1126](https://github.com/thaw-app/Thaw/issues/1126)
