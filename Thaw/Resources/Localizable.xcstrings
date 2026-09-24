@@ -184,8 +184,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Remove from group"
+            "state" : "translated",
+            "value" : "Usuń z grupy"
           }
         },
         "pt-BR" : {
@@ -302,8 +302,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Reference captured"
+            "state" : "translated",
+            "value" : "Zapisano odniesienie"
           }
         },
         "pt-BR" : {
@@ -657,8 +657,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Relaunch Now"
+            "state" : "translated",
+            "value" : "Uruchom ponownie"
           }
         },
         "pt-BR" : {
@@ -776,8 +776,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Remove"
+            "state" : "translated",
+            "value" : "Usuń"
           }
         },
         "pt-BR" : {
@@ -1013,8 +1013,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Remove All"
+            "state" : "translated",
+            "value" : "Usuń wszystkie"
           }
         },
         "pt-BR" : {
@@ -1250,8 +1250,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Radius"
+            "state" : "translated",
+            "value" : "Promień"
           }
         },
         "pt-BR" : {
@@ -1368,8 +1368,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Remove Override for This Space"
+            "state" : "translated",
+            "value" : "Wyłącz nadpisywanie ustawień w tej przestrzeni"
           }
         },
         "pt-BR" : {
@@ -1486,8 +1486,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Remove this condition"
+            "state" : "translated",
+            "value" : "Usuń warunek"
           }
         },
         "pt-BR" : {
@@ -1604,8 +1604,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Remove this spacer"
+            "state" : "translated",
+            "value" : "Wyjmij ten element dystansowy"
           }
         },
         "pt-BR" : {
@@ -1842,8 +1842,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Replay onboarding"
+            "state" : "translated",
+            "value" : "Uruchom ponownie samouczek"
           }
         },
         "pt-BR" : {
@@ -1960,8 +1960,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Replay Onboarding"
+            "state" : "translated",
+            "value" : "Uruchom ponownie samouczek"
           }
         },
         "pt-BR" : {
@@ -2435,8 +2435,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Quit the menu bar host and delete its saved item positions, so the menu bar arrangement rebuilds from scratch. Use this when items refuse to return to the menu bar after rearranging."
+            "state" : "translated",
+            "value" : "Zamknij proces zarządzający paskiem menu i usuń dane o zapisanym położeniu elementów, by odtworzyć układ paska menu od zera. Wybierz tę opcję, jeśli po przestawieniu elementów nie da się ich przywrócić na pasek menu."
           }
         },
         "pt-BR" : {
@@ -2792,8 +2792,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Per-Space Profiles"
+            "state" : "translated",
+            "value" : "Profile przypisane do przestrzeni"
           }
         },
         "pt-BR" : {
@@ -3148,8 +3148,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Permissions cleared. Quitting…"
+            "state" : "translated",
+            "value" : "Uprawnienia cofnięte. Zamykanie aplikacji…"
           }
         },
         "pt-BR" : {
@@ -3266,8 +3266,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Pick two items below to group them. Grouped items always move together."
+            "state" : "translated",
+            "value" : "Wybierz dwa poniższe elementy, aby je zgrupować. Zgrupowane elementy zawsze przesuwają się razem."
           }
         },
         "pt-BR" : {
@@ -3859,8 +3859,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Quit Control Center and delete its preference files so system menu bar item state can rebuild."
+            "state" : "translated",
+            "value" : "Zamknij Centrum sterowania i usuń jego pliki preferencji, aby można było odbudować stan systemowych elementów paska menu."
           }
         },
         "pt-BR" : {
@@ -4454,8 +4454,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Quit & Clear Cache"
+            "state" : "translated",
+            "value" : "Zamknij aplikację i wyczyść pamięć podręczną"
           }
         },
         "pt-BR" : {
@@ -4692,8 +4692,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Quit and clear cache"
+            "state" : "translated",
+            "value" : "Zamknij aplikację i wyczyść pamięć podręczną"
           }
         },
         "pt-BR" : {
@@ -4810,8 +4810,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Quit and clear cache?"
+            "state" : "translated",
+            "value" : "Zamknąć aplikację i wyczyścić pamięć podręczną?"
           }
         },
         "pt-BR" : {
@@ -5881,8 +5881,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Rotate by time"
+            "state" : "translated",
+            "value" : "Nadpisuj logi z upływem czasu"
           }
         },
         "pt-BR" : {
@@ -6119,8 +6119,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Rounded corners"
+            "state" : "translated",
+            "value" : "Zaokrąglone narożniki"
           }
         },
         "pt-BR" : {
@@ -6237,8 +6237,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Runs your script about every 30 seconds. Reveals when it exits 0, or — if an expected output is set — when its output contains that text."
+            "state" : "translated",
+            "value" : "Uruchamia Twój skrypt mniej więcej co 30 sekund. Ujawnia się, gdy skrypt zakończy się z kodem 0 albo — jeśli określono oczekiwany tekst w wyniku — gdy wynik zawiera ten tekst."
           }
         },
         "pt-BR" : {
@@ -6356,8 +6356,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Reveals the item while its icon is blinking. A clock or a battery percentage will not trigger this: they always move to a state they have never shown before, while a blink keeps returning to one. Requires screen recording permission."
+            "state" : "translated",
+            "value" : "Pokazuje element, gdy jego ikona miga. Zmiany godziny ani poziomu naładowania baterii nie uruchamiają tej funkcji: wskazania te przechodzą do nowych stanów, natomiast migająca ikona regularnie powraca do poprzedniego. Wymaga dostępu do nagrywania ekranu."
           }
         },
         "pt-BR" : {
@@ -6593,8 +6593,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Safe vs maintenance tools"
+            "state" : "translated",
+            "value" : "Bezpieczne narzędzia a narzędzia konserwacyjne"
           }
         },
         "pt-BR" : {
@@ -6948,8 +6948,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Save Diagnostic Report"
+            "state" : "translated",
+            "value" : "Zapisz raport diagnostyczny"
           }
         },
         "pt-BR" : {
@@ -7066,8 +7066,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Save Diagnostic Report…"
+            "state" : "translated",
+            "value" : "Zapisz raport diagnostyczny…"
           }
         },
         "pt-BR" : {
@@ -7422,8 +7422,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Review the feature tour and permission setup again."
+            "state" : "translated",
+            "value" : "Przejdź ponownie przez przewodnik po funkcjach oraz konfigurację uprawnień."
           }
         },
         "pt-BR" : {
@@ -8134,8 +8134,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Reset Control Center"
+            "state" : "translated",
+            "value" : "Przywróć domyślne ustawienia Centrum sterowania"
           }
         },
         "pt-BR" : {
@@ -8252,8 +8252,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Reset Control Center preferences"
+            "state" : "translated",
+            "value" : "Przywróć domyślne ustawienia Centrum sterowania"
           }
         },
         "pt-BR" : {
@@ -8370,8 +8370,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Reset Control Center preferences?"
+            "state" : "translated",
+            "value" : "Przywrócić domyślne ustawienia Centrum sterowania?"
           }
         },
         "pt-BR" : {
@@ -8607,8 +8607,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Reset Layout Positions"
+            "state" : "translated",
+            "value" : "Przywróć początkowy układ elementów"
           }
         },
         "pt-BR" : {
@@ -8962,8 +8962,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Restore %@ preferences to their defaults. Saved profiles and user data are not deleted. This cannot be undone."
+            "state" : "translated",
+            "value" : "Przywróć ustawienia %@ do wartości domyślnych. Zapisane profile i dane użytkownika pozostaną nienaruszone. Tej czynności nie można cofnąć."
           }
         },
         "pt-BR" : {
@@ -9080,8 +9080,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Reset menu bar layout positions"
+            "state" : "translated",
+            "value" : "Przywróć domyślne położenie elementów paska menu"
           }
         },
         "pt-BR" : {
@@ -9198,8 +9198,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Reset menu bar layout positions?"
+            "state" : "translated",
+            "value" : "Przywrócić domyślne położenie elementów paska menu?"
           }
         },
         "pt-BR" : {
@@ -9316,8 +9316,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Reset permissions"
+            "state" : "translated",
+            "value" : "Przywróć domyślne uprawnienia"
           }
         },
         "pt-BR" : {
@@ -9434,8 +9434,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Reset Permissions"
+            "state" : "translated",
+            "value" : "Przywróć domyślne uprawnienia"
           }
         },
         "pt-BR" : {
@@ -9552,8 +9552,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Reset permissions?"
+            "state" : "translated",
+            "value" : "Przywrócić domyślne uprawnienia?"
           }
         },
         "pt-BR" : {
@@ -10026,8 +10026,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Per-Space override"
+            "state" : "translated",
+            "value" : "Nadpisanie ustawień dla danej przestrzeni"
           }
         },
         "pt-BR" : {
@@ -10144,8 +10144,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Per display"
+            "state" : "translated",
+            "value" : "Dla każdego wyświetlacza"
           }
         },
         "pt-BR" : {
@@ -10262,8 +10262,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Saves the appearance above for the currently active Space only. Every other Space keeps the shared appearance."
+            "state" : "translated",
+            "value" : "Zastosuje powyższy wygląd tylko do obecnie aktywnej przestrzeni. W pozostałych przestrzeniach nadal będzie obowiązywać wspólny wygląd."
           }
         },
         "pt-BR" : {
@@ -11566,8 +11566,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Move trigger down"
+            "state" : "translated",
+            "value" : "Przenieś wyzwalacz niżej"
           }
         },
         "pt-BR" : {
@@ -11684,8 +11684,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Move trigger up"
+            "state" : "translated",
+            "value" : "Przenieś wyzwalacz wyżej"
           }
         },
         "pt-BR" : {
@@ -12278,8 +12278,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "No display found."
+            "state" : "translated",
+            "value" : "Nie znaleziono wyświetlacza."
           }
         },
         "pt-BR" : {
@@ -12633,8 +12633,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Mode"
+            "state" : "translated",
+            "value" : "Tryb"
           }
         },
         "pt-BR" : {
@@ -13581,8 +13581,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Menu bar item"
+            "state" : "translated",
+            "value" : "Element paska menu"
           }
         },
         "pt-BR" : {
@@ -14182,8 +14182,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Menu bar items are rehidden using a smart algorithm, or after the interval below."
+            "state" : "translated",
+            "value" : "Elementy paska menu zostają ponownie ukryte przez inteligentny algorytm albo po czasie ustawionym poniżej."
           }
         },
         "pt-BR" : {
@@ -14419,8 +14419,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Menu bar layout positions were reset."
+            "state" : "translated",
+            "value" : "Przywrócono domyślne położenie elementów paska menu."
           }
         },
         "pt-BR" : {
@@ -15131,8 +15131,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "No location captured"
+            "state" : "translated",
+            "value" : "Nie udało się ustalić lokalizacji"
           }
         },
         "pt-BR" : {
@@ -16600,8 +16600,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Onboarding"
+            "state" : "translated",
+            "value" : "Wprowadzenie"
           }
         },
         "pt-BR" : {
@@ -17193,8 +17193,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Other…"
+            "state" : "translated",
+            "value" : "Inne…"
           }
         },
         "pt-BR" : {
@@ -17311,8 +17311,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Otherwise hide in"
+            "state" : "translated",
+            "value" : "W przeciwnym razie ukryj w"
           }
         },
         "pt-BR" : {
@@ -17429,8 +17429,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Overridden by %@. Move this trigger above them to give it priority."
+            "state" : "translated",
+            "value" : "Wyzwalacz %@ ma pierwszeństwo przed tym wyzwalaczem. Przenieś ten wyzwalacz nad niego, aby zmienić kolejność priorytetów."
           }
         },
         "pt-BR" : {
@@ -18272,8 +18272,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "No reference yet"
+            "state" : "translated",
+            "value" : "Nie ma jeszcze odniesienia"
           }
         },
         "pt-BR" : {
@@ -18627,8 +18627,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "No triggers yet"
+            "state" : "translated",
+            "value" : "Brak wyzwalaczy"
           }
         },
         "pt-BR" : {
@@ -19697,8 +19697,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "not running"
+            "state" : "translated",
+            "value" : "nie jest uruchomiony"
           }
         },
         "pt-BR" : {
@@ -20053,8 +20053,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Nothing shown here is saved or sent anywhere; the capture exists only while this page is open."
+            "state" : "translated",
+            "value" : "To, co jest tu wyświetlane, nie jest nigdzie zapisywane ani wysyłane. Przechwycony obraz istnieje tylko tak długo, jak długo ta strona pozostaje otwarta."
           }
         },
         "pt-BR" : {
@@ -20171,8 +20171,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Notify when this reveals the item"
+            "state" : "translated",
+            "value" : "Wyślij powiadomienie, gdy element zostanie ujawniony"
           }
         },
         "pt-BR" : {
@@ -20527,8 +20527,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Maximum log file size (MB)"
+            "state" : "translated",
+            "value" : "Maksymalny rozmiar loga (MB)"
           }
         },
         "pt-BR" : {
@@ -20645,8 +20645,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Trigger list view"
+            "state" : "translated",
+            "value" : "Przełącz na widok listy"
           }
         },
         "pt-BR" : {
@@ -20763,8 +20763,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Toggle zen mode"
+            "state" : "translated",
+            "value" : "Przełącz w tryb Zen"
           }
         },
         "pt-BR" : {
@@ -20881,8 +20881,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Tools"
+            "state" : "translated",
+            "value" : "Narzędzia"
           }
         },
         "pt-BR" : {
@@ -21475,8 +21475,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Trigger list"
+            "state" : "translated",
+            "value" : "Lista wyzwalaczy"
           }
         },
         "pt-BR" : {
@@ -21593,8 +21593,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Triggers"
+            "state" : "translated",
+            "value" : "Wyzwalacze"
           }
         },
         "pt-BR" : {
@@ -21830,8 +21830,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Troubleshooting"
+            "state" : "translated",
+            "value" : "Rozwiązywanie problemów"
           }
         },
         "pt-BR" : {
@@ -21948,8 +21948,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Turn off to show every setting. Nothing you configure here is lost either way."
+            "state" : "translated",
+            "value" : "Wyłącz tę opcję, aby zobaczyć wszystkie ustawienia. Wprowadzone tutaj zmiany zostaną zachowane niezależnie od tego, którą opcję wybierzesz."
           }
         },
         "pt-BR" : {
@@ -22002,120 +22002,126 @@
         }
       }
     },
-    "Turn on the Location flag in Developer settings and grant permission to capture your current location." : {
+    "Turn on Location in Trigger Sources and grant permission to capture your current location." : {
       "localizations" : {
         "cs" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Turn on the Location flag in Developer settings and grant permission to capture your current location."
+            "value" : "Turn on Location in Trigger Sources and grant permission to capture your current location."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Turn on the Location flag in Developer settings and grant permission to capture your current location."
+            "value" : "Turn on Location in Trigger Sources and grant permission to capture your current location."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Turn on Location in Trigger Sources and grant permission to capture your current location."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Turn on the Location flag in Developer settings and grant permission to capture your current location."
+            "value" : "Turn on Location in Trigger Sources and grant permission to capture your current location."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Turn on the Location flag in Developer settings and grant permission to capture your current location."
+            "value" : "Turn on Location in Trigger Sources and grant permission to capture your current location."
           }
         },
         "hu" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Turn on the Location flag in Developer settings and grant permission to capture your current location."
+            "value" : "Turn on Location in Trigger Sources and grant permission to capture your current location."
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Turn on the Location flag in Developer settings and grant permission to capture your current location."
+            "value" : "Turn on Location in Trigger Sources and grant permission to capture your current location."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Turn on the Location flag in Developer settings and grant permission to capture your current location."
+            "value" : "Turn on Location in Trigger Sources and grant permission to capture your current location."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Turn on the Location flag in Developer settings and grant permission to capture your current location."
+            "value" : "Turn on Location in Trigger Sources and grant permission to capture your current location."
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Turn on the Location flag in Developer settings and grant permission to capture your current location."
+            "value" : "Turn on Location in Trigger Sources and grant permission to capture your current location."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Turn on the Location flag in Developer settings and grant permission to capture your current location."
+            "value" : "Turn on Location in Trigger Sources and grant permission to capture your current location."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Turn on the Location flag in Developer settings and grant permission to capture your current location."
+            "value" : "Turn on Location in Trigger Sources and grant permission to capture your current location."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Turn on the Location flag in Developer settings and grant permission to capture your current location."
+            "value" : "Turn on Location in Trigger Sources and grant permission to capture your current location."
           }
         },
         "ru" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Включите флаг «Местоположение» в настройках для разработчиков и предоставьте разрешение на определение вашего текущего местоположения."
+            "state" : "new",
+            "value" : "Turn on Location in Trigger Sources and grant permission to capture your current location."
           }
         },
         "th" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "เปิดแฟล็ก Location ในการตั้งค่านักพัฒนา แล้วให้สิทธิ์เพื่อบันทึกตำแหน่งปัจจุบันของคุณ"
+            "state" : "new",
+            "value" : "Turn on Location in Trigger Sources and grant permission to capture your current location."
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Turn on the Location flag in Developer settings and grant permission to capture your current location."
+            "value" : "Turn on Location in Trigger Sources and grant permission to capture your current location."
           }
         },
         "uk" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Turn on the Location flag in Developer settings and grant permission to capture your current location."
+            "value" : "Turn on Location in Trigger Sources and grant permission to capture your current location."
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Turn on the Location flag in Developer settings and grant permission to capture your current location."
+            "value" : "Turn on Location in Trigger Sources and grant permission to capture your current location."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "在开发者设置中开启“位置”功能，并授权位置权限来获取你当前的位置。"
+            "state" : "new",
+            "value" : "Turn on Location in Trigger Sources and grant permission to capture your current location."
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Turn on the Location flag in Developer settings and grant permission to capture your current location."
+            "value" : "Turn on Location in Trigger Sources and grant permission to capture your current location."
           }
         }
       }
@@ -22422,8 +22428,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Ungroup"
+            "state" : "translated",
+            "value" : "Rozdziel"
           }
         },
         "pt-BR" : {
@@ -22897,8 +22903,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Toggle automatic rehiding"
+            "state" : "translated",
+            "value" : "Włącz lub wyłącz automatyczne ukrywanie"
           }
         },
         "pt-BR" : {
@@ -23270,26 +23276,26 @@
             "plural" : {
               "few" : {
                 "stringUnit" : {
-                  "state" : "new",
-                  "value" : "This will overwrite the settings of %lld displays with the global template. If the active display's spacing changes, Thaw will relaunch each app with a menu bar item. Relaunching apps may cause unsaved input, progress, or transient app state to be lost."
+                  "state" : "translated",
+                  "value" : "Spowoduje to zastąpienie ustawień %lld wyświetlaczy ustawieniami szablonu globalnego. Jeśli zmieni się odstęp na aktywnym wyświetlaczu, Thaw uruchomi ponownie każdą aplikację z ikoną na pasku menu. Ponowne uruchomienie aplikacji może spowodować utratę niezapisanych danych wprowadzonych w aplikacjach, postępów lub tymczasowego stanu aplikacji."
                 }
               },
               "many" : {
                 "stringUnit" : {
-                  "state" : "new",
-                  "value" : "This will overwrite the settings of %lld displays with the global template. If the active display's spacing changes, Thaw will relaunch each app with a menu bar item. Relaunching apps may cause unsaved input, progress, or transient app state to be lost."
+                  "state" : "translated",
+                  "value" : "Spowoduje to zastąpienie ustawień %lld wyświetlaczy ustawieniami szablonu globalnego. Jeśli zmieni się odstęp na aktywnym wyświetlaczu, Thaw uruchomi ponownie każdą aplikację z ikoną na pasku menu. Ponowne uruchomienie aplikacji może spowodować utratę niezapisanych danych wprowadzonych w aplikacjach, postępów lub tymczasowego stanu aplikacji."
                 }
               },
               "one" : {
                 "stringUnit" : {
-                  "state" : "new",
-                  "value" : "This will overwrite the settings of %lld display with the global template. If the active display's spacing changes, Thaw will relaunch each app with a menu bar item. Relaunching apps may cause unsaved input, progress, or transient app state to be lost."
+                  "state" : "translated",
+                  "value" : "Spowoduje to zastąpienie ustawień %lld wyświetlacza ustawieniami szablonu globalnego. Jeśli zmieni się odstęp na aktywnym wyświetlaczu, Thaw uruchomi ponownie każdą aplikację z ikoną na pasku menu. Ponowne uruchomienie aplikacji może spowodować utratę niezapisanych danych wprowadzonych w aplikacjach, postępów lub tymczasowego stanu aplikacji."
                 }
               },
               "other" : {
                 "stringUnit" : {
-                  "state" : "new",
-                  "value" : "This will overwrite the settings of %lld displays with the global template. If the active display's spacing changes, Thaw will relaunch each app with a menu bar item. Relaunching apps may cause unsaved input, progress, or transient app state to be lost."
+                  "state" : "translated",
+                  "value" : "Spowoduje to zastąpienie ustawień %lld wyświetlaczy ustawieniami szablonu globalnego. Jeśli zmieni się odstęp na aktywnym wyświetlaczu, Thaw uruchomi ponownie każdą aplikację z ikoną na pasku menu. Ponowne uruchomienie aplikacji może spowodować utratę niezapisanych danych wprowadzonych w aplikacjach, postępów lub tymczasowego stanu aplikacji."
                 }
               }
             }
@@ -23560,120 +23566,126 @@
         }
       }
     },
-    "This condition is turned off in Developer settings, so the trigger won't run." : {
+    "This condition is turned off in Trigger Sources, so the trigger won't run." : {
       "localizations" : {
         "cs" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "This condition is turned off in Developer settings, so the trigger won't run."
+            "value" : "This condition is turned off in Trigger Sources, so the trigger won't run."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "This condition is turned off in Developer settings, so the trigger won't run."
+            "value" : "This condition is turned off in Trigger Sources, so the trigger won't run."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "This condition is turned off in Trigger Sources, so the trigger won't run."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "This condition is turned off in Developer settings, so the trigger won't run."
+            "value" : "This condition is turned off in Trigger Sources, so the trigger won't run."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "This condition is turned off in Developer settings, so the trigger won't run."
+            "value" : "This condition is turned off in Trigger Sources, so the trigger won't run."
           }
         },
         "hu" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "This condition is turned off in Developer settings, so the trigger won't run."
+            "value" : "This condition is turned off in Trigger Sources, so the trigger won't run."
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "This condition is turned off in Developer settings, so the trigger won't run."
+            "value" : "This condition is turned off in Trigger Sources, so the trigger won't run."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "This condition is turned off in Developer settings, so the trigger won't run."
+            "value" : "This condition is turned off in Trigger Sources, so the trigger won't run."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "This condition is turned off in Developer settings, so the trigger won't run."
+            "value" : "This condition is turned off in Trigger Sources, so the trigger won't run."
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "This condition is turned off in Developer settings, so the trigger won't run."
+            "value" : "This condition is turned off in Trigger Sources, so the trigger won't run."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "This condition is turned off in Developer settings, so the trigger won't run."
+            "value" : "This condition is turned off in Trigger Sources, so the trigger won't run."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "This condition is turned off in Developer settings, so the trigger won't run."
+            "value" : "This condition is turned off in Trigger Sources, so the trigger won't run."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "This condition is turned off in Developer settings, so the trigger won't run."
+            "value" : "This condition is turned off in Trigger Sources, so the trigger won't run."
           }
         },
         "ru" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Это условие отключено в настройках для разработчиков, поэтому триггер не будет работать."
+            "state" : "new",
+            "value" : "This condition is turned off in Trigger Sources, so the trigger won't run."
           }
         },
         "th" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "เงื่อนไขนี้ถูกปิดใช้งานในการตั้งค่านักพัฒนา ทริกเกอร์นี้จึงจะไม่ทำงาน"
+            "state" : "new",
+            "value" : "This condition is turned off in Trigger Sources, so the trigger won't run."
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "This condition is turned off in Developer settings, so the trigger won't run."
+            "value" : "This condition is turned off in Trigger Sources, so the trigger won't run."
           }
         },
         "uk" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "This condition is turned off in Developer settings, so the trigger won't run."
+            "value" : "This condition is turned off in Trigger Sources, so the trigger won't run."
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "This condition is turned off in Developer settings, so the trigger won't run."
+            "value" : "This condition is turned off in Trigger Sources, so the trigger won't run."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "此条件已在开发者设置中关闭，因此此触发器不会运行。"
+            "state" : "new",
+            "value" : "This condition is turned off in Trigger Sources, so the trigger won't run."
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "This condition is turned off in Developer settings, so the trigger won't run."
+            "value" : "This condition is turned off in Trigger Sources, so the trigger won't run."
           }
         }
       }
@@ -23743,8 +23755,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "This Space uses a saved override. Changes above apply to this Space only."
+            "state" : "translated",
+            "value" : "W tej Przestrzeni używane są zapisane ustawienia niestandardowe. Powyższe zmiany dotyczą tylko tej przestrzeni."
           }
         },
         "pt-BR" : {
@@ -23861,8 +23873,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "This Space uses the shared appearance."
+            "state" : "translated",
+            "value" : "W tej Przestrzeni obowiązują wspólne ustawienia wyglądu."
           }
         },
         "pt-BR" : {
@@ -23979,8 +23991,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "This trigger controls %@'s section. Your saved layout no longer applies to it."
+            "state" : "translated",
+            "value" : "Sekcja %@ jest sterowana przez ten wyzwalacz. Twój zapisany układ nie ma już do niej zastosowania."
           }
         },
         "pt-BR" : {
@@ -24097,8 +24109,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "This trigger controls the section of %@. Your saved layout no longer applies to them."
+            "state" : "translated",
+            "value" : "Ten wyzwalacz steruje sekcją %@. Twój zapisany układ już ich nie dotyczy."
           }
         },
         "pt-BR" : {
@@ -24689,8 +24701,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "This will reset app preferences to their default values. Saved profiles and user data will not be deleted. This action cannot be undone."
+            "state" : "translated",
+            "value" : "Spowoduje to przywrócenie domyślnych ustawień aplikacji. Zapisane profile i dane użytkownika nie zostaną usunięte. Tej czynności nie można cofnąć."
           }
         },
         "pt-BR" : {
@@ -24807,8 +24819,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Threshold"
+            "state" : "translated",
+            "value" : "Próg"
           }
         },
         "pt-BR" : {
@@ -25401,8 +25413,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "To"
+            "state" : "translated",
+            "value" : "Do"
           }
         },
         "pt-BR" : {
@@ -25882,8 +25894,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "The language change applies after %@ relaunches."
+            "state" : "translated",
+            "value" : "Zmiana języka zostanie zastosowana po ponownym uruchomieniu %@."
           }
         },
         "pt-BR" : {
@@ -26237,8 +26249,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "What %@ Sees"
+            "state" : "translated",
+            "value" : "Co widzi %@"
           }
         },
         "pt-BR" : {
@@ -26287,131 +26299,6 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "What %@ Sees"
-          }
-        }
-      }
-    },
-    "When a display transition requires Thaw to apply a different menu bar spacing, Thaw relaunches apps with menu bar items. Relaunching apps may cause unsaved input, progress, or transient app state to be lost." : {
-      "comment" : "A warning that a display transition requiring a different menu bar spacing relaunches menu bar apps, which can lose unsaved state.",
-      "localizations" : {
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Když změna monitorů zapříčiní aktivaci jiného nastavení rozestupů, Thaw restartuje aplikace s položkami v řádku nabídek. Restartování aplikací může zapříčinit ztrátu neuložených dat, postupu nebo dočasného stavu."
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wenn eine Bildschirmänderung Thaw zur Anwendung anderer Menüleisten-Abstände zwingt, startet Thaw Anwendungen mit Menüleisten-Einträgen neu. Der Neustart von Anwendungen kann zu ungespeicherten Eingaben führen, der Fortschritt oder Zustand von Anwendungen kann verloren gehen."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "When a display transition requires Thaw to apply a different menu bar spacing, Thaw relaunches apps with menu bar items. Relaunching apps may cause unsaved input, progress, or transient app state to be lost."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cuando una transición de presentación requiere que Thaw aplique un espaciado de barra de menús distinto, Thaw reinicia apps con iconos en la barra de menús. Reiniciar apps puede causar que se pierda información, progreso o estado no guardado."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Lorsqu'une transition d'affichage nécessite que Thaw applique un espacement différent pour la barre de menus, Thaw relance les applications comportant des éléments dans la barre de menus. Le redémarrage des applications peut entraîner la perte des données non enregistrées, de la progression ou de l'état temporaire de l'application."
-          }
-        },
-        "hu" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "When a display transition requires Thaw to apply a different menu bar spacing, Thaw relaunches apps with menu bar items. Relaunching apps may cause unsaved input, progress, or transient app state to be lost."
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Saat perpindahan layar mengharuskan Thaw menerapkan jarak bar menu yang berbeda, Thaw akan memulai ulang aplikasi yang memiliki item di bar menu. Tindakan ini dapat menyebabkan input yang belum disimpan, progres yang sedang berjalan atau status sementara aplikasi hilang."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "When a display transition requires Thaw to apply a different menu bar spacing, Thaw relaunches apps with menu bar items. Relaunching apps may cause unsaved input, progress, or transient app state to be lost."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "When a display transition requires Thaw to apply a different menu bar spacing, Thaw relaunches apps with menu bar items. Relaunching apps may cause unsaved input, progress, or transient app state to be lost."
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "When a display transition requires Thaw to apply a different menu bar spacing, Thaw relaunches apps with menu bar items. Relaunching apps may cause unsaved input, progress, or transient app state to be lost."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wanneer een schermovergang vereist dat Thaw een andere spatiëring voor de menubalk toepast, start Thaw apps met menubalkitems opnieuw op. Door het opnieuw opstarten van apps kunnen niet-opgeslagen invoer, voortgang of tijdelijke app-statussen verloren gaan."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Jeśli zmiana wyświetlacza wymusza na programie Thaw zmianę odstępów na pasku menu, Thaw restartuje aplikacje posiadające tam swoje ikony. Restart aplikacji grozi utratą niezapisanych danych, postępów pracy lub tymczasowego stanu programu."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "When a display transition requires Thaw to apply a different menu bar spacing, Thaw relaunches apps with menu bar items. Relaunching apps may cause unsaved input, progress, or transient app state to be lost."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "При изменении настроек разделителя Thaw перезапустит приложения, размещающие иконки в строке меню, что может привести к потере не сохраненного результата."
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "เมื่อการเปลี่ยนแปลงจอแสดงผลต้องให้ Thaw ใช้ระยะห่างแถบเมนูที่แตกต่างออกไป Thaw จะรีสตาร์ทแอปที่มีรายการในแถบเมนู การรีสตาร์ทแอปอาจทำให้ข้อมูลที่ยังไม่ได้บันทึก ความคืบหน้า หรือสถานะชั่วคราวของแอปสูญหายได้"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bir ekran geçişi Thaw uygulamasının farklı bir menü çubuğu aralığı uygulamasını gerektirdiğinde, Thaw menü çubuğu ögesine sahip uygulamaları yeniden başlatır. Uygulamaları yeniden başlatmak; kaydedilmemiş ayarların, ilerlemenin veya geçici uygulama tercihlerinin kaybolmasına neden olabilir."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "When a display transition requires Thaw to apply a different menu bar spacing, Thaw relaunches apps with menu bar items. Relaunching apps may cause unsaved input, progress, or transient app state to be lost."
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Khi quá trình chuyển đổi hiển thị yêu cầu Thaw áp dụng khoảng cách thanh menu khác, Thaw sẽ khởi chạy lại các ứng dụng có mục trên thanh menu. Việc khởi chạy lại ứng dụng có thể khiến dữ liệu đầu vào, tiến trình hoặc trạng thái ứng dụng tạm thời chưa được lưu bị mất."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "当显示状态切换需要 Thaw 应用不同的菜单栏间距时，Thaw 会重新启动带有菜单栏项目的应用。重新启动应用可能会导致尚未保存的输入、进行中的进度或应用的临时状态丢失。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "當顯示器切換需要 Thaw 套用不同的選單列間距時,Thaw 會重新啟動具有選單列項目的應用程式。重新啟動應用程式可能導致尚未儲存的輸入、進度或暫存狀態遺失。"
           }
         }
       }
@@ -26480,8 +26367,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "When a hidden item starts blinking its icon, briefly show its section so you see it. Thaw tells a blink apart from a clock or a battery percentage by whether the icon keeps returning to a state it already showed. It shows the section rather than moving the item, and the usual rehide puts it back."
+            "state" : "translated",
+            "value" : "Gdy ikona ukrytego elementu zacznie migać, na chwilę pokaż jego sekcję, żeby go zobaczyć. Thaw odróżnia miganie od zmian wskazania zegara lub poziomu naładowania baterii po tym, czy ikona stale wraca do stanu, który już wcześniej wyświetlała. Pokazuje sekcję zamiast przenosić element, a potem ukrywa ją ponownie."
           }
         },
         "pt-BR" : {
@@ -26955,8 +26842,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "While this trigger is on, it controls its target's section and your saved layout no longer applies to it."
+            "state" : "translated",
+            "value" : "Kiedy ten wyzwalacz jest włączony, steruje sekcją elementu docelowego, więc zapisany przez Ciebie układ nie ma już do niej zastosowania."
           }
         },
         "pt-BR" : {
@@ -27556,8 +27443,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Without Screen Recording, menu bar items appear as their app's icon rather than a live preview. You can still arrange them."
+            "state" : "translated",
+            "value" : "Gdy nagrywanie ekranu jest wyłączone, elementy paska menu są widoczne jako ikony aplikacji zamiast podglądu na żywo. Wciąż możesz zmieniać ich kolejność."
           }
         },
         "pt-BR" : {
@@ -28031,8 +27918,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Zen mode is off"
+            "state" : "translated",
+            "value" : "Tryb Zen wyłączony"
           }
         },
         "pt-BR" : {
@@ -28149,8 +28036,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Watched item"
+            "state" : "translated",
+            "value" : "Obserwowany element"
           }
         },
         "pt-BR" : {
@@ -28505,8 +28392,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Use Current Appearance for This Space"
+            "state" : "translated",
+            "value" : "Zastosuj obecny wygląd do tej Przestrzeni"
           }
         },
         "pt-BR" : {
@@ -29336,8 +29223,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Use %@ in a different language than the system. Takes effect after a relaunch."
+            "state" : "translated",
+            "value" : "Używaj %@ w języku innym niż systemowy. Zmiana zacznie obowiązywać po ponownym uruchomieniu."
           }
         },
         "pt-BR" : {
@@ -29455,8 +29342,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Use a separate appearance"
+            "state" : "translated",
+            "value" : "Ustaw osobny wygląd"
           }
         },
         "pt-BR" : {
@@ -29573,8 +29460,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Use Current Location"
+            "state" : "translated",
+            "value" : "Użyj bieżącej lokalizacji"
           }
         },
         "pt-BR" : {
@@ -30878,8 +30765,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "The report retains installed-app identities, menu-item titles and status text, and display/menu-bar geometry for debugging. It attempts to redact other potentially sensitive information, but redaction cannot be guaranteed. Review the report before sharing it."
+            "state" : "translated",
+            "value" : "Raport zachowuje informacje identyfikujące zainstalowane aplikacje, nazwy pozycji menu i tekst statusu, a także geometrię ekranu i paska menu na potrzeby debugowania. Podejmowana jest próba usunięcia z niego innych potencjalnie poufnych informacji, ale nie można zagwarantować, że wszystkie zostaną usunięte. Przed udostępnieniem raportu należy go przejrzeć."
           }
         },
         "pt-BR" : {
@@ -30997,8 +30884,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Screen Recording is off, so %@ reads nothing."
+            "state" : "translated",
+            "value" : "Nagrywanie ekranu jest wyłączone, więc %@ nic nie odczytał."
           }
         },
         "pt-BR" : {
@@ -31116,8 +31003,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Show hidden items on"
+            "state" : "translated",
+            "value" : "Ukryte elementy są widoczne"
           }
         },
         "pt-BR" : {
@@ -31353,8 +31240,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Show All Off in menu bar dropdown"
+            "state" : "translated",
+            "value" : "Pokaż opcję „Wyłącz wszystko” w menu rozwijanym na pasku menu"
           }
         },
         "pt-BR" : {
@@ -31829,8 +31716,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Show app icons instead of live previews"
+            "state" : "translated",
+            "value" : "Wyświetlaj ikony aplikacji zamiast podglądu ich zawartości na żywo"
           }
         },
         "pt-BR" : {
@@ -32066,8 +31953,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Show hidden menu bar items by clicking, hovering, or scrolling in an empty area of the menu bar."
+            "state" : "translated",
+            "value" : "Aby wyświetlić ukryte elementy paska menu, kliknij jego pusty obszar, najedź na niego kursorem lub przewiń w nim."
           }
         },
         "pt-BR" : {
@@ -32547,8 +32434,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Show in"
+            "state" : "translated",
+            "value" : "Pokaż w"
           }
         },
         "pt-BR" : {
@@ -33970,8 +33857,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Scroll"
+            "state" : "translated",
+            "value" : "Przewiń"
           }
         },
         "pt-BR" : {
@@ -34684,8 +34571,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Second item"
+            "state" : "translated",
+            "value" : "Drugi element"
           }
         },
         "pt-BR" : {
@@ -35276,8 +35163,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Settings"
+            "state" : "translated",
+            "value" : "Ustawienia"
           }
         },
         "pt-BR" : {
@@ -35512,8 +35399,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Settings were reset to defaults."
+            "state" : "translated",
+            "value" : "Ustawienia zostały przywrócone do wartości domyślnych."
           }
         },
         "pt-BR" : {
@@ -36462,8 +36349,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Surface hidden items that ask for attention"
+            "state" : "translated",
+            "value" : "Wyświetl ukryte elementy wymagające uwagi"
           }
         },
         "pt-BR" : {
@@ -36698,8 +36585,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "System Default"
+            "state" : "translated",
+            "value" : "Domyślne ustawienie systemowe"
           }
         },
         "pt-BR" : {
@@ -36935,8 +36822,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Thaw reads a band across the top of your display — the menu bar and its background. That band can contain the frontmost app's menus."
+            "state" : "translated",
+            "value" : "Thaw analizuje pas na górze ekranu, obejmujący pasek menu i jego tło. Pas ten może zawierać menu aplikacji, która jest na pierwszym planie."
           }
         },
         "pt-BR" : {
@@ -37886,8 +37773,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "The active Space is still settling. Switch away and back to assign a profile."
+            "state" : "translated",
+            "value" : "Aktywna przestrzeń nie jest jeszcze gotowa. Przełącz się na inną przestrzeń i wróć, aby przypisać profil."
           }
         },
         "pt-BR" : {
@@ -38242,8 +38129,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "The capture returned nothing for this display."
+            "state" : "translated",
+            "value" : "Przechwytywanie nie zwróciło żadnych danych dla tego wyświetlacza."
           }
         },
         "pt-BR" : {
@@ -38480,8 +38367,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Style the %@ Bar on its own instead of matching the menu bar."
+            "state" : "translated",
+            "value" : "Ustaw wygląd paska %@ niezależnie od paska menu."
           }
         },
         "pt-BR" : {
@@ -38599,8 +38486,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Show setting descriptions"
+            "state" : "translated",
+            "value" : "Pokaż objaśnienia ustawień"
           }
         },
         "pt-BR" : {
@@ -38717,8 +38604,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Spacer"
+            "state" : "translated",
+            "value" : "Separator"
           }
         },
         "pt-BR" : {
@@ -39073,8 +38960,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Shows only the essential settings. All features keep working and keep their configuration."
+            "state" : "translated",
+            "value" : "Widoczne są tylko niezbędne ustawienia. Wszystkie funkcje działają bez zmian, a ich konfiguracja zostaje zachowana."
           }
         },
         "pt-BR" : {
@@ -39310,8 +39197,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Simple Mode"
+            "state" : "translated",
+            "value" : "Tryb uproszczony"
           }
         },
         "pt-BR" : {
@@ -39667,8 +39554,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Space"
+            "state" : "translated",
+            "value" : "Przestrzeń"
           }
         },
         "pt-BR" : {
@@ -39785,8 +39672,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Spacer color"
+            "state" : "translated",
+            "value" : "Kolor elementu rozdzielającego"
           }
         },
         "pt-BR" : {
@@ -40022,8 +39909,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Spacers"
+            "state" : "translated",
+            "value" : "Elementy rozdzielające"
           }
         },
         "pt-BR" : {
@@ -40140,8 +40027,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Spaces with overrides: %lld"
+            "state" : "translated",
+            "value" : "Przestrzenie z nadpisanymi ustawieniami: %lld"
           }
         },
         "pt-BR" : {
@@ -40733,8 +40620,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Start a new log file once the current one reaches this size."
+            "state" : "translated",
+            "value" : "Utwórz nowy plik dziennika, gdy bieżący osiągnie ten rozmiar."
           }
         },
         "pt-BR" : {
@@ -40970,8 +40857,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Maximum log file size in megabytes"
+            "state" : "translated",
+            "value" : "Maksymalny rozmiar pliku dziennika w megabajtach"
           }
         },
         "pt-BR" : {
@@ -41343,26 +41230,26 @@
             "plural" : {
               "few" : {
                 "stringUnit" : {
-                  "state" : "new",
-                  "value" : "[%lld items]"
+                  "state" : "translated",
+                  "value" : "%lld elementy"
                 }
               },
               "many" : {
                 "stringUnit" : {
-                  "state" : "new",
-                  "value" : "[%lld items]"
+                  "state" : "translated",
+                  "value" : "%lld elementów"
                 }
               },
               "one" : {
                 "stringUnit" : {
-                  "state" : "new",
-                  "value" : "[%lld item]"
+                  "state" : "translated",
+                  "value" : "%lld element"
                 }
               },
               "other" : {
                 "stringUnit" : {
-                  "state" : "new",
-                  "value" : "[%lld items]"
+                  "state" : "translated",
+                  "value" : "%lld elementów"
                 }
               }
             }
@@ -41816,8 +41703,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Battery level"
+            "state" : "translated",
+            "value" : "Poziom naładowania baterii"
           }
         },
         "pt-BR" : {
@@ -42053,8 +41940,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Behavior"
+            "state" : "translated",
+            "value" : "Zachowanie"
           }
         },
         "pt-BR" : {
@@ -43004,8 +42891,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Cache cleared. Quitting…"
+            "state" : "translated",
+            "value" : "Wyczyszczono pamięć podręczną. Zamykanie programu…"
           }
         },
         "pt-BR" : {
@@ -43479,8 +43366,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Capture One Frame"
+            "state" : "translated",
+            "value" : "Przechwyć jedną klatkę"
           }
         },
         "pt-BR" : {
@@ -43597,8 +43484,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Capture Reference"
+            "state" : "translated",
+            "value" : "Identyfikator przechwycenia"
           }
         },
         "pt-BR" : {
@@ -43953,8 +43840,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Capturing…"
+            "state" : "translated",
+            "value" : "Przechwytywanie…"
           }
         },
         "pt-BR" : {
@@ -44903,8 +44790,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Assigns a profile to the Space you are currently on. Spaces have no system name, so each assignment is labelled by its Mission Control position at the time you made it. A Space assignment takes precedence over a display assignment; a Focus Filter still overrides both."
+            "state" : "translated",
+            "value" : "Przypisuje profil do przestrzeni, na której obecnie się znajdujesz. Przestrzenie nie mają nazw systemowych, dlatego każde przypisanie jest oznaczone pozycją przestrzeni w Mission Control w chwili jego utworzenia. Przypisanie do przestrzeni ma pierwszeństwo przed przypisaniem do wyświetlacza; filtr skupienia nadal ma pierwszeństwo przed oboma."
           }
         },
         "pt-BR" : {
@@ -45379,8 +45266,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "automatic"
+            "state" : "translated",
+            "value" : "automatyczny"
           }
         },
         "pt-BR" : {
@@ -45497,8 +45384,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Automatic rehiding is off"
+            "state" : "translated",
+            "value" : "Funkcja automatycznego ponownego ukrywania jest wyłączona"
           }
         },
         "pt-BR" : {
@@ -45615,8 +45502,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Automatic rehiding is on"
+            "state" : "translated",
+            "value" : "Funkcja automatycznego ponownego ukrywania jest włączona"
           }
         },
         "pt-BR" : {
@@ -46145,120 +46032,126 @@
         }
       }
     },
-    "Automatically reveal a menu bar item while a condition is met, then hide it again when the condition no longer applies. Enable additional condition types in the Developer pane." : {
+    "Automatically reveal a menu bar item while a condition is met, then hide it again when the condition no longer applies. Turn on more condition types in Trigger Sources." : {
       "localizations" : {
         "cs" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Automatically reveal a menu bar item while a condition is met, then hide it again when the condition no longer applies. Enable additional condition types in the Developer pane."
+            "value" : "Automatically reveal a menu bar item while a condition is met, then hide it again when the condition no longer applies. Turn on more condition types in Trigger Sources."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Automatically reveal a menu bar item while a condition is met, then hide it again when the condition no longer applies. Enable additional condition types in the Developer pane."
+            "value" : "Automatically reveal a menu bar item while a condition is met, then hide it again when the condition no longer applies. Turn on more condition types in Trigger Sources."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Automatically reveal a menu bar item while a condition is met, then hide it again when the condition no longer applies. Turn on more condition types in Trigger Sources."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Automatically reveal a menu bar item while a condition is met, then hide it again when the condition no longer applies. Enable additional condition types in the Developer pane."
+            "value" : "Automatically reveal a menu bar item while a condition is met, then hide it again when the condition no longer applies. Turn on more condition types in Trigger Sources."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Automatically reveal a menu bar item while a condition is met, then hide it again when the condition no longer applies. Enable additional condition types in the Developer pane."
+            "value" : "Automatically reveal a menu bar item while a condition is met, then hide it again when the condition no longer applies. Turn on more condition types in Trigger Sources."
           }
         },
         "hu" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Automatically reveal a menu bar item while a condition is met, then hide it again when the condition no longer applies. Enable additional condition types in the Developer pane."
+            "value" : "Automatically reveal a menu bar item while a condition is met, then hide it again when the condition no longer applies. Turn on more condition types in Trigger Sources."
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Automatically reveal a menu bar item while a condition is met, then hide it again when the condition no longer applies. Enable additional condition types in the Developer pane."
+            "value" : "Automatically reveal a menu bar item while a condition is met, then hide it again when the condition no longer applies. Turn on more condition types in Trigger Sources."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Automatically reveal a menu bar item while a condition is met, then hide it again when the condition no longer applies. Enable additional condition types in the Developer pane."
+            "value" : "Automatically reveal a menu bar item while a condition is met, then hide it again when the condition no longer applies. Turn on more condition types in Trigger Sources."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Automatically reveal a menu bar item while a condition is met, then hide it again when the condition no longer applies. Enable additional condition types in the Developer pane."
+            "value" : "Automatically reveal a menu bar item while a condition is met, then hide it again when the condition no longer applies. Turn on more condition types in Trigger Sources."
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Automatically reveal a menu bar item while a condition is met, then hide it again when the condition no longer applies. Enable additional condition types in the Developer pane."
+            "value" : "Automatically reveal a menu bar item while a condition is met, then hide it again when the condition no longer applies. Turn on more condition types in Trigger Sources."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Automatically reveal a menu bar item while a condition is met, then hide it again when the condition no longer applies. Enable additional condition types in the Developer pane."
+            "value" : "Automatically reveal a menu bar item while a condition is met, then hide it again when the condition no longer applies. Turn on more condition types in Trigger Sources."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Automatically reveal a menu bar item while a condition is met, then hide it again when the condition no longer applies. Enable additional condition types in the Developer pane."
+            "value" : "Automatically reveal a menu bar item while a condition is met, then hide it again when the condition no longer applies. Turn on more condition types in Trigger Sources."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Automatically reveal a menu bar item while a condition is met, then hide it again when the condition no longer applies. Enable additional condition types in the Developer pane."
+            "value" : "Automatically reveal a menu bar item while a condition is met, then hide it again when the condition no longer applies. Turn on more condition types in Trigger Sources."
           }
         },
         "ru" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Автоматически отображать элемент строки меню, пока выполняется условие, а затем снова скрывать его, когда условие больше не выполняется. Включите дополнительные типы условий в панели «Для разработчиков»."
+            "state" : "new",
+            "value" : "Automatically reveal a menu bar item while a condition is met, then hide it again when the condition no longer applies. Turn on more condition types in Trigger Sources."
           }
         },
         "th" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "แสดงรายการแถบเมนูโดยอัตโนมัติขณะที่เงื่อนไขเป็นจริง แล้วซ่อนอีกครั้งเมื่อเงื่อนไขไม่เป็นจริงอีกต่อไป เปิดใช้งานประเภทเงื่อนไขเพิ่มเติมได้ในแผงนักพัฒนา"
+            "state" : "new",
+            "value" : "Automatically reveal a menu bar item while a condition is met, then hide it again when the condition no longer applies. Turn on more condition types in Trigger Sources."
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Automatically reveal a menu bar item while a condition is met, then hide it again when the condition no longer applies. Enable additional condition types in the Developer pane."
+            "value" : "Automatically reveal a menu bar item while a condition is met, then hide it again when the condition no longer applies. Turn on more condition types in Trigger Sources."
           }
         },
         "uk" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Automatically reveal a menu bar item while a condition is met, then hide it again when the condition no longer applies. Enable additional condition types in the Developer pane."
+            "value" : "Automatically reveal a menu bar item while a condition is met, then hide it again when the condition no longer applies. Turn on more condition types in Trigger Sources."
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Automatically reveal a menu bar item while a condition is met, then hide it again when the condition no longer applies. Enable additional condition types in the Developer pane."
+            "value" : "Automatically reveal a menu bar item while a condition is met, then hide it again when the condition no longer applies. Turn on more condition types in Trigger Sources."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Automatically reveal a menu bar item while a condition is met, then hide it again when the condition no longer applies. Enable additional condition types in the Developer pane."
+            "value" : "Automatically reveal a menu bar item while a condition is met, then hide it again when the condition no longer applies. Turn on more condition types in Trigger Sources."
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Automatically reveal a menu bar item while a condition is met, then hide it again when the condition no longer applies. Enable additional condition types in the Developer pane."
+            "value" : "Automatically reveal a menu bar item while a condition is met, then hide it again when the condition no longer applies. Turn on more condition types in Trigger Sources."
           }
         }
       }
@@ -46327,8 +46220,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Captures the icon now as a reference, then reveals the item when the icon later changes from it. Requires screen recording permission."
+            "state" : "translated",
+            "value" : "Utrwala ikonę w jej aktualnej postaci, a następnie ujawnia element, gdy jej wygląd odbiega od zapisanego wzorca. Wymaga uprawnienia do nagrywania ekranu."
           }
         },
         "pt-BR" : {
@@ -46934,8 +46827,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Condition"
+            "state" : "translated",
+            "value" : "Warunek"
           }
         },
         "pt-BR" : {
@@ -47052,8 +46945,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Click"
+            "state" : "translated",
+            "value" : "Kliknięcie"
           }
         },
         "pt-BR" : {
@@ -47290,8 +47183,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Click an item to open it. Hidden items are temporarily revealed."
+            "state" : "translated",
+            "value" : "Aby otworzyć element, kliknij go. Ukryte elementy pojawiają się na chwilę."
           }
         },
         "pt-BR" : {
@@ -47645,8 +47538,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Collapse trigger"
+            "state" : "translated",
+            "value" : "Wyzwalacz zwinięcia paska menu"
           }
         },
         "pt-BR" : {
@@ -47882,8 +47775,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Conditional Triggers"
+            "state" : "translated",
+            "value" : "Wyzwalacze warunkowe"
           }
         },
         "pt-BR" : {
@@ -48953,8 +48846,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Control Center preferences were reset."
+            "state" : "translated",
+            "value" : "Ustawienia Centrum sterowania zostały przywrócone do wartości domyślnych."
           }
         },
         "pt-BR" : {
@@ -49189,8 +49082,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Clear Accessibility and Screen Recording decisions for %@, then quit so you can re-grant them on next launch."
+            "state" : "translated",
+            "value" : "Przywróć ustawienia uprawnień dostępu do funkcji ułatwień dostępu i nagrywania ekranu dla %@ do wartości domyślnych, a następnie zamknij aplikację. Przy kolejnym uruchomieniu będzie można nadać te uprawnienia ponownie."
           }
         },
         "pt-BR" : {
@@ -50497,8 +50390,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Choose a device…"
+            "state" : "translated",
+            "value" : "Wybierz urządzenie…"
           }
         },
         "pt-BR" : {
@@ -50734,8 +50627,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Choose an app…"
+            "state" : "translated",
+            "value" : "Wybierz aplikację…"
           }
         },
         "pt-BR" : {
@@ -50852,8 +50745,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Choose an item"
+            "state" : "translated",
+            "value" : "Wybierz element"
           }
         },
         "pt-BR" : {
@@ -50970,8 +50863,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Choose an item…"
+            "state" : "translated",
+            "value" : "Wybierz element…"
           }
         },
         "pt-BR" : {
@@ -51563,8 +51456,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Choose…"
+            "state" : "translated",
+            "value" : "Wybierz…"
           }
         },
         "pt-BR" : {
@@ -51918,8 +51811,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Controlled by a trigger"
+            "state" : "translated",
+            "value" : "Uruchamiany przez wyzwalacz"
           }
         },
         "pt-BR" : {
@@ -52155,8 +52048,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "%@ spacer"
+            "state" : "translated",
+            "value" : "element dystansowy %@"
           }
         },
         "pt-BR" : {
@@ -52273,8 +52166,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "%@ will delete its cache folder and quit. Launch the app again afterward."
+            "state" : "translated",
+            "value" : "%@ wyczyści folder pamięci podręcznej, a następnie zakończy działanie. Po zamknięciu uruchom aplikację ponownie."
           }
         },
         "pt-BR" : {
@@ -52510,7 +52403,7 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
+            "state" : "translated",
             "value" : "%lld m"
           }
         },
@@ -52746,8 +52639,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "A diagnostic report was saved to %@."
+            "state" : "translated",
+            "value" : "Zapisano raport diagnostyczny w lokalizacji %@."
           }
         },
         "pt-BR" : {
@@ -53220,8 +53113,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Accessibility and Screen Recording permissions will be cleared for %@. The app will quit so you can grant them again on next launch."
+            "state" : "translated",
+            "value" : "Uprawnienia do ułatwień dostępu i nagrywania ekranu przyznane aplikacji %@ zostaną usunięte. Aplikacja zakończy działanie, by można było ponownie je przyznać po jej następnym uruchomieniu."
           }
         },
         "pt-BR" : {
@@ -53338,8 +53231,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Accessibility is all Simple Mode needs for hiding and arranging; adding Screen Recording draws your real menu bar icons in the layout editor."
+            "state" : "translated",
+            "value" : "Tryb prosty wymaga tylko uprawnienia Dostępność, aby ukrywać i porządkować ikony. Jeśli przyznasz mu również uprawnienie Nagrywanie ekranu, w edytorze układu zobaczysz rzeczywiste ikony ze swojego paska menu."
           }
         },
         "pt-BR" : {
@@ -54407,8 +54300,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Add a trigger to reveal a menu bar item when a condition is met."
+            "state" : "translated",
+            "value" : "Dodaj wyzwalacz, aby wyświetlić element paska menu po spełnieniu warunku."
           }
         },
         "pt-BR" : {
@@ -54650,8 +54543,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@ — placed by trigger “%2$@”"
+            "state" : "translated",
+            "value" : "%1$@ — umieszczono za pomocą wyzwalacza „%2$@”"
           }
         },
         "pt-BR" : {
@@ -54768,8 +54661,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "%@ (not present)"
+            "state" : "translated",
+            "value" : "%@ (brak)"
           }
         },
         "pt-BR" : {
@@ -54886,8 +54779,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "%@ (not running)"
+            "state" : "translated",
+            "value" : "%@ (nie jest uruchomiony)"
           }
         },
         "pt-BR" : {
@@ -56465,8 +56358,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@ failed with exit status %2$d: %3$@"
+            "state" : "translated",
+            "value" : "Wykonanie %1$@ nie powiodło się (kod wyjścia %2$d): %3$@"
           }
         },
         "pt-BR" : {
@@ -56589,8 +56482,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@ failed with exit status %2$d."
+            "state" : "translated",
+            "value" : "%1$@ zakończył działanie z błędem (kod wyjścia: %2$d)."
           }
         },
         "pt-BR" : {
@@ -57539,8 +57432,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Another enabled trigger also targets this item. Priority runs top to bottom; the first active trigger wins."
+            "state" : "translated",
+            "value" : "Ten element jest również objęty innym włączonym wyzwalaczem. Wyzwalacze mają priorytet w kolejności od góry do dołu — decyduje pierwszy aktywny."
           }
         },
         "pt-BR" : {
@@ -57657,8 +57550,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "App language"
+            "state" : "translated",
+            "value" : "Język aplikacji"
           }
         },
         "pt-BR" : {
@@ -57894,8 +57787,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Application"
+            "state" : "translated",
+            "value" : "Aplikacja"
           }
         },
         "pt-BR" : {
@@ -59559,8 +59452,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Add Condition"
+            "state" : "translated",
+            "value" : "Dodaj warunek"
           }
         },
         "pt-BR" : {
@@ -59677,8 +59570,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "All Trigger Features Off"
+            "state" : "translated",
+            "value" : "Wyłączono wszystkie funkcje wyzwalania"
           }
         },
         "pt-BR" : {
@@ -59795,8 +59688,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Add Spacer"
+            "state" : "translated",
+            "value" : "Dodaj odstęp"
           }
         },
         "pt-BR" : {
@@ -59913,8 +59806,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Add Trigger"
+            "state" : "translated",
+            "value" : "Dodaj wyzwalacz"
           }
         },
         "pt-BR" : {
@@ -60031,8 +59924,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Adds the emergency trigger-feature shutoff to the three-dot menu. Keep this off unless a trigger source is disrupting normal computer use."
+            "state" : "translated",
+            "value" : "W menu z trzema kropkami pojawia się opcja awaryjnego wyłączenia funkcji wyzwalania. Powinna pozostać wyłączona, o ile źródło wyzwalania nie zakłóca zwykłej pracy na komputerze."
           }
         },
         "pt-BR" : {
@@ -60504,8 +60397,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "All Off"
+            "state" : "translated",
+            "value" : "Wszystko wyłączone"
           }
         },
         "pt-BR" : {
@@ -61461,8 +61354,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Also move"
+            "state" : "translated",
+            "value" : "Przesuń również"
           }
         },
         "pt-BR" : {
@@ -61579,8 +61472,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Also move another item"
+            "state" : "translated",
+            "value" : "Przenieś również inny element"
           }
         },
         "pt-BR" : {
@@ -61697,8 +61590,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Also start a new log file once the current one has been open for an hour or a day. The size limit still applies."
+            "state" : "translated",
+            "value" : "Twórz też nowy plik dziennika, gdy bieżący pozostaje otwarty przez godzinę lub dobę. Limit rozmiaru nadal obowiązuje."
           }
         },
         "pt-BR" : {
@@ -61933,8 +61826,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Control Center will quit and its preference files will be deleted. macOS usually relaunches it automatically."
+            "state" : "translated",
+            "value" : "Centrum sterowania zostanie zamknięte, a jego pliki preferencji zostaną usunięte. macOS zwykle uruchamia je ponownie automatycznie."
           }
         },
         "pt-BR" : {
@@ -62169,8 +62062,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Match"
+            "state" : "translated",
+            "value" : "Dopasuj"
           }
         },
         "pt-BR" : {
@@ -62762,8 +62655,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Hide the item while the condition is met (invert)"
+            "state" : "translated",
+            "value" : "Ukryj element, gdy warunek jest spełniony (odwróć działanie)"
           }
         },
         "pt-BR" : {
@@ -63476,8 +63369,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Hourly"
+            "state" : "translated",
+            "value" : "Co godzinę"
           }
         },
         "pt-BR" : {
@@ -63595,8 +63488,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Hover"
+            "state" : "translated",
+            "value" : "Najedź"
           }
         },
         "pt-BR" : {
@@ -63952,8 +63845,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "How often animated icons refresh in the visible section, Hidden Thaw Bar, Search, and Layout. Always Hidden is capped at 1 fps. Higher values use more CPU."
+            "state" : "translated",
+            "value" : "Częstotliwość odświeżania animowanych ikon w widocznym obszarze, ukrytym pasku Thaw, wyszukiwarce i układzie. W trybie „Zawsze ukryte” odświeżanie jest ograniczone do 1 kl./s. Wyższe wartości zwiększają obciążenie procesora."
           }
         },
         "pt-BR" : {
@@ -64426,8 +64319,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Hide every concealable section for as long as a display is mirrored or your screen is being shared, then put it back. macOS offers no way to see that another app is recording the screen, so recordings are not covered."
+            "state" : "translated",
+            "value" : "Ukryj wszystkie sekcje, które można ukryć, na czas dublowania obrazu na ekranie lub udostępniania ekranu, a potem przywróć je. macOS nie pozwala wykryć, czy inna aplikacja nagrywa ekran, więc nagrywanie nie jest objęte tą ochroną."
           }
         },
         "pt-BR" : {
@@ -64906,8 +64799,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "From"
+            "state" : "translated",
+            "value" : "Od"
           }
         },
         "pt-BR" : {
@@ -65144,8 +65037,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Full Screen Space %lld"
+            "state" : "translated",
+            "value" : "Przestrzeń w trybie pełnoekranowym %lld"
           }
         },
         "pt-BR" : {
@@ -66572,8 +66465,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Group name"
+            "state" : "translated",
+            "value" : "Nazwa grupy"
           }
         },
         "pt-BR" : {
@@ -66691,8 +66584,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Grouped items stay adjacent: drag any member and the whole group moves with it."
+            "state" : "translated",
+            "value" : "Zgrupowane elementy pozostają obok siebie. Przeciągnięcie jednego z nich przenosi całą grupę."
           }
         },
         "pt-BR" : {
@@ -66810,8 +66703,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Groups always move together: drag any member in the bars above and the whole group follows."
+            "state" : "translated",
+            "value" : "Elementy grupy przemieszczają się wspólnie. Wystarczy przeciągnąć jeden z nich na paskach powyżej, aby przesunąć całą grupę."
           }
         },
         "pt-BR" : {
@@ -66928,8 +66821,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Help translate %@"
+            "state" : "translated",
+            "value" : "Pomóż w tłumaczeniu %@"
           }
         },
         "pt-BR" : {
@@ -68472,8 +68365,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Language"
+            "state" : "translated",
+            "value" : "Język"
           }
         },
         "pt-BR" : {
@@ -68591,8 +68484,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Live previews are off"
+            "state" : "translated",
+            "value" : "Podgląd w czasie rzeczywistym jest wyłączony"
           }
         },
         "pt-BR" : {
@@ -68709,8 +68602,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Live System State"
+            "state" : "translated",
+            "value" : "Stan systemu na żywo"
           }
         },
         "pt-BR" : {
@@ -70965,8 +70858,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Inserts an empty gap item into the menu bar. Position it like any other item — hold ⌘ Command and drag it in the menu bar."
+            "state" : "translated",
+            "value" : "Dodaje do paska menu pusty element służący jako odstęp. Aby go ustawić, przytrzymaj klawisz ⌘ Command i przeciągnij go w wybrane miejsce na pasku menu."
           }
         },
         "pt-BR" : {
@@ -71083,8 +70976,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Keep logs for (days)"
+            "state" : "translated",
+            "value" : "Przechowuj logi przez (dni)"
           }
         },
         "pt-BR" : {
@@ -71319,8 +71212,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Item groups"
+            "state" : "translated",
+            "value" : "Grupy elementów"
           }
         },
         "pt-BR" : {
@@ -71438,8 +71331,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Item icons are cropped out of this band to draw the layout editor, the Bar, and Search."
+            "state" : "translated",
+            "value" : "Ikony elementów są wycinane, aby zrobić miejsce na edytor układu, pasek i wyszukiwarkę."
           }
         },
         "pt-BR" : {
@@ -72156,8 +72049,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Frame bounds: x=%1$lld, y=%2$lld, %3$lld×%4$lld pt"
+            "state" : "translated",
+            "value" : "Obszar ramki: x=%1$lld, y=%2$lld, %3$lld×%4$lld pkt"
           }
         },
         "pt-BR" : {
@@ -72751,8 +72644,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Desktop %lld"
+            "state" : "translated",
+            "value" : "Biurko %lld"
           }
         },
         "pt-BR" : {
@@ -72923,120 +72816,126 @@
         }
       }
     },
-    "Dev Mode Flags" : {
+    "Trigger Sources" : {
       "localizations" : {
         "cs" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Dev Mode Flags"
+            "value" : "Trigger Sources"
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Dev Mode Flags"
+            "value" : "Trigger Sources"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Trigger Sources"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Dev Mode Flags"
+            "value" : "Trigger Sources"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Dev Mode Flags"
+            "value" : "Trigger Sources"
           }
         },
         "hu" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Dev Mode Flags"
+            "value" : "Trigger Sources"
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Dev Mode Flags"
+            "value" : "Trigger Sources"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Dev Mode Flags"
+            "value" : "Trigger Sources"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Dev Mode Flags"
+            "value" : "Trigger Sources"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Dev Mode Flags"
+            "value" : "Trigger Sources"
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Dev Mode Flags"
+            "value" : "Trigger Sources"
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Dev Mode Flags"
+            "value" : "Trigger Sources"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Dev Mode Flags"
+            "value" : "Trigger Sources"
           }
         },
         "ru" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Флаги режима разработчика"
+            "state" : "new",
+            "value" : "Trigger Sources"
           }
         },
         "th" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "แฟล็กโหมดนักพัฒนา"
+            "state" : "new",
+            "value" : "Trigger Sources"
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Dev Mode Flags"
+            "value" : "Trigger Sources"
           }
         },
         "uk" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Dev Mode Flags"
+            "value" : "Trigger Sources"
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Dev Mode Flags"
+            "value" : "Trigger Sources"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Dev Mode Flags"
+            "value" : "Trigger Sources"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Dev Mode Flags"
+            "value" : "Trigger Sources"
           }
         }
       }
@@ -73105,8 +73004,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Device"
+            "state" : "translated",
+            "value" : "Urządzenie"
           }
         },
         "pt-BR" : {
@@ -73342,8 +73241,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Diagnostics and Onboarding are non-destructive. Reset and Troubleshooting can delete preferences, clear the cache, or quit apps."
+            "state" : "translated",
+            "value" : "Diagnostyka i wprowadzenie nie powodują utraty danych. Resetowanie i rozwiązywanie problemów mogą usuwać preferencje, czyścić pamięć podręczną lub zamykać aplikacje."
           }
         },
         "pt-BR" : {
@@ -73698,8 +73597,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Display"
+            "state" : "translated",
+            "value" : "Wyświetlacz"
           }
         },
         "pt-BR" : {
@@ -74649,8 +74548,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Delete this trigger"
+            "state" : "translated",
+            "value" : "Usuń ten wyzwalacz"
           }
         },
         "pt-BR" : {
@@ -74767,8 +74666,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Delete older log files after this many days, or sooner if more than 50 pile up. The file being written is always kept."
+            "state" : "translated",
+            "value" : "Usuwaj starsze pliki dziennika po określonej liczbie dni albo wcześniej, jeśli ich liczba przekroczy 50. Plik, do którego trwa zapis, nigdy nie jest usuwany."
           }
         },
         "pt-BR" : {
@@ -75242,8 +75141,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Couldn't confirm that the group settled into place."
+            "state" : "translated",
+            "value" : "Nie udało się ustalić, czy grupa znalazła się już na swoim miejscu."
           }
         },
         "pt-BR" : {
@@ -75832,8 +75731,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Couldn't run tool"
+            "state" : "translated",
+            "value" : "Nie udało się uruchomić narzędzia"
           }
         },
         "pt-BR" : {
@@ -75951,8 +75850,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Create Group"
+            "state" : "translated",
+            "value" : "Utwórz grupę"
           }
         },
         "pt-BR" : {
@@ -76070,8 +75969,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Current Space"
+            "state" : "translated",
+            "value" : "Aktualna Przestrzeń"
           }
         },
         "pt-BR" : {
@@ -76189,8 +76088,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Delete %@'s cache folder, then quit the app."
+            "state" : "translated",
+            "value" : "Usuń folder pamięci podręcznej %@, po czym zamknij aplikację."
           }
         },
         "pt-BR" : {
@@ -76426,8 +76325,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Custom delay"
+            "state" : "translated",
+            "value" : "Niestandardowe opóźnienie"
           }
         },
         "pt-BR" : {
@@ -76664,8 +76563,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Daily"
+            "state" : "translated",
+            "value" : "Codziennie"
           }
         },
         "pt-BR" : {
@@ -76901,8 +76800,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Days to keep log files"
+            "state" : "translated",
+            "value" : "Okres przechowywania plików dziennika w dniach"
           }
         },
         "pt-BR" : {
@@ -77732,8 +77631,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Enter zen mode while presenting"
+            "state" : "translated",
+            "value" : "Włącz tryb Zen podczas prezentacji"
           }
         },
         "pt-BR" : {
@@ -78207,8 +78106,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Every saved status-item position will be deleted and the menu bar host will quit, so your whole menu bar arrangement is rebuilt from scratch."
+            "state" : "translated",
+            "value" : "Zostaną usunięte wszystkie zapisane pozycje elementów paska stanu, a proces odpowiedzialny za pasek menu zakończy działanie. Następnie cały układ paska menu zostanie zbudowany od nowa."
           }
         },
         "pt-BR" : {
@@ -78444,8 +78343,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Expand trigger"
+            "state" : "translated",
+            "value" : "Wyzwalacz rozwijania"
           }
         },
         "pt-BR" : {
@@ -78563,8 +78462,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Explains what a setting does directly beneath it, like this text."
+            "state" : "translated",
+            "value" : "Wyjaśnia, do czego służy dane ustawienie, umieszczając opis bezpośrednio pod nim — tak jak tutaj."
           }
         },
         "pt-BR" : {
@@ -79291,26 +79190,26 @@
             "plural" : {
               "few" : {
                 "stringUnit" : {
-                  "state" : "new",
-                  "value" : "Failed to update configuration on [%lld profiles]."
+                  "state" : "translated",
+                  "value" : "Nie udało się zaktualizować konfiguracji dla [%lld profili]."
                 }
               },
               "many" : {
                 "stringUnit" : {
-                  "state" : "new",
-                  "value" : "Failed to update configuration on [%lld profiles]."
+                  "state" : "translated",
+                  "value" : "Nie udało się zaktualizować konfiguracji dla [%lld profili]."
                 }
               },
               "one" : {
                 "stringUnit" : {
-                  "state" : "new",
-                  "value" : "Failed to update configuration on [%lld profile]."
+                  "state" : "translated",
+                  "value" : "Nie udało się zaktualizować konfiguracji dla [%lld profilu]."
                 }
               },
               "other" : {
                 "stringUnit" : {
-                  "state" : "new",
-                  "value" : "Failed to update configuration on [%lld profiles]."
+                  "state" : "translated",
+                  "value" : "Nie udało się zaktualizować konfiguracji dla [%lld profili]."
                 }
               }
             }
@@ -79645,8 +79544,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Fill the spacer with a color. Fully transparent renders as an empty gap."
+            "state" : "translated",
+            "value" : "Wypełnij element odstępowy kolorem. Przy ustawieniu pełnej przezroczystości będzie widoczna jedynie pusta przestrzeń."
           }
         },
         "pt-BR" : {
@@ -79881,8 +79780,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "First item"
+            "state" : "translated",
+            "value" : "Pierwszy element"
           }
         },
         "pt-BR" : {
@@ -80594,8 +80493,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Drag to change trigger priority"
+            "state" : "translated",
+            "value" : "Przeciągnij, żeby zmienić kolejność wyzwalaczy"
           }
         },
         "pt-BR" : {
@@ -80713,8 +80612,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Draw each menu bar item as its app's icon everywhere %@ shows it. Items whose app cannot be identified keep their live preview."
+            "state" : "translated",
+            "value" : "Wszędzie tam, gdzie %@ wyświetla elementy paska menu, pokazuj je jako ikony odpowiednich aplikacji. Jeśli nie można ustalić, do której aplikacji należy dany element, zachowaj jego podgląd na żywo."
           }
         },
         "pt-BR" : {
@@ -81782,8 +81681,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Enable"
+            "state" : "translated",
+            "value" : "Włącz"
           }
         },
         "pt-BR" : {
@@ -81955,120 +81854,126 @@
         }
       }
     },
-    "Enable experimental trigger sources one at a time. Each flag turns on its condition in the Triggers pane and starts its background monitor. Battery and power conditions are always available." : {
+    "Turn on the trigger sources you want to use. Each one adds its conditions to the Triggers pane and starts a background monitor. Battery and power conditions are always available." : {
       "localizations" : {
         "cs" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Enable experimental trigger sources one at a time. Each flag turns on its condition in the Triggers pane and starts its background monitor. Battery and power conditions are always available."
+            "value" : "Turn on the trigger sources you want to use. Each one adds its conditions to the Triggers pane and starts a background monitor. Battery and power conditions are always available."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Enable experimental trigger sources one at a time. Each flag turns on its condition in the Triggers pane and starts its background monitor. Battery and power conditions are always available."
+            "value" : "Turn on the trigger sources you want to use. Each one adds its conditions to the Triggers pane and starts a background monitor. Battery and power conditions are always available."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Turn on the trigger sources you want to use. Each one adds its conditions to the Triggers pane and starts a background monitor. Battery and power conditions are always available."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Enable experimental trigger sources one at a time. Each flag turns on its condition in the Triggers pane and starts its background monitor. Battery and power conditions are always available."
+            "value" : "Turn on the trigger sources you want to use. Each one adds its conditions to the Triggers pane and starts a background monitor. Battery and power conditions are always available."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Enable experimental trigger sources one at a time. Each flag turns on its condition in the Triggers pane and starts its background monitor. Battery and power conditions are always available."
+            "value" : "Turn on the trigger sources you want to use. Each one adds its conditions to the Triggers pane and starts a background monitor. Battery and power conditions are always available."
           }
         },
         "hu" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Enable experimental trigger sources one at a time. Each flag turns on its condition in the Triggers pane and starts its background monitor. Battery and power conditions are always available."
+            "value" : "Turn on the trigger sources you want to use. Each one adds its conditions to the Triggers pane and starts a background monitor. Battery and power conditions are always available."
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Enable experimental trigger sources one at a time. Each flag turns on its condition in the Triggers pane and starts its background monitor. Battery and power conditions are always available."
+            "value" : "Turn on the trigger sources you want to use. Each one adds its conditions to the Triggers pane and starts a background monitor. Battery and power conditions are always available."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Enable experimental trigger sources one at a time. Each flag turns on its condition in the Triggers pane and starts its background monitor. Battery and power conditions are always available."
+            "value" : "Turn on the trigger sources you want to use. Each one adds its conditions to the Triggers pane and starts a background monitor. Battery and power conditions are always available."
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "実験的なトリガーソースを個別に有効化します。各フラグをオンにすると、トリガー設定内に該当の条件が追加され、バックグラウンドでの監視が始まります。なお、バッテリーと電源の状態に関する条件は常に利用できます。"
+            "state" : "new",
+            "value" : "Turn on the trigger sources you want to use. Each one adds its conditions to the Triggers pane and starts a background monitor. Battery and power conditions are always available."
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Enable experimental trigger sources one at a time. Each flag turns on its condition in the Triggers pane and starts its background monitor. Battery and power conditions are always available."
+            "value" : "Turn on the trigger sources you want to use. Each one adds its conditions to the Triggers pane and starts a background monitor. Battery and power conditions are always available."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Enable experimental trigger sources one at a time. Each flag turns on its condition in the Triggers pane and starts its background monitor. Battery and power conditions are always available."
+            "value" : "Turn on the trigger sources you want to use. Each one adds its conditions to the Triggers pane and starts a background monitor. Battery and power conditions are always available."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Enable experimental trigger sources one at a time. Each flag turns on its condition in the Triggers pane and starts its background monitor. Battery and power conditions are always available."
+            "value" : "Turn on the trigger sources you want to use. Each one adds its conditions to the Triggers pane and starts a background monitor. Battery and power conditions are always available."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Enable experimental trigger sources one at a time. Each flag turns on its condition in the Triggers pane and starts its background monitor. Battery and power conditions are always available."
+            "value" : "Turn on the trigger sources you want to use. Each one adds its conditions to the Triggers pane and starts a background monitor. Battery and power conditions are always available."
           }
         },
         "ru" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Включайте экспериментальные источники триггеров по одному. Каждый флаг активирует соответствующее условие на панели «Триггеры» и запускает фоновый мониторинг. Условия заряда батареи и питания доступны всегда."
+            "state" : "new",
+            "value" : "Turn on the trigger sources you want to use. Each one adds its conditions to the Triggers pane and starts a background monitor. Battery and power conditions are always available."
           }
         },
         "th" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "เปิดใช้งานแหล่งทริกเกอร์แบบทดลองทีละตัว แต่ละแฟล็กจะเปิดเงื่อนไขของตนในแผงทริกเกอร์และเริ่มการตรวจสอบพื้นหลัง เงื่อนไขแบตเตอรี่และพลังงานพร้อมใช้งานเสมอ"
+            "state" : "new",
+            "value" : "Turn on the trigger sources you want to use. Each one adds its conditions to the Triggers pane and starts a background monitor. Battery and power conditions are always available."
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Enable experimental trigger sources one at a time. Each flag turns on its condition in the Triggers pane and starts its background monitor. Battery and power conditions are always available."
+            "value" : "Turn on the trigger sources you want to use. Each one adds its conditions to the Triggers pane and starts a background monitor. Battery and power conditions are always available."
           }
         },
         "uk" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Enable experimental trigger sources one at a time. Each flag turns on its condition in the Triggers pane and starts its background monitor. Battery and power conditions are always available."
+            "value" : "Turn on the trigger sources you want to use. Each one adds its conditions to the Triggers pane and starts a background monitor. Battery and power conditions are always available."
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Enable experimental trigger sources one at a time. Each flag turns on its condition in the Triggers pane and starts its background monitor. Battery and power conditions are always available."
+            "value" : "Turn on the trigger sources you want to use. Each one adds its conditions to the Triggers pane and starts a background monitor. Battery and power conditions are always available."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Enable experimental trigger sources one at a time. Each flag turns on its condition in the Triggers pane and starts its background monitor. Battery and power conditions are always available."
+            "value" : "Turn on the trigger sources you want to use. Each one adds its conditions to the Triggers pane and starts a background monitor. Battery and power conditions are always available."
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Enable experimental trigger sources one at a time. Each flag turns on its condition in the Triggers pane and starts its background monitor. Battery and power conditions are always available."
+            "value" : "Turn on the trigger sources you want to use. Each one adds its conditions to the Triggers pane and starts a background monitor. Battery and power conditions are always available."
           }
         }
       }
@@ -82732,8 +82637,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Zen mode is on"
+            "state" : "translated",
+            "value" : "Tryb Zen włączony"
           }
         },
         "pt-BR" : {
@@ -82857,8 +82762,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Hide Dock icon when toggling the menu bar"
+            "state" : "translated",
+            "value" : "Ukrywaj ikonę w Docku podczas włączania i wyłączania paska menu"
           }
         },
         "pt-BR" : {
@@ -82982,8 +82887,8 @@
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Keep the app's icon out of the Dock when showing or hiding hidden menu bar items. If they need extra space, they open in the Thaw Bar instead of hiding the app menus. Settings windows still appear normally."
+            "state" : "translated",
+            "value" : "Podczas pokazywania i ukrywania schowanych elementów paska menu ikona aplikacji nie będzie widoczna w Docku. Gdy elementy te potrzebują więcej miejsca, otwierają się na pasku Thaw, nie zasłaniając menu aplikacji. Okna ustawień nadal pojawiają się jak zwykle."
           }
         },
         "pt-BR" : {

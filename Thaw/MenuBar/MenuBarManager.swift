@@ -122,6 +122,11 @@ final class MenuBarManager {
     /// Cancellable for the periodic average-color refresh when adaptive background is active.
     private var adaptiveColorRefreshCancellable: AnyCancellable?
 
+    /// True between screensDidSleep and screensDidWake. Captures skip while
+    /// it's set; the wake handler recaptures anyway.
+    @ObservationIgnored
+    private var areDisplaysAsleep = false
+
     /// Task observing `imageCache.tagsSeekingAttention` for items that have
     /// started blinking while hidden.
     private var attentionObservationTask: Task<Void, Never>?
@@ -389,6 +394,7 @@ final class MenuBarManager {
             .sink { [weak self] _ in
                 guard let self else { return }
                 sleepColorCache = averageColors
+                areDisplaysAsleep = true
             }
             .store(in: &c)
 
@@ -399,6 +405,7 @@ final class MenuBarManager {
             .publisher(for: NSWorkspace.screensDidWakeNotification)
             .sink { [weak self] _ in
                 guard let self else { return }
+                areDisplaysAsleep = false
                 guard adaptiveCaptureRequirements?.isAdaptive == true else { return }
 
                 guard let cache = sleepColorCache else {
@@ -787,7 +794,7 @@ final class MenuBarManager {
     /// the await sees the newer pass's values instead of its own, and can
     /// still come back incomplete while that pass is in flight.
     func updateAverageColorInfoAsync() async {
-        guard let appState else { return }
+        guard let appState, !areDisplaysAsleep else { return }
 
         // Only update if we really need the color info
         let isSettingsVisible = settingsWindow?.isVisible == true
@@ -848,7 +855,9 @@ final class MenuBarManager {
         await withTaskGroup(of: (CGDirectDisplayID, MenuBarAverageColorInfo, WallpaperPalette?)?.self) { group in
             for input in inputs {
                 group.addTask {
+                    // Displays can sleep mid-pass; each capture rechecks.
                     guard
+                        await !self.areDisplaysAsleep,
                         let image = await ScreenCapture.captureWindowsAsync(
                             with: input.windowIDs,
                             screenBounds: input.bounds,
@@ -860,7 +869,7 @@ final class MenuBarManager {
                     }
 
                     var palette: WallpaperPalette?
-                    if needsPalette {
+                    if needsPalette, await !self.areDisplaysAsleep {
                         // The strip above is one pixel tall by design, which
                         // is enough to average and far too little to derive a
                         // scheme from, so the palette re-captures at the
