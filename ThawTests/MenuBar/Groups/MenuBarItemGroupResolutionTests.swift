@@ -2,7 +2,6 @@
 //  MenuBarItemGroupResolutionTests.swift
 //  Project: Thaw
 //
-//  Copyright (Ice) © 2023–2025 Jordan Baird
 //  Copyright (Thaw) © 2026 Toni Förster
 //  Licensed under the GNU GPLv3
 
@@ -18,9 +17,7 @@ struct MenuBarItemGroupResolutionTests {
 
     // MARK: Regression lock
 
-    /// While the store is empty in the field, resolution must be a faithful
-    /// superset of today's derivation — this is the gate for landing the
-    /// resolver swap without a behaviour change.
+    /// With an empty store, resolution must match automatic derivation exactly.
     @Test("An empty store reproduces automatic grouping exactly")
     func emptyStoreMatchesAutomaticGrouping() {
         let tags = [
@@ -48,10 +45,8 @@ struct MenuBarItemGroupResolutionTests {
         #expect(MenuBarItemGroupResolver.resolve(tags: tags, groupSet: .empty).isEmpty)
     }
 
-    /// `LayoutBarContainer` maps its non-item arranged views (the New Items
-    /// badge, opaque slots) onto a non-groupable placeholder tag before
-    /// resolving. Those placeholders must never become members, and must not
-    /// break the member indices of the real items around them.
+    /// `LayoutBarContainer` maps non-item views (New Items badge, opaque slots)
+    /// to a placeholder tag, which must not join or shift member indices.
     @Test("Non-groupable placeholders never join a group")
     func placeholdersNeverJoinAGroup() {
         let placeholder = MenuBarItemTag.visibleControlItem
@@ -85,8 +80,8 @@ struct MenuBarItemGroupResolutionTests {
 
         let resolved = MenuBarItemGroupResolver.resolve(tags: tags, groupSet: set)
 
-        // The user group claims one item from each bundle, leaving each bundle
-        // with a single unclaimed item — so neither automatic cluster forms.
+        // The user group leaves each bundle one unclaimed item, so neither
+        // automatic cluster forms.
         #expect(resolved.count == 1)
         #expect(resolved[0].origin.isUserAuthored)
         #expect(resolved[0].displayName == "Work")
@@ -141,7 +136,7 @@ struct MenuBarItemGroupResolutionTests {
         // Nothing of the user group is live, so only the automatic cluster shows.
         #expect(resolved.count == 1)
         #expect(resolved[0].origin == .automatic(.string("com.a")))
-        // The store is untouched — quitting an app must never destroy a group.
+        // Quitting an app must never destroy a group.
         #expect(set.groups.count == 1)
     }
 
@@ -210,56 +205,5 @@ struct MenuBarItemGroupResolutionTests {
         #expect(MenuBarItemGroupResolver.dragUnitIndices(forIndex: 0, in: groups) == [0, 2])
         #expect(MenuBarItemGroupResolver.dragUnitIndices(forIndex: 2, in: groups) == [0, 2])
         #expect(MenuBarItemGroupResolver.dragUnitIndices(forIndex: 1, in: groups) == [1])
-    }
-
-    // MARK: placeBlock
-
-    @Test("placeBlock gathers a scattered group at the drop cursor")
-    func placeBlockGathersScatteredMembers() {
-        let elements = ["a1", "x", "a2", "y", "a3"]
-        let result = MenuBarItemGroupResolver.placeBlock(elements, memberIndices: [0, 2, 4], toIndexInOriginal: 0)
-        #expect(result == ["a1", "a2", "a3", "x", "y"])
-    }
-
-    @Test("placeBlock moves a gathered group to the end")
-    func placeBlockMovesToEnd() {
-        let elements = ["a1", "a2", "x", "y"]
-        let result = MenuBarItemGroupResolver.placeBlock(elements, memberIndices: [0, 1], toIndexInOriginal: 4)
-        #expect(result == ["x", "y", "a1", "a2"])
-    }
-
-    @Test("placeBlock preserves member order and non-member relative order")
-    func placeBlockPreservesOrders() {
-        let elements = ["x", "a1", "y", "a2", "z"]
-        let result = MenuBarItemGroupResolver.placeBlock(elements, memberIndices: [1, 3], toIndexInOriginal: 5)
-        #expect(result == ["x", "y", "z", "a1", "a2"])
-    }
-
-    @Test("placeBlock is a permutation of its input")
-    func placeBlockIsAPermutation() {
-        let elements = ["a1", "x", "a2", "y", "a3", "z"]
-        for destination in 0 ... elements.count {
-            let result = MenuBarItemGroupResolver.placeBlock(
-                elements,
-                memberIndices: [0, 2, 4],
-                toIndexInOriginal: destination
-            )
-            #expect(result.sorted() == elements.sorted(), "destination \(destination) lost or invented an element")
-            #expect(result.count == elements.count)
-        }
-    }
-
-    @Test("placeBlock leaves an already-gathered group in place when re-applied")
-    func placeBlockIsStableOnGatheredInput() {
-        let elements = ["a1", "a2", "a3", "x"]
-        let result = MenuBarItemGroupResolver.placeBlock(elements, memberIndices: [0, 1, 2], toIndexInOriginal: 0)
-        #expect(result == elements)
-    }
-
-    @Test("placeBlock ignores out-of-range indices rather than trapping")
-    func placeBlockIgnoresOutOfRange() {
-        let elements = ["a", "b"]
-        #expect(MenuBarItemGroupResolver.placeBlock(elements, memberIndices: [5], toIndexInOriginal: 0) == elements)
-        #expect(MenuBarItemGroupResolver.placeBlock(elements, memberIndices: [], toIndexInOriginal: 0) == elements)
     }
 }

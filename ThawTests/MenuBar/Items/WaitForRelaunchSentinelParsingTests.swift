@@ -2,7 +2,6 @@
 //  WaitForRelaunchSentinelParsingTests.swift
 //  Project: Thaw
 //
-//  Copyright (Ice) © 2023–2025 Jordan Baird
 //  Copyright (Thaw) © 2026 Toni Förster
 //  Licensed under the GNU GPLv3
 
@@ -10,10 +9,9 @@ import Foundation
 import Testing
 @testable import Thaw
 
-/// Covers the waitForRelaunch sentinel's string format, including the
-/// unix-time suffix added in #1079 so a sentinel whose app never
-/// relaunches can be aged out. The format must round-trip and must stay
-/// backward-compatible with the pre-#1079 two-field form.
+/// The waitForRelaunch sentinel format, including the unix-time suffix that lets
+/// a never-relaunched app's sentinel age out. Must round-trip and still read
+/// the older two-field form.
 @MainActor
 @Suite("Wait-for-relaunch sentinel parsing")
 final class WaitForRelaunchSentinelParsingTests {

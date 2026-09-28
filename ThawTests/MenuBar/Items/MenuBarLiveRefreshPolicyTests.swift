@@ -2,7 +2,6 @@
 //  MenuBarLiveRefreshPolicyTests.swift
 //  Project: Thaw
 //
-//  Copyright (Ice) © 2023–2025 Jordan Baird
 //  Copyright (Thaw) © 2026 Toni Förster
 //  Licensed under the GNU GPLv3
 
@@ -33,13 +32,6 @@ struct MenuBarLiveRefreshPolicyTests {
     func alwaysHiddenCeiling() {
         #expect(MenuBarLiveRefreshPolicy.refreshInterval(for: .alwaysHidden, target: 0.2) == 1)
         #expect(MenuBarLiveRefreshPolicy.refreshInterval(for: .alwaysHidden, target: 2) == 2)
-    }
-
-    @Test("Visible uses ScreenCaptureKit; offscreen uses the capture service")
-    func backends() {
-        #expect(MenuBarLiveRefreshPolicy.backend(for: .visible) == .screenCaptureKit)
-        #expect(MenuBarLiveRefreshPolicy.backend(for: .hidden) == .captureService)
-        #expect(MenuBarLiveRefreshPolicy.backend(for: .alwaysHidden) == .captureService)
     }
 
     @Test("The first frame is due immediately")

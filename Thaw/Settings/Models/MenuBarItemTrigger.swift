@@ -2,7 +2,6 @@
 //  MenuBarItemTrigger.swift
 //  Project: Thaw
 //
-//  Copyright (Ice) © 2023–2025 Jordan Baird
 //  Copyright (Thaw) © 2026 Toni Förster
 //  Licensed under the GNU GPLv3
 
@@ -83,8 +82,8 @@ enum EnergyModeMatch: String, Codable, Hashable, CaseIterable, Identifiable {
     ///
     /// ``high`` is dropped on Macs that don't offer High Power Mode, where
     /// it could never be satisfied. An existing selection is not filtered
-    /// here — the editor keeps a trigger's own current value visible the
-    /// same way it does for a disabled feature flag.
+    /// here; the editor keeps a trigger's current value visible, as it does
+    /// for a disabled feature flag.
     static func selectableCases(highPowerModeSupported: Bool) -> [EnergyModeMatch] {
         allCases.filter { $0 != .high || highPowerModeSupported }
     }
@@ -559,11 +558,6 @@ enum TriggerConditionKind: String, CaseIterable, Identifiable {
         case .imageChanged: "Menu bar icon changed"
         case .itemSeekingAttention: "Menu bar icon is asking for attention"
         }
-    }
-
-    /// Whether this kind carries a battery percentage threshold.
-    var usesPercentage: Bool {
-        self == .batteryBelow || self == .batteryAtOrAbove
     }
 
     /// How long a flipped condition of this kind must hold before its item

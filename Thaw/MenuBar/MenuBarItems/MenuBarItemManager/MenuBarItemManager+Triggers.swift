@@ -2,7 +2,6 @@
 //  MenuBarItemManager+Triggers.swift
 //  Project: Thaw
 //
-//  Copyright (Ice) © 2023–2025 Jordan Baird
 //  Copyright (Thaw) © 2026 Toni Förster
 //  Licensed under the GNU GPLv3
 
@@ -11,28 +10,20 @@ import Foundation
 
 /// Trigger ownership of item placement.
 ///
-/// While a conditional trigger holds an item, that item's live placement is
-/// not the user's layout: it must neither be persisted as a user edit nor be
-/// dragged back by the saved-layout reconciler. The identifier bookkeeping
-/// here is instance-drift tolerant, because an item's `:N` suffix can change
-/// while a trigger owns it.
+/// A trigger-held item's placement must not be persisted or dragged back by
+/// the reconciler. Matching tolerates `:N` suffix drift while it's held.
 extension MenuBarItemManager {
     /// Updates the set of items whose temporary placement is currently owned
     /// by conditional triggers.
     ///
-    /// Removing an identifier intentionally schedules a later cache cycle:
-    /// `move` has a five-second saved-layout cooldown, so waiting past it lets
-    /// the normal reconciler restore the user's saved section and ordering
-    /// without fighting an in-flight synthetic drag.
+    /// Removing an identifier schedules a cache cycle past `move`'s
+    /// five-second cooldown, so the reconciler restores the saved layout
+    /// without fighting an in-flight drag.
     func setTriggerControlledItemIdentifiers(_ identifiers: Set<String>) {
         guard triggerControlledItemIdentifiers != identifiers else { return }
 
-        // Read `itemCache` directly. This extension is on `MenuBarItemManager`,
-        // so `appState?.itemManager` only resolves back to `self` -- but
-        // `appState` is weak, and a nil hop would empty both sets. Every
-        // suffixed identifier would then fail to resolve to a base, degrading
-        // release detection to exact matching and reporting a drifted but
-        // still-controlled item as released.
+        // Not via the weak `appState`: a nil hop would empty both sets and
+        // report drifted, still-controlled items as released.
         let managedItems = itemCache.managedItems
         let knownBaseIdentifiers = Set(managedItems.map(\.tag.stableIdentifierBase))
         let knownLiveIdentifiers = Set(managedItems.map(\.uniqueIdentifier))
@@ -47,9 +38,8 @@ extension MenuBarItemManager {
             savedSectionOrder: savedSectionOrder
         )
         triggerControlledItemIdentifiers = identifiers
-        // A condition can become active again before the delayed restore gets
-        // a chance to run. In that case its old release must no longer force a
-        // replay, but the still-active item remains persistence-protected.
+        // A reactivated condition cancels its pending restore; the item stays
+        // persistence-protected.
         triggerLayoutRestorationItemIdentifiers.subtract(
             Self.releasedTriggerRestorationIdentifiersToClear(
                 reactivatedIdentifiers: identifiers,
@@ -58,30 +48,21 @@ extension MenuBarItemManager {
                 knownLiveIdentifiers: knownLiveIdentifiers
             )
         )
-        // An item with no saved position has no durable placement to restore.
-        // Keeping it shielded would leave it at its trigger destination
-        // indefinitely while another trigger remains active, and would stop
-        // the next cache cycle from ever recording its first real baseline.
-        // Let that item enter normal persistence immediately; only saved
-        // targets need an anchor-restoration pass.
+        // Items with no saved position have nothing to restore; shielding
+        // them would stop their first baseline from ever being recorded.
         triggerLayoutRestorationItemIdentifiers.formUnion(identifiersRequiringRestoration)
         MenuBarItemManager.diagLog.debug(
             "Updated trigger-controlled item set: active=\(identifiers.count), released=\(releasedIdentifiers.count), restorable=\(identifiersRequiringRestoration.count), pendingRestore=\(triggerLayoutRestorationItemIdentifiers.count)"
         )
 
         guard !releasedIdentifiers.isEmpty else { return }
-        // Coalesce: a burst of releases should wait once, not stack one task
-        // per release. Replacing the pending task also restarts the cooldown,
-        // which is what the later releases need anyway.
+        // Coalesce a burst of releases; replacing the task restarts the wait.
         triggerReleaseRecacheTask?.cancel()
         triggerReleaseRecacheTask = Task { [weak self] in
             try? await Task.sleep(for: .seconds(6))
             guard !Task.isCancelled, let self else { return }
-            await self.cacheItemsRegardless(skipRecentMoveCheck: true)
-            // The handle is deliberately left in place: by the time this runs,
-            // it may already have been replaced by a newer release's task, and
-            // clearing it would drop that one's cancellation handle. A settled
-            // handle is harmless -- cancelling a finished task is a no-op.
+            await self.cacheItemsRegardless(options: .init(skipRecentMoveCheck: true))
+            // Don't clear the handle: it may belong to a newer release's task.
         }
     }
 
@@ -109,16 +90,13 @@ extension MenuBarItemManager {
     }
 
     /// Returns only released trigger targets that have a persisted section and
-    /// order to recover. This is pure so the no-baseline behavior remains
-    /// independently testable from the WindowServer move pipeline.
+    /// order to recover.
     static nonisolated func triggerReleaseIdentifiersRequiringRestoration(
         _ releasedIdentifiers: Set<String>,
         savedSectionOrder: [String: [String]],
         knownBaseIdentifiers _: Set<String> = []
     ) -> Set<String> {
         Set(releasedIdentifiers.filter {
-            // Upstream's `savedPositionByBaseID` does its own canonical
-            // base matching and takes no `knownBaseIdentifiers`.
             LayoutSolver.savedPositionByBaseID(
                 for: $0,
                 in: savedSectionOrder
@@ -166,9 +144,8 @@ extension MenuBarItemManager {
     /// The live UIDs in `uids` that a trigger currently owns or is still
     /// restoring, resolved drift-tolerantly against `items`.
     ///
-    /// Callers that classify items against the desired layout need this:
-    /// a trigger-owned item is deliberately absent from the desired layout,
-    /// so without excluding it explicitly it reads as an unmanaged arrival.
+    /// Trigger-owned items are absent from the desired layout, so without
+    /// this they read as unmanaged arrivals.
     func triggerProtectedUIDs(among uids: [String], items: [MenuBarItem]) -> Set<String> {
         let protectedIdentifiers = triggerControlledItemIdentifiers
             .union(triggerLayoutRestorationItemIdentifiers)
@@ -201,10 +178,8 @@ extension MenuBarItemManager {
         ).isEmpty
     }
 
-    /// Removes currently trigger-owned items from a desired saved order.
-    /// Their temporary section belongs to the trigger until release, so a
-    /// saved-layout apply must leave them untouched even when it is restoring
-    /// unrelated items in the same pass.
+    /// Removes currently trigger-owned items from a desired saved order, so
+    /// a saved-layout apply leaves them alone until release.
     static nonisolated func savedOrderExcludingTriggerControlledIdentifiers(
         _ savedOrder: [String: [String]],
         controlledIdentifiers: Set<String>,
@@ -225,9 +200,7 @@ extension MenuBarItemManager {
     }
 
     /// Identifies pending release shields superseded by a newly active
-    /// trigger. Instance suffixes may have drifted while the item relaunched,
-    /// so this deliberately uses the same unambiguous protection matcher as
-    /// layout persistence and restoration.
+    /// trigger, using the same drift-tolerant matcher as persistence.
     static nonisolated func releasedTriggerRestorationIdentifiersToClear(
         reactivatedIdentifiers: Set<String>,
         pendingRestorationIdentifiers: Set<String>,
@@ -246,32 +219,6 @@ extension MenuBarItemManager {
         }
     }
 
-    /// Resolves a released trigger's fresh live identifier after a cache
-    /// refresh. Exact matching wins; a suffix-drift fallback is accepted only
-    /// when the live base identifier has one unambiguous candidate.
-    static nonisolated func unambiguousLiveIdentifier(
-        matching protectedIdentifier: String,
-        in liveIdentifiers: [String],
-        knownBaseIdentifiers: Set<String> = []
-    ) -> String? {
-        if liveIdentifiers.contains(protectedIdentifier) {
-            return protectedIdentifier
-        }
-        guard let protectedBaseID = MenuBarItemTag.resolvedBaseIdentifier(
-            for: protectedIdentifier,
-            knownBaseIdentifiers: knownBaseIdentifiers
-        ) else {
-            return nil
-        }
-        let candidates = liveIdentifiers.filter { identifier in
-            MenuBarItemTag.resolvedBaseIdentifier(
-                for: identifier,
-                knownBaseIdentifiers: knownBaseIdentifiers
-            ) == protectedBaseID
-        }
-        return candidates.count == 1 ? candidates[0] : nil
-    }
-
     enum TriggerMoveResult {
         /// A synthetic move was performed and verified.
         case moved
@@ -287,12 +234,6 @@ extension MenuBarItemManager {
 
     /// Moves the menu bar item identified by the given stable tag identifier
     /// into the given section, if the item is present and not already there.
-    ///
-    /// Used by the menu bar item triggers system to reveal or hide an
-    /// individual item when its trigger condition changes. While a trigger
-    /// owns an item, `MenuBarItemTriggersManager` excludes that temporary
-    /// placement from `savedSectionOrder`; the reconciler restores the user's
-    /// durable layout after the trigger releases it.
     ///
     /// - Returns: A ``TriggerMoveResult`` describing whether the move
     ///   happened, was unnecessary, should be retried later, or failed.
@@ -315,8 +256,7 @@ extension MenuBarItemManager {
         }
         guard options.shouldProceed?() ?? true else { return .deferred }
 
-        // Upstream has no `getMenuBarItemsDroppingSystemClones` wrapper;
-        // drop transient WindowServer duplicates inline instead.
+        // Drop transient WindowServer duplicates.
         var items = await MenuBarItem
             .getMenuBarItems(on: nil, option: .activeSpace)
             .filter { !$0.isSystemClone }
@@ -337,7 +277,6 @@ extension MenuBarItemManager {
             MenuBarItemManager.diagLog.debug("moveItem(trigger): \(target.logString) is not movable")
             return .unavailable
         }
-        // Items destined for a hidden section must actually be hideable.
         if section != .visible, !target.canBeHidden {
             MenuBarItemManager.diagLog.debug("moveItem(trigger): \(target.logString) cannot be hidden")
             return .unavailable
@@ -368,7 +307,6 @@ extension MenuBarItemManager {
             resolvedSection = .hidden
         }
 
-        // Skip when the item already resides in the effective target section.
         let displayID = Bridging.getActiveMenuBarDisplayID()
         var context = CacheContext(controlItems: controlItems, displayID: displayID)
         let currentSection = context.findSection(for: target)
@@ -389,9 +327,6 @@ extension MenuBarItemManager {
             """
         )
         do {
-            // The current `move` takes a single `skipInputPause` flag and a
-            // `Duration` watchdog; the trigger branch's finer-grained pause
-            // and cursor options have no upstream counterpart.
             try await move(
                 item: target,
                 to: destination,

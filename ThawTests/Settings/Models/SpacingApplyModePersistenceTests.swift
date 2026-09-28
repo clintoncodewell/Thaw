@@ -2,7 +2,6 @@
 //  SpacingApplyModePersistenceTests.swift
 //  Project: Thaw
 //
-//  Copyright (Ice) © 2023–2025 Jordan Baird
 //  Copyright (Thaw) © 2026 Toni Förster
 //  Licensed under the GNU GPLv3
 
@@ -10,11 +9,9 @@ import Foundation
 import Testing
 @testable import Thaw
 
-/// Covers `DisplaySettingsManager.spacingApplyMode` persistence: the
-/// `didSet` writes the raw value to `Defaults`, and a fresh manager reads
-/// it back. The spacing manager sync is covered separately because it
-/// needs an `AppState`. Added for the "disable the app restarts" request
-/// on #1075.
+/// Covers `DisplaySettingsManager.spacingApplyMode` persistence: `didSet`
+/// writes the raw value to `Defaults` and a fresh manager reads it back.
+/// The spacing manager sync needs an `AppState`, so it's covered elsewhere.
 @MainActor
 @Suite("Spacing apply mode persistence", .serialized)
 final class SpacingApplyModePersistenceTests {

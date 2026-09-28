@@ -2,7 +2,6 @@
 //  MouseHelpersCursorPointTests.swift
 //  Project: Thaw
 //
-//  Copyright (Ice) © 2023–2025 Jordan Baird
 //  Copyright (Thaw) © 2026 Toni Förster
 //  Licensed under the GNU GPLv3
 
@@ -67,7 +66,7 @@ struct MouseHelpersCursorPointTests {
     }
 
     /// An item whose window has already gone away reads back as an empty
-    /// rect, whose center is the origin — a point that a display containing
+    /// rect, whose center is the origin, a point that a display containing
     /// the origin would otherwise accept.
     @Test("Empty bounds resolve to no point", arguments: [
         CGRect.zero,

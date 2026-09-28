@@ -2,7 +2,6 @@
 //  SettingsResetter.swift
 //  Project: Thaw
 //
-//  Copyright (Ice) © 2023–2025 Jordan Baird
 //  Copyright (Thaw) © 2026 Toni Förster
 //  Licensed under the GNU GPLv3
 
@@ -24,9 +23,7 @@ extension AppSettings {
 
     /// Resets Appearance settings to their default values.
     func resetAppearance() {
-        // AppSettings doesn't have direct access to appearanceManager,
-        // but it is available on AppState.
-        // If we want to reset it from here, we need to go through appState.
+        // appearanceManager lives on AppState, not AppSettings.
         appState?.appearanceManager.configuration = Defaults.DefaultValue.menuBarAppearanceConfigurationV2
     }
 
@@ -47,6 +44,7 @@ extension AppSettings {
         general.autoRehide = Defaults.DefaultValue.autoRehide
         general.rehideStrategy = Defaults.DefaultValue.rehideStrategy
         general.rehideInterval = Defaults.DefaultValue.rehideInterval
+        general.tempShowInterval = Defaults.DefaultValue.tempShowInterval
         general.simpleMode = Defaults.DefaultValue.simpleMode
         general.showSettingDescriptions = Defaults.DefaultValue.showSettingDescriptions
         general.hideDockIconWhenToggling = Defaults.DefaultValue.hideDockIconWhenToggling

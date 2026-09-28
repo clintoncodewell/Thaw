@@ -2,7 +2,6 @@
 //  HideApplicationMenusPolicyTests.swift
 //  Project: Thaw
 //
-//  Copyright (Ice) © 2023–2025 Jordan Baird
 //  Copyright (Thaw) © 2026 Toni Förster
 //  Licensed under the GNU GPLv3
 
@@ -10,12 +9,10 @@ import AppKit
 import Testing
 @testable import Thaw
 
-/// Covers the activation-policy decision in front of
-/// ``MenuBarManager/hideApplicationMenus(manual:)``.
+/// The activation-policy choice in front of ``MenuBarManager/hideApplicationMenus(manual:)``.
 ///
-/// The 25 ms retry talks to `NSApp`, so what is pinned here is the choice of
-/// policy: a clean Dock stays accessory unless explicit UI has already asked
-/// for `.regular`.
+/// The 25 ms retry talks to `NSApp`, so only the policy is pinned: a clean Dock
+/// stays accessory unless explicit UI already asked for `.regular`.
 @Suite("Hide application menus activation policy")
 struct HideApplicationMenusPolicyTests {
     @Test("Toggling the menu bar uses regular activation by default")

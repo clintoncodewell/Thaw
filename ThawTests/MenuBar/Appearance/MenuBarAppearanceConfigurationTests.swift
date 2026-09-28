@@ -2,7 +2,6 @@
 //  MenuBarAppearanceConfigurationTests.swift
 //  Project: Thaw
 //
-//  Copyright (Ice) © 2023–2025 Jordan Baird
 //  Copyright (Thaw) © 2026 Toni Förster
 //  Licensed under the GNU GPLv3
 
@@ -13,6 +12,7 @@ import Testing
 
 @Suite("Menu bar appearance configuration")
 struct MenuBarAppearanceConfigurationTests {
+    @MainActor
     @Suite("MenuBarAppearanceConfigurationV2")
     struct MenuBarAppearanceConfigurationV2Tests {
         // MARK: - Default Configuration Tests
@@ -99,6 +99,40 @@ struct MenuBarAppearanceConfigurationTests {
             let config2 = MenuBarAppearanceConfigurationV2.defaultConfiguration
 
             #expect(config1.hashValue == config2.hashValue)
+        }
+
+        // MARK: - Current Configuration Tests
+
+        private func partial(borderWidth: Double) -> MenuBarAppearancePartialConfiguration {
+            var partial = MenuBarAppearancePartialConfiguration.defaultConfiguration
+            partial.borderWidth = borderWidth
+            return partial
+        }
+
+        @Test("A static configuration ignores the light and dark pair")
+        func staticConfigurationIsUsedWhenNotDynamic() {
+            var configuration = MenuBarAppearanceConfigurationV2.defaultConfiguration
+            configuration.isDynamic = false
+            configuration.lightModeConfiguration = partial(borderWidth: 1)
+            configuration.darkModeConfiguration = partial(borderWidth: 2)
+            configuration.staticConfiguration = partial(borderWidth: 3)
+
+            #expect(configuration.current == configuration.staticConfiguration)
+            #expect(configuration.current.borderWidth == 3)
+        }
+
+        /// Light and dark match so the result doesn't depend on the host's appearance;
+        /// this pins that a dynamic configuration never reads `staticConfiguration`.
+        @Test("A dynamic configuration reads the mode pair, not the static one")
+        func dynamicConfigurationIgnoresTheStaticConfiguration() {
+            var configuration = MenuBarAppearanceConfigurationV2.defaultConfiguration
+            configuration.isDynamic = true
+            configuration.lightModeConfiguration = partial(borderWidth: 7)
+            configuration.darkModeConfiguration = partial(borderWidth: 7)
+            configuration.staticConfiguration = partial(borderWidth: 42)
+
+            #expect(configuration.current.borderWidth == 7)
+            #expect(configuration.current != configuration.staticConfiguration)
         }
     }
 
@@ -198,13 +232,61 @@ struct MenuBarAppearanceConfigurationTests {
         }
     }
 
+    // MARK: - MenuBarAppearanceConfigurationV1Tests
+
+    @MainActor
+    @Suite("MenuBarAppearanceConfigurationV1.hasRoundedShape")
+    struct MenuBarAppearanceConfigurationV1Tests {
+        private func configuration(
+            shapeKind: MenuBarShapeKind,
+            fullShapeInfo: MenuBarFullShapeInfo = .defaultValue,
+            splitShapeInfo: MenuBarSplitShapeInfo = .defaultValue
+        ) -> MenuBarAppearanceConfigurationV1 {
+            var configuration = MenuBarAppearanceConfigurationV1.defaultConfiguration
+            configuration.shapeKind = shapeKind
+            configuration.fullShapeInfo = fullShapeInfo
+            configuration.splitShapeInfo = splitShapeInfo
+            return configuration
+        }
+
+        private var squareFull: MenuBarFullShapeInfo {
+            MenuBarFullShapeInfo(leadingEndCap: .square, trailingEndCap: .square)
+        }
+
+        @Test("A shapeless configuration is never rounded")
+        func noShapeIsNeverRounded() {
+            // Round end caps are supplied on purpose: `noShape` must ignore
+            // them rather than read through to the full-shape info.
+            #expect(!configuration(shapeKind: .noShape, fullShapeInfo: .defaultValue).hasRoundedShape)
+        }
+
+        @Test("A full shape reads its rounding from the full shape info")
+        func fullShapeReadsFullShapeInfo() {
+            #expect(configuration(shapeKind: .full, fullShapeInfo: .defaultValue).hasRoundedShape)
+            #expect(!configuration(shapeKind: .full, fullShapeInfo: squareFull).hasRoundedShape)
+        }
+
+        @Test("A split shape reads its rounding from the split shape info")
+        func splitShapeReadsSplitShapeInfo() {
+            let squareSplit = MenuBarSplitShapeInfo(leading: squareFull, trailing: squareFull)
+            // The full-shape info is left rounded to prove the split arm does
+            // not read the wrong field.
+            #expect(configuration(shapeKind: .split, splitShapeInfo: .defaultValue).hasRoundedShape)
+            #expect(!configuration(shapeKind: .split, splitShapeInfo: squareSplit).hasRoundedShape)
+        }
+
+        /// V1 predates the notch shape; the case exists only via the shared enum, so
+        /// legacy must report it unrounded.
+        @Test("A notch shape is not rounded in the legacy format")
+        func notchShapeIsNeverRoundedInV1() {
+            #expect(!configuration(shapeKind: .notch).hasRoundedShape)
+        }
+    }
+
     // MARK: - MenuBarAppearanceV1MigrationTests
 
-    /// Tests for converting V1 appearance data — the format Ice used before its
-    /// `0.11.10` release — which reaches Thaw only through the Ice importer.
-    ///
-    /// `MenuBarAppearanceConfigurationV1` is main-actor isolated, as is the
-    /// importer that reads it, so these tests are too.
+    /// V1 appearance data (Ice before `0.11.10`) reaches Thaw only through the
+    /// Ice importer.
     @MainActor
     @Suite("V1 migration")
     struct MenuBarAppearanceV1MigrationTests {
@@ -265,9 +347,8 @@ struct MenuBarAppearanceConfigurationTests {
         }
     }
 
-    /// The Thaw Bar borrowed the menu bar's shape, tint and border for its
-    /// whole life before this, so the tests that matter here are the ones
-    /// pinning that it still does until someone opts out.
+    /// The Thaw Bar keeps borrowing the menu bar's shape, tint and border
+    /// until someone opts out.
     @MainActor
     @Suite("Thaw Bar appearance")
     struct ThawBarAppearanceTests {
@@ -348,8 +429,7 @@ struct MenuBarAppearanceConfigurationTests {
             #expect(!resolved.hasBorder)
         }
 
-        /// Switching the toggle on is meant to change nothing until something
-        /// is edited, which only holds if the seed round trips exactly.
+        /// Switching the toggle on must change nothing until something is edited.
         @Test("Seeding an override changes nothing on screen")
         func seedingIsInert() {
             let configuration = withMutableCopy(of: MenuBarAppearanceConfigurationV2.defaultConfiguration) { config in

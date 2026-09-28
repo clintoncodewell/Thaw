@@ -17,10 +17,8 @@ import SwiftUI
 final class GeneralSettings {
     private let diagLog = DiagLog(category: "GeneralSettings")
 
-    /// Whether the settings window shows a single curated page instead of
-    /// the full sidebar navigation. Nothing is lost either way: every other
-    /// pane keeps its configuration and stays reachable through the settings
-    /// URI, and turning Simple Mode off brings the full sidebar back.
+    /// Whether the settings window shows a single curated page instead of the
+    /// sidebar. Other panes keep their settings and stay reachable by URI.
     var simpleMode = Defaults.DefaultValue.simpleMode {
         didSet {
             guard oldValue != simpleMode else { return }
@@ -166,8 +164,6 @@ final class GeneralSettings {
         }
     }
 
-    // The offset to apply to the menu bar item spacing and padding.
-
     /// A Boolean value that indicates whether the hidden section
     /// should automatically rehide.
     var autoRehide = Defaults.DefaultValue.autoRehide {
@@ -194,6 +190,16 @@ final class GeneralSettings {
         }
     }
 
+    /// How long a hidden item opened from search or the Thaw Bar stays in the
+    /// menu bar after its menu closes, so an accidental click away does not
+    /// send it straight back.
+    var tempShowInterval = Defaults.DefaultValue.tempShowInterval {
+        didSet {
+            guard oldValue != tempShowInterval else { return }
+            Defaults.set(tempShowInterval, forKey: .tempShowInterval)
+        }
+    }
+
     /// Encoder for properties.
     @ObservationIgnored
     private let encoder = JSONEncoder()
@@ -212,10 +218,8 @@ final class GeneralSettings {
 
     /// Performs the initial setup of the model.
     ///
-    /// The app state is only stored, never read, by this model: the setup it
-    /// performs is reading `Defaults` and subscribing to the Settings-URI
-    /// notification. The parameter is optional so that setup can be driven
-    /// without standing up an ``AppState``; the app always passes one.
+    /// The app state is stored but never read here, so it's optional to let
+    /// tests run setup without an ``AppState``.
     func performSetup(with appState: AppState? = nil) {
         self.appState = appState
         loadInitialState()
@@ -238,6 +242,7 @@ final class GeneralSettings {
         Defaults.ifPresent(key: .showSettingDescriptions, assign: &showSettingDescriptions)
         Defaults.ifPresent(key: .hideDockIconWhenToggling, assign: &hideDockIconWhenToggling)
         Defaults.ifPresent(key: .rehideInterval, assign: &rehideInterval)
+        Defaults.ifPresent(key: .tempShowInterval, assign: &tempShowInterval)
 
         Defaults.ifPresent(key: .iceBarLocation) { rawValue in
             if let location = IceBarLocation(rawValue: rawValue) {
@@ -264,10 +269,8 @@ final class GeneralSettings {
 
     /// Configures the internal observers for the model.
     ///
-    /// Persistence for most properties is now driven by `didSet` on each
-    /// property (see above), replacing the previous `$property.persistToDefaults`
-    /// Combine pipelines. Only the Settings-URI notification subscription
-    /// remains Combine-based here.
+    /// Most properties persist through their own `didSet`; only the
+    /// Settings-URI subscription lives here.
     private func configureObservers() {
         cancellables = [
             NotificationCenter.observeSettingsChangesViaURI { [weak self] change in
@@ -280,7 +283,6 @@ final class GeneralSettings {
     private func handleExternalSettingsChange(_ change: ExternalSettingsChange) {
         let key = change.key
 
-        // Handle boolean values
         if let boolValue = change.boolValue {
             diagLog.debug("GeneralSettings: Received external change for \(key) = \(boolValue)")
 
@@ -313,16 +315,17 @@ final class GeneralSettings {
             }
         }
 
-        // Handle double values
         if let doubleValue = change.doubleValue {
             diagLog.debug("GeneralSettings: Received external change for \(key) = \(doubleValue)")
 
             if key == "rehideInterval", rehideInterval != doubleValue {
                 rehideInterval = doubleValue
+            } else if key == "tempShowInterval", tempShowInterval != doubleValue {
+                tempShowInterval = doubleValue
             }
         }
 
-        // Handle enum values (raw integers)
+        // Enums arrive as raw integers.
         if let rawEnumValue = change.rawEnumValue {
             diagLog.debug("GeneralSettings: Received external change for \(key) = \(rawEnumValue)")
 

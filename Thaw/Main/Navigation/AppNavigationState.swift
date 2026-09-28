@@ -2,7 +2,6 @@
 //  AppNavigationState.swift
 //  Project: Thaw
 //
-//  Copyright (Ice) © 2023–2025 Jordan Baird
 //  Copyright (Thaw) © 2026 Toni Förster
 //  Licensed under the GNU GPLv3
 
@@ -32,10 +31,7 @@ final class AppNavigationState {
     var requestedSettingsDisclosure: SettingsDisclosure?
 
     init() {
-        // Reopen the settings window on the pane the user last used. A pane
-        // Simple Mode hides would restore an unselectable sidebar row (Simple
-        // Mode replaces navigation entirely), so fall back to the default
-        // (General) in that case.
+        // Reopen on the last-used pane, unless Simple Mode hides it; then use General.
         if let rawValue = Defaults.string(forKey: .lastSettingsPane),
            let pane = SettingsNavigationIdentifier(rawValue: rawValue),
            !Defaults.bool(forKey: .simpleMode)

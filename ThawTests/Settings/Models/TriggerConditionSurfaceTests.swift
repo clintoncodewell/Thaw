@@ -2,7 +2,6 @@
 //  TriggerConditionSurfaceTests.swift
 //  Project: Thaw
 //
-//  Copyright (Ice) © 2023–2025 Jordan Baird
 //  Copyright (Thaw) © 2026 Toni Förster
 //  Licensed under the GNU GPLv3
 
@@ -10,15 +9,12 @@ import Foundation
 import Testing
 @testable import Thaw
 
-/// Covers the value surface of ``TriggerCondition`` and the enums the trigger
-/// editor drives it with: the per-kind lookup tables, the accessors that pull
-/// a carried value back out of a case, and the `with…` copies the editor uses
-/// to edit one field without disturbing the rest.
+/// Covers the value surface of ``TriggerCondition`` and the editor's enums:
+/// per-kind lookup tables, value accessors, and the `with…` copies that edit
+/// one field without disturbing the rest.
 ///
-/// Deliberately exhaustive over `allCases` rather than spot-checked. Every one
-/// of these tables is a `switch` the compiler forces to stay complete, so the
-/// failure mode worth catching is a new case wired to the wrong arm — which
-/// only a pass over the whole set finds.
+/// Exhaustive over `allCases`: the compiler keeps each `switch` complete, so
+/// the real risk is a new case wired to the wrong arm.
 @Suite("Trigger condition surface")
 @MainActor
 struct TriggerConditionSurfaceTests {
@@ -31,12 +27,6 @@ struct TriggerConditionSurfaceTests {
             #expect(!kind.displayString.isEmpty)
             #expect(TriggerCondition.defaultCondition(for: kind).kind == kind)
         }
-    }
-
-    @Test("Only the two battery thresholds use a percentage")
-    func percentageKinds() {
-        let usingPercentage = TriggerConditionKind.allCases.filter(\.usesPercentage)
-        #expect(usingPercentage == [.batteryBelow, .batteryAtOrAbove])
     }
 
     @Test("Jittery sources settle for longer than discrete ones")
@@ -80,7 +70,7 @@ struct TriggerConditionSurfaceTests {
             guard case let .text(prompt) = kind.editor else { return nil }
             return prompt
         }
-        // Five text kinds, and no two share a prompt — a copy-paste slip in
+        // Five text kinds, and no two share a prompt. A copy-paste slip in
         // that table is otherwise invisible.
         #expect(prompts.count == 5)
         #expect(Set(prompts).count == 5)

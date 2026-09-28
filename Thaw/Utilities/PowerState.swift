@@ -2,7 +2,6 @@
 //  PowerState.swift
 //  Project: Thaw
 //
-//  Copyright (Ice) © 2023–2025 Jordan Baird
 //  Copyright (Thaw) © 2026 Toni Förster
 //  Licensed under the GNU GPLv3
 
@@ -27,11 +26,6 @@ struct PowerState: Equatable {
     /// A Boolean value that indicates whether the battery is currently
     /// charging.
     var isCharging: Bool
-
-    /// A Boolean value that indicates whether the machine has a battery.
-    var hasBattery: Bool {
-        batteryPercentage != nil
-    }
 }
 
 extension PowerState {

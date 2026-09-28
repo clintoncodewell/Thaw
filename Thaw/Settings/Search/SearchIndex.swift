@@ -2,7 +2,6 @@
 //  SearchIndex.swift
 //  Project: Thaw
 //
-//  Copyright (Ice) © 2023–2025 Jordan Baird
 //  Copyright (Thaw) © 2026 Toni Förster
 //  Licensed under the GNU GPLv3
 
@@ -22,23 +21,13 @@ nonisolated enum SettingsProperty: Hashable {
 
 /// One searchable row in the settings search index.
 ///
-/// `titleKey`/`sectionKey` reuse the exact `LocalizedStringKey` literals from
-/// the settings panes so no new translation keys are introduced for titles or
-/// section headers — they resolve to the same catalog entries the panes use.
-/// `titleText`/`sectionText`/`descriptionText` are the English source strings,
-/// which are also the catalog keys, so ``localizedTitle(bundle:)`` and its
-/// siblings resolve them to the running localization for fuzzy matching. `keywords`
-/// stays English: it is a search-only alias list with no catalog entries, and
-/// the English title is indexed alongside the translated one so terms users
-/// saw in docs or release notes keep matching in a localized build.
+/// `titleKey`/`sectionKey` reuse the panes' exact `LocalizedStringKey`
+/// literals, so no new translation keys are needed. The `*Text` fields are
+/// the English sources, which double as catalog keys for localized matching.
+/// `keywords` stays English: it has no catalog entries.
 ///
-/// Conforms to `@unchecked Sendable` (not `Hashable`) so the static index
-/// arrays are concurrency-safe under Swift 6 strict concurrency.
-/// `LocalizedStringKey` is not `Sendable`-annotated in this SDK and not
-/// `Hashable`; the entry is immutable (all `let`), so unchecked Sendable
-/// conformance is safe — matching the precedent set by `SectionedListItem`.
-/// `Identifiable.id` is `String`, which is `Hashable`, so `Identifiable` is
-/// satisfied without the whole struct being `Hashable`.
+/// `@unchecked Sendable` because `LocalizedStringKey` isn't `Sendable`; the
+/// entry is all `let`, so that's safe.
 nonisolated struct SearchEntry: Identifiable, @unchecked Sendable {
     let id: String
     let titleKey: LocalizedStringKey
@@ -55,18 +44,11 @@ nonisolated struct SearchEntry: Identifiable, @unchecked Sendable {
     /// The English source doubles as the catalog key, so this resolves the
     /// same entry the pane's `titleKey` does.
     ///
-    /// - Parameter bundle: The bundle to resolve against. Defaults to
-    ///   `.main`, which picks the running localization; tests pass a
-    ///   specific `.lproj` bundle, since the `locale:` argument of
-    ///   `String(localized:)` only selects formatting, not which
-    ///   localization is looked up.
+    /// - Parameter bundle: The bundle to resolve against. Tests pass a
+    ///   specific `.lproj` bundle, since `String(localized:)`'s `locale:`
+    ///   only affects formatting, not which localization is looked up.
     func localizedTitle(bundle: Bundle = .main) -> String {
         String(localized: String.LocalizationValue(titleText), bundle: bundle)
-    }
-
-    /// The section header as rendered, when the entry has one.
-    func localizedSection(bundle: Bundle = .main) -> String? {
-        sectionText.map { String(localized: String.LocalizationValue($0), bundle: bundle) }
     }
 
     /// The annotation text as rendered, when the entry has one.
@@ -96,15 +78,12 @@ nonisolated enum SearchIndex {
         + displayEntries + hotkeyEntries + layoutEntries + appearanceEntries
 
     /// macOS 27-only settings rows, appended when the sidebar search UI is
-    /// available. Currently empty: rows are only added here once a matching
-    /// control is actually exposed in a settings pane.
+    /// available. Empty until a matching control ships in a pane.
     private static let macOS27Entries: [SearchEntry] = []
 
     /// All searchable settings entries, in pane order.
     ///
-    /// The set is static for a given OS, so it is resolved once and cached
-    /// rather than re-concatenated on every access (the search path reads it
-    /// per keystroke).
+    /// Cached because the search path reads it per keystroke.
     static let entries: [SearchEntry] = {
         if #available(macOS 27, *) {
             return sharedEntries + macOS27Entries
@@ -139,9 +118,7 @@ nonisolated enum SearchIndex {
         return baseNonSearchableProperties.union(macOS27AdvancedNonSearchableProperties)
     }
 
-    /// ``entries`` bucketed by pane, resolved once for the same reason
-    /// ``entries`` itself is: the search path reads it per keystroke, and a
-    /// filter per lookup rescans the whole index for each pane.
+    /// ``entries`` bucketed by pane, cached for the same per-keystroke reason.
     private static let entriesByPane: [SettingsNavigationIdentifier: [SearchEntry]] =
         Dictionary(grouping: entries, by: \.pane)
 
@@ -150,10 +127,8 @@ nonisolated enum SearchIndex {
         entriesByPane[pane] ?? []
     }
 
-    /// Pure relevance sort: Fuse's `diffScore` is `0` for a perfect match and
-    /// increases with worse matches, so the best result has the lowest score.
-    /// Delegates to ``SearchRanker/sortedByRelevance(_:)``, the pipe shared
-    /// with menu bar item search, so the two surfaces can't drift apart.
+    /// Sorts by Fuse `diffScore`, lowest (best) first. Delegates to
+    /// ``SearchRanker/sortedByRelevance(_:)``, shared with menu bar item search.
     static func sortedByRelevance<T>(_ items: [(item: T, diffScore: Double)]) -> [T] {
         SearchRanker.sortedByRelevance(items)
     }
@@ -469,6 +444,17 @@ nonisolated enum SearchIndex {
             property: .general("rehideInterval")
         ),
         SearchEntry(
+            id: "general.tempShowInterval",
+            titleKey: "Hide opened items again after",
+            titleText: "Hide opened items again after",
+            descriptionText: "How long a hidden menu bar item you open from search or the Thaw Bar stays in the menu bar after its menu closes.",
+            pane: .general,
+            sectionKey: "After revealing",
+            sectionText: "After revealing",
+            keywords: ["temp", "temporary", "temporarily shown", "hide again", "seconds", "delay"],
+            property: .general("tempShowInterval")
+        ),
+        SearchEntry(
             id: "advanced.useOptionClickToShowAlwaysHiddenSection",
             titleKey: "Use Option-click to open always-hidden section",
             titleText: "Use Option-click to open always-hidden section",
@@ -691,10 +677,8 @@ nonisolated enum SearchIndex {
 
     // MARK: Display Settings
 
-    /// Display settings are configuration-based (per-display and global
-    /// templates on `DisplaySettingsManager`), not direct `@Published` toggles,
-    /// so they are not covered by the drift guard. They are indexed for search
-    /// discoverability.
+    /// Display settings live in `DisplaySettingsManager` configurations, not
+    /// `@Published` toggles, so the drift guard doesn't cover them.
     private static let displayEntries: [SearchEntry] = [
         SearchEntry(
             id: "displays.useIceBar",

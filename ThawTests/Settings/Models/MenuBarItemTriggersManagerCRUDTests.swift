@@ -2,7 +2,6 @@
 //  MenuBarItemTriggersManagerCRUDTests.swift
 //  Project: Thaw
 //
-//  Copyright (Ice) © 2023–2025 Jordan Baird
 //  Copyright (Thaw) © 2026 Toni Förster
 //  Licensed under the GNU GPLv3
 
@@ -10,10 +9,9 @@ import Foundation
 import Testing
 @testable import Thaw
 
-/// Exercises the trigger CRUD surface of ``MenuBarItemTriggersManager`` —
-/// add, remove, update, and priority reordering, plus what survives a
-/// reload. The manager runs without `performSetup`, so no live menu bar,
-/// item manager, or system monitors are involved.
+/// Covers add, remove, update, and priority reordering in
+/// ``MenuBarItemTriggersManager``, plus what survives a reload. Runs without
+/// `performSetup`, so no live menu bar or system monitors are involved.
 @Suite("Menu bar item triggers manager CRUD")
 @MainActor
 struct MenuBarItemTriggersManagerCRUDTests {

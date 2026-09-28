@@ -19,22 +19,20 @@ final class MenuBarAppearanceEditorPanel: NSObject, NSPopoverDelegate {
         NSScreen.screenWithMouse ?? NSScreen.main
     }
 
-    /// The shared app state.
     private weak var appState: AppState?
 
     /// Storage for internal observers.
     private var cancellables = Set<AnyCancellable>()
 
-    /// Observes `appearanceManager.effectiveConfiguration` — what the editor
-    /// itself shows — to keep the popover's content size in sync, replacing
-    /// the old `$configuration.sink`.
+    /// Observes `appearanceManager.effectiveConfiguration` to keep the
+    /// popover's content size in sync.
     private var appearanceConfigurationObservationTask: Task<Void, Never>?
 
     /// The underlying popover.
     private var popover: NSPopover?
 
-    /// An invisible window used to anchor the popover to the top of the screen.
-    private var anchorWindow: NSWindow?
+    /// Anchors the popover to the top of the screen.
+    private let anchorWindow = PopoverAnchorWindow()
 
     @MainActor
     deinit {
@@ -51,7 +49,7 @@ final class MenuBarAppearanceEditorPanel: NSObject, NSPopoverDelegate {
     func show(on screen: NSScreen, onDone: (() -> Void)? = nil) {
         guard
             let appState,
-            let anchorView = anchorView(for: screen)
+            let anchorView = anchorWindow.anchorView(for: screen)
         else {
             return
         }
@@ -79,7 +77,7 @@ final class MenuBarAppearanceEditorPanel: NSObject, NSPopoverDelegate {
     }
 
     func popoverDidClose(_: Notification) {
-        anchorWindow?.orderOut(nil)
+        anchorWindow.orderOut()
         NSColorPanel.shared.hidesOnDeactivate = true
         NSColorPanel.shared.close()
     }
@@ -129,38 +127,6 @@ final class MenuBarAppearanceEditorPanel: NSObject, NSPopoverDelegate {
         hostingController.updatePreferredContentSize()
         popover.contentSize = hostingController.preferredContentSize
     }
-
-    private func anchorView(for screen: NSScreen) -> NSView? {
-        let window: NSWindow
-        if let anchorWindow {
-            window = anchorWindow
-        } else {
-            let newWindow = NSWindow(
-                contentRect: .init(origin: .zero, size: .init(width: 1, height: 1)),
-                styleMask: .borderless,
-                backing: .buffered,
-                defer: false
-            )
-            newWindow.isReleasedWhenClosed = false
-            newWindow.isOpaque = false
-            newWindow.backgroundColor = .clear
-            newWindow.level = .statusBar
-            newWindow.ignoresMouseEvents = true
-            newWindow.hasShadow = false
-            newWindow.contentView = NSView(
-                frame: .init(origin: .zero, size: .init(width: 1, height: 1))
-            )
-            anchorWindow = newWindow
-            window = newWindow
-        }
-
-        let frame = screen.visibleFrame
-        let origin = CGPoint(x: frame.midX, y: frame.maxY - window.frame.height)
-        window.setFrameOrigin(origin)
-        window.orderFrontRegardless()
-
-        return window.contentView
-    }
 }
 
 // MARK: - MenuBarAppearanceEditorHostingController
@@ -170,9 +136,8 @@ private final class MenuBarAppearanceEditorHostingController: NSHostingControlle
     private weak var appState: AppState?
     private var cancellables = Set<AnyCancellable>()
 
-    /// Observes `appearanceManager.effectiveConfiguration` — what the editor
-    /// itself shows — to keep the preferred content size in sync, replacing
-    /// the old `$configuration.sink`.
+    /// Observes `appearanceManager.effectiveConfiguration` to keep the
+    /// preferred content size in sync.
     private var appearanceConfigurationObservationTask: Task<Void, Never>?
 
     init(appState: AppState, onDone: (() -> Void)?) {
