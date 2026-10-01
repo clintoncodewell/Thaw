@@ -369,6 +369,38 @@ jobs:
           release-notes: ${{ steps.notes.outputs.body }}
           publish-appcast: "false"
 
+      # 2.x is the macOS 26 line; macOS 27 gets 3.0. generate_appcast rewrites
+      # the items it has archives for, so every run re-applies the cap to all
+      # 2.x items, and it is a no-op on items that already carry one.
+      - name: Keep 2.x releases off macOS 27
+        env:
+          APPCAST_PATH: ${{ steps.sparkle.outputs.appcast-path }}
+        run: |
+          python3 - "$APPCAST_PATH" <<'PY'
+          import re, sys
+          path = sys.argv[1]
+          xml = open(path, encoding="utf-8").read()
+          capped = []
+
+          def cap(match):
+              item = match.group(0)
+              version = re.search(r"<sparkle:shortVersionString>([^<]+)</sparkle:shortVersionString>", item)
+              if not version or not version.group(1).startswith("2."):
+                  return item
+              if "<sparkle:maximumSystemVersion>" in item:
+                  return item
+              minimum = re.search(r"([ \t]*)<sparkle:minimumSystemVersion>[^<]*</sparkle:minimumSystemVersion>\n", item)
+              if not minimum:
+                  sys.exit(f"{version.group(1)} has no minimumSystemVersion to anchor the cap on")
+              capped.append(version.group(1))
+              line = f"{minimum.group(1)}<sparkle:maximumSystemVersion>26.99</sparkle:maximumSystemVersion>\n"
+              return item[:minimum.end()] + line + item[minimum.end():]
+
+          xml = re.sub(r"<item>.*?</item>", cap, xml, flags=re.S)
+          open(path, "w", encoding="utf-8").write(xml)
+          print("Capped at macOS 26:", ", ".join(capped) if capped else "none")
+          PY
+
       - name: Collect update assets
         id: update-assets
         run: |
