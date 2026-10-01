@@ -7,7 +7,7 @@ The `release.yml` workflow reads the section matching the release tag
 (`## [tag]`) and uses it as the release notes for both the GitHub Release
 and the Sparkle appcast, unless overridden with the `release_notes` input.
 
-## [3.0.0-beta.1] - 2026-09-30
+## [3.0.0-beta.1] - 2026-10-01
 
 **macOS 27 only · Build 111 · First beta**
 
@@ -95,6 +95,7 @@ Switches in Settings > Experiments swap these for Thaw icons you can move or hid
 
 - **Settings no longer crashes** on notched MacBooks or at 110% zoom. Reported by @ifangxiang and @NickBenthem in [#1194](https://github.com/thaw-app/Thaw/issues/1194).
 - **Thaw no longer reorders the menu bar around its own icons.**
+- **Unplugging a display no longer quits menu bar apps.** A different spacing on each display used to relaunch every app with a menu bar item, Chrome included. The new spacing now applies the next time those apps launch, or at once with Reapply Spacing. [#1215](https://github.com/thaw-app/Thaw/issues/1215)
 - **A full menu bar stays in order.** When macOS has no room to draw some Visible items, Thaw moves the extra ones to Hidden instead of rearranging the bar again and again.
 - **Apps with more than one icon stay where you put them.**
 - **Items keep their section** when you reorder Hidden or Always Hidden in Layout.
