@@ -1,0 +1,21 @@
+build-local.sh
+  s_18089cb9a83437::t_923383def3b50a 116-128
+  s_18089cb9a83437::t_19996c6fb304be 52-53,55
+  s_18089cb9a83437::t_6eddbe994818c9 54,56
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "6cc6b66e2448a9472e13ea862f1d598678387ed3",
+  "prompts": {},
+  "sessions": {
+    "s_18089cb9a83437": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0929f2d0-2544-4c88-bdca-1f904c57c01d",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "clintoncodewell <clinton@advisewell.co>"
+    }
+  }
+}
