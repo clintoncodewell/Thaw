@@ -49,7 +49,11 @@ if [ "$ADHOC" = 1 ]; then
   SIGN_ARGS=(CODE_SIGN_IDENTITY=- CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM= CODE_SIGNING_REQUIRED=NO)
 else
   SIGNED=1
-  SIGN_ARGS=(DEVELOPMENT_TEAM="$TEAM" CODE_SIGN_STYLE=Automatic)
+  # Upstream sets "CODE_SIGN_IDENTITY[sdk=macosx*]" = "-" on the Thaw target
+  # (97bcb501). That SDK-conditional ad-hoc identity survives a plain
+  # DEVELOPMENT_TEAM override; a command-line CODE_SIGN_IDENTITY outranks it.
+  SIGN_ARGS=(DEVELOPMENT_TEAM="$TEAM" CODE_SIGN_STYLE=Automatic
+             CODE_SIGN_IDENTITY="Apple Development")
   if [ -r "$SIGNING_KEYCHAIN" ] && [ -r "$SIGNING_PW" ]; then
     # A stale password or a re-created keychain must land on the same "cannot
     # sign here" path. Left bare, set -e would abort with security's own wording,
@@ -109,6 +113,19 @@ if [ "$SIGNED" = 0 ]; then
   codesign --verify --strict "$APP" && echo "re-signed frameworks ad-hoc (entitlements preserved)"
 fi
 
+if [ "$SIGNED" = 1 ]; then
+  # Check every signed build, not just --install: the nightly verify runs
+  # without --install and mac-install.sh only checks that the seal is valid,
+  # so an ad-hoc build that passes here gets deployed and voids TCC.
+  # Capture, don't pipe into `grep -q`: grep exits on first match, codesign
+  # takes SIGPIPE, and pipefail then reports a successful match as a failure.
+  SIGINFO=$(codesign -dvvv "$APP" 2>&1)
+  case "$SIGINFO" in
+    *"TeamIdentifier=$TEAM"*) ;;
+    *) echo "built app is not signed with team $TEAM (ad-hoc?) — failing the build" >&2; exit 1 ;;
+  esac
+fi
+
 echo "built: $APP"
 
 if [ "$INSTALL" = 1 ]; then
@@ -116,14 +133,6 @@ if [ "$INSTALL" = 1 ]; then
     { echo "built app fails codesign — not installing" >&2; exit 1; }
 
   if [ "$SIGNED" = 1 ]; then
-    # Capture, don't pipe into `grep -q`: grep exits on first match, codesign
-    # takes SIGPIPE, and pipefail then reports a successful match as a failure.
-    SIGINFO=$(codesign -dvvv "$APP" 2>&1)
-    case "$SIGINFO" in
-      *"TeamIdentifier=$TEAM"*) ;;
-      *) echo "built app is not signed with team $TEAM — refusing to install" >&2; exit 1 ;;
-    esac
-
     # The signature is the whole point, so check the thing that actually matters:
     # does this bundle still satisfy the requirement macOS recorded when the
     # Accessibility grant was made? Skipped silently when the TCC database isn't
