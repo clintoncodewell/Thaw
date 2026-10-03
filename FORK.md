@@ -21,7 +21,7 @@ Clean merge pushes straight to `development`. Conflict against our tweaks aborts
 opens a PR instead, so nothing is ever lost silently. A dirty working tree makes it skip.
 
 Thaw's config line also **deploys**: `mac-build.sh` verifies the merge builds, and on a clean
-push `mac-install.sh Thaw` replaces `/Applications/Thaw.app` and restarts it. An upstream merge
+push `EXPECT_TEAM=36H9FH5KZM mac-install.sh Thaw` replaces `/Applications/Thaw.app` and restarts it. An upstream merge
 therefore reaches your Mac the same night, which is why the signing rules below are load-bearing
 rather than a nicety.
 

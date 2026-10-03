@@ -115,15 +115,23 @@ fi
 
 if [ "$SIGNED" = 1 ]; then
   # Check every signed build, not just --install: the nightly verify runs
-  # without --install and mac-install.sh only checks that the seal is valid,
-  # so an ad-hoc build that passes here gets deployed and voids TCC.
+  # without --install, so an ad-hoc build that passes here gets deployed.
   # Capture, don't pipe into `grep -q`: grep exits on first match, codesign
   # takes SIGPIPE, and pipefail then reports a successful match as a failure.
-  SIGINFO=$(codesign -dvvv "$APP" 2>&1)
-  case "$SIGINFO" in
-    *"TeamIdentifier=$TEAM"*) ;;
-    *) echo "built app is not signed with team $TEAM (ad-hoc?) — failing the build" >&2; exit 1 ;;
-  esac
+  # Check the app and the code it loads or launches directly: dyld kills the
+  # app at launch when a framework's team differs (Sparkle did, 2026-10).
+  # Sparkle's own helpers one level deeper ship ad-hoc and run as separate
+  # processes, so they are not checked.
+  codesign --verify --strict --deep "$APP" ||
+    { echo "built app fails strict codesign — failing the build" >&2; exit 1; }
+  for CODE in "$APP" "$APP"/Contents/{Frameworks,XPCServices,PlugIns,Library/LoginItems}/*; do
+    [ -e "$CODE" ] || continue
+    SIGINFO=$(codesign -dvvv "$CODE" 2>&1 || true)
+    case "$SIGINFO" in
+      *"TeamIdentifier=$TEAM"*) ;;
+      *) echo "${CODE#"$APP"/} is not signed with team $TEAM (ad-hoc?) — failing the build" >&2; exit 1 ;;
+    esac
+  done
 fi
 
 echo "built: $APP"
@@ -134,18 +142,23 @@ if [ "$INSTALL" = 1 ]; then
 
   if [ "$SIGNED" = 1 ]; then
     # The signature is the whole point, so check the thing that actually matters:
-    # does this bundle still satisfy the requirement macOS recorded when the
-    # Accessibility grant was made? Skipped silently when the TCC database isn't
-    # readable (needs Full Disk Access) or no grant exists yet.
+    # does this bundle still satisfy the requirement macOS recorded when each
+    # grant was made? Skipped silently when the TCC database isn't readable
+    # (needs Full Disk Access) or no grant exists yet.
     REQ=$(mktemp -t thaw-req)
-    if sqlite3 "/Library/Application Support/com.apple.TCC/TCC.db" \
-         "select hex(csreq) from access where service='kTCCServiceAccessibility' and client='com.stonerl.Thaw';" \
-         2>/dev/null | xxd -r -p > "$REQ" && [ -s "$REQ" ]; then
-      codesign --verify -R "$REQ" "$APP" 2>/dev/null || {
-        echo "this build does not satisfy the Accessibility grant macOS has stored;" >&2
-        echo "installing it would silently revoke Thaw's permissions — aborting" >&2
-        rm -f "$REQ"; exit 1; }
-    fi
+    for DB in "/Library/Application Support/com.apple.TCC/TCC.db" \
+              "$HOME/Library/Application Support/com.apple.TCC/TCC.db"; do
+      for SVC in kTCCServiceAccessibility kTCCServiceScreenCapture; do
+        if sqlite3 "$DB" \
+             "select hex(csreq) from access where service='$SVC' and client='com.stonerl.Thaw';" \
+             2>/dev/null | xxd -r -p > "$REQ" && [ -s "$REQ" ]; then
+          codesign --verify -R "$REQ" "$APP" 2>/dev/null || {
+            echo "this build does not satisfy the $SVC grant macOS has stored;" >&2
+            echo "installing it would silently revoke Thaw's permissions — aborting" >&2
+            rm -f "$REQ"; exit 1; }
+        fi
+      done
+    done
     rm -f "$REQ"
   fi
 
