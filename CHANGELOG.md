@@ -14,7 +14,14 @@ and the Sparkle appcast, unless overridden with the `release_notes` input.
 > [!IMPORTANT]
 > **This is the first 3.0.0 beta.**
 >
-> Beta is the default update channel. Nightly gets every build as it lands. Switch it in About Thaw, from the ⋯ menu in Settings.
+> Beta is the default update channel. Choose Beta or Nightly in About Thaw, from the ⋯ menu in Settings.
+
+> [!NOTE]
+> **Updating from alpha 7**
+>
+> Alpha 7 couldn't find beta 1 because its updater only checked the alpha channel. We've fixed the update feed, so Check for Updates can now offer beta 1 without a manual download. The app itself hasn't changed.
+>
+> After updating, choose **Beta** in About Thaw to receive later betas. If you previously selected Alpha/Nightly, that choice carries over and excludes later beta releases. This update requires macOS 27; nothing changes for macOS 26 users.
 
 > [!NOTE]
 > **Missing a fix?**
