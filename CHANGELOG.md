@@ -7,6 +7,91 @@ The `release.yml` workflow reads the section matching the release tag
 (`## [tag]`) and uses it as the release notes for both the GitHub Release
 and the Sparkle appcast, unless overridden with the `release_notes` input.
 
+## [3.0.0-beta.2] - 2026-10-06
+
+**macOS 27 only · Build 112**
+
+### New
+
+- **Triggers can show items while an app runs**, even in the background. When it quits, they go back to your saved layout. Added by @diazdesandi in [#1223](https://github.com/thaw-app/Thaw/pull/1223).
+- **Launchers can open menu bar items and apply profiles** through `thaw://` URLs. Floe works without setup. Added by @diazdesandi in [#1223](https://github.com/thaw-app/Thaw/pull/1223).
+- **Restore missing menu bar items**, in Troubleshooting, brings back stuck items and keeps your saved layout. Added by @diazdesandi in [#1223](https://github.com/thaw-app/Thaw/pull/1223).
+- **Gradients can run at any angle.** A new slider in Appearance sets it. Gradients you already use look the same. Suggested by Danilo Carvalho (danmnesiac) on Discord. Added by @diazdesandi.
+- **Layout shows when macOS won't let an icon follow its section.** A badge on the item explains why. Added by @camguillory in [#1254](https://github.com/thaw-app/Thaw/pull/1254).
+
+### Changed
+
+- **Automatic overflow is off by default.** If you set it yourself, your choice stays. By @diazdesandi in [#1223](https://github.com/thaw-app/Thaw/pull/1223).
+- **A gold app icon** and a matching accent color. By @diazdesandi in [#1223](https://github.com/thaw-app/Thaw/pull/1223).
+- **About has a new layout**, a sidebar entry and a Credits page. By @diazdesandi in [#1223](https://github.com/thaw-app/Thaw/pull/1223).
+- **Release notes and Credits use the same text sizes as Settings.** By @diazdesandi in [#1223](https://github.com/thaw-app/Thaw/pull/1223).
+- **Menu bar history is gone**, with its click history and unused-item suggestions. Thaw clears the recorded history on launch. Layout backups and hidden items are unaffected. By @diazdesandi in [#1223](https://github.com/thaw-app/Thaw/pull/1223).
+
+### Fixed: missing icons and search
+
+- **Thaw says when macOS is blocking its icon.** A warning under "Show Thaw icon" points you to System Settings > Menu Bar. Reported by @promonteiro89 in [#1232](https://github.com/thaw-app/Thaw/issues/1232). Fixed by @diazdesandi in [#1223](https://github.com/thaw-app/Thaw/pull/1223).
+- **Thaw warns when apps it hid are still hidden** after a launch where it couldn't show them again. The warning in General opens Tools, where you can restore them. Fixed by @diazdesandi in [#1223](https://github.com/thaw-app/Thaw/pull/1223).
+- **Items show in the menu bar again with the Thaw Bar turned off.** The bar could show only the section markers. Reported by @daschles in [#1228](https://github.com/thaw-app/Thaw/issues/1228). Fixed by @diazdesandi in [#1223](https://github.com/thaw-app/Thaw/pull/1223).
+- **Menu bar search keeps the keyboard** after a search with no matches, and when you open it again. Reported by Jam and krossen6 on Discord. Fixed by @diazdesandi in [#1223](https://github.com/thaw-app/Thaw/pull/1223).
+
+### Fixed: items and previews
+
+- **Layout previews follow each item's current position.** Fixed by @diazdesandi in [#1223](https://github.com/thaw-app/Thaw/pull/1223).
+- **Simple Mode previews stay up to date.** Fixed by @diazdesandi in [#1223](https://github.com/thaw-app/Thaw/pull/1223).
+- **Amphetamine, Rectangle and OneDrive stay hidden** across title changes and restarts. Reported by Mason_Boom and xX-Mordran-Xx on Discord. Fixed by @diazdesandi in [#1223](https://github.com/thaw-app/Thaw/pull/1223).
+- **Items parked off the menu bar no longer count toward overflow.** Fixed by @diazdesandi in [#1223](https://github.com/thaw-app/Thaw/pull/1223).
+- **Clock, Control Center and Siri stay in view** with Live Activities and the camera indicator shown. Fixed by @diazdesandi in [#1223](https://github.com/thaw-app/Thaw/pull/1223).
+
+### Fixed: appearance, Thaw Bar and Displays
+
+- **Appearance detects a menu bar that hides automatically.** Reported by @lyramsr in [#1217](https://github.com/thaw-app/Thaw/issues/1217). Fixed by @diazdesandi in [#1223](https://github.com/thaw-app/Thaw/pull/1223).
+- **Split pills cover status items on secondary displays.** Fixed by @diazdesandi in [#1223](https://github.com/thaw-app/Thaw/pull/1223).
+- **Clicking Thaw's icon after it moves** no longer closes and reopens the Thaw Bar. Fixed by @diazdesandi in [#1223](https://github.com/thaw-app/Thaw/pull/1223).
+- **The Thaw Bar no longer turns gray with black icons** when "Thaw Bar own look" is off. Reported by @scsyc in [#1222](https://github.com/thaw-app/Thaw/issues/1222). Fixed by @diazdesandi in [#1223](https://github.com/thaw-app/Thaw/pull/1223).
+- **"When applying spacing" is back in Displays.** "Wait until next restart" saves the spacing without relaunching apps. Reported by @netheremp in [#1230](https://github.com/thaw-app/Thaw/issues/1230). Fixed by @diazdesandi in [#1223](https://github.com/thaw-app/Thaw/pull/1223).
+
+### Fixed: moving and arranging
+
+- **Moves work while another app is slow to respond.** One busy app, such as Google Drive in the middle of a sync, used to block every move. Fixed by @camguillory in [#1233](https://github.com/thaw-app/Thaw/pull/1233).
+- **Reordering in Layout works with the Thaw icon hidden.** Drops used to save the order without moving anything. Fixed by @camguillory in [#1234](https://github.com/thaw-app/Thaw/pull/1234).
+- **Dragging one Stats item moves only that item.** After updating, you may need to place your Stats items once more. Fixed by @camguillory in [#1235](https://github.com/thaw-app/Thaw/pull/1235).
+- **A second display no longer scrambles your saved order.** Items used to jump to the end of the menu bar after a reveal. Fixed by @camguillory in [#1241](https://github.com/thaw-app/Thaw/pull/1241).
+- **Some items no longer take seconds to move.** Thaw drags them right away. Fixed by @camguillory in [#1251](https://github.com/thaw-app/Thaw/pull/1251).
+
+### Fixed: saved order and Manual arrangement
+
+- **A new or temporary icon no longer scrambles your order.** When an item arrives, Thaw keeps the order you saved. Reported by HiroMike on Discord. Fixed by @diazdesandi in [#1223](https://github.com/thaw-app/Thaw/pull/1223).
+- **Layout works in Manual arrangement.** You can drag, sort and use the keyboard there to move items between sections. Reported by HiroMike on Discord. Fixed by @diazdesandi in [#1223](https://github.com/thaw-app/Thaw/pull/1223).
+
+### Fixed: icons in Layout and the Thaw Bar
+
+- **Stats icons show up** where they used to be blank or out of date. Fixed by @camguillory in [#1236](https://github.com/thaw-app/Thaw/pull/1236).
+- **Items that report an oversized icon appear in Thaw.** You can now show, hide and move them. Fixed by @camguillory in [#1240](https://github.com/thaw-app/Thaw/pull/1240).
+- **Layout keeps real icons while you work in another app.** They used to turn into app icons after 30 seconds. Fixed by @camguillory in [#1246](https://github.com/thaw-app/Thaw/pull/1246).
+- **Icons next to a hidden Thaw icon keep their real look.** Fixed by @camguillory in [#1247](https://github.com/thaw-app/Thaw/pull/1247) and [#1252](https://github.com/thaw-app/Thaw/pull/1252).
+- **Icons with their own background keep it**, such as Krisp's white square. Fixed by @camguillory in [#1264](https://github.com/thaw-app/Thaw/pull/1264).
+
+### Fixed: several displays and a full menu bar
+
+- **Icons load sooner in Layout with several displays.** They could take about 19 seconds and show app icons in the meantime. Fixed by @camguillory in [#1248](https://github.com/thaw-app/Thaw/pull/1248).
+- **Thaw recognizes the menu bar's overflow arrow in every language.** On non-English systems Thaw could save it as an app's icon, and opening the Thaw Bar made icons blink. Fixed by @camguillory in [#1257](https://github.com/thaw-app/Thaw/pull/1257).
+- **Clicks in empty menu bar space work on a full notched bar.** Right-clicking opens Thaw's menu there, and click, hover and scroll show your items. Fixed by @camguillory in [#1258](https://github.com/thaw-app/Thaw/pull/1258).
+- **The Thaw Bar shows real icons when the menu bar is full**, where it used to show an app icon for every item. Fixed by @camguillory in [#1259](https://github.com/thaw-app/Thaw/pull/1259).
+- **A Thaw Bar opened at the pointer stays put.** It used to jump across the screen when you moved the mouse over an item. Fixed by @camguillory in [#1249](https://github.com/thaw-app/Thaw/pull/1249).
+
+### Fixed: menus and permissions
+
+- **Menus opened from the Thaw Bar appear at their icon.** They could open at the top-left corner of the screen. Reported by @steermomo in [#1225](https://github.com/thaw-app/Thaw/issues/1225) and confirmed by @daschles. Fixed by @diazdesandi.
+- **System Settings no longer opens behind the Screen Recording prompt.** Thaw waits for your answer first. Fixed by @camguillory in [#1243](https://github.com/thaw-app/Thaw/pull/1243).
+
+## [2.1.0-rc.1] - 2026-10-06
+
+**macOS 26 only · Build 63 · Release candidate**
+
+The first 2.1.0 release candidate. Nothing changed since 2.1.0-beta.6: this is the same app, promoted so it can ship as 2.1.0 if no new problems turn up. For what's new in 2.1.0, see the beta notes below.
+
+If something breaks, please report it at [github.com/thaw-app/Thaw/issues](https://github.com/thaw-app/Thaw/issues).
+
 ## [3.0.0-beta.1] - 2026-10-01
 
 **macOS 27 only · Build 111 · First beta**
